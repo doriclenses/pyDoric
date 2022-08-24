@@ -8,6 +8,29 @@ def load_attributes(
     f: h5py.File,
     path: str
 ) -> dict:
+
+    """
+    Loads group/dataset attributes as a dictionary
+
+    Args:
+        f: opened h5py file
+        path: path to the group/dataset
+
+    Returns:
+        dictionary of dataset/group attributes
+
+    Raises:
+        IOError: if file is closed or path does not exist
+    """
+
+    if type(f) != h5py.File:
+        raise TypeError('f is not h5py.File')
+
+    if not f.__bool__():
+        raise ValueError('File is closed')
+
+    if path not in f:
+        raise KeyError(f'"{path}" path does not exist in the file')
     
     params = {}
     
