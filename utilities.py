@@ -20,7 +20,9 @@ def load_attributes(
         dictionary of dataset/group attributes
 
     Raises:
-        IOError: if file is closed or path does not exist
+        TypeError: If file is not h5py.File
+        ValueError: If file is closed
+        KeyError: If path does not exist in the file
     """
 
     if type(f) != h5py.File:
