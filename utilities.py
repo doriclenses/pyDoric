@@ -89,27 +89,25 @@ def save_images(
     Saves images and time vector in HDF file as 'ImagesStack' and 'Time' 
     datasets in `path` group. Saves images width, height, `bits_count`, and
     `qt_format` as 'ImagesStack' dataset attribute
-    Parameters
-    ----------
-    images : np.ndarray
-        3D images stack, with shape (frame, height, width).
-    time_ : np.array
-        1D vector of timestamps
-    f : h5py.File
-        Opened HDF file where the information should be saved
-    path  : str
-        Group path in the HDF file
-    bits_count : int
-        Bits depth of images
-    qt_format : int
-        QImage_Format, necessary to display images in DNS. For reference, please
-        see https://doc.qt.io/qt-6/qimage.html
+    
+    Args:
+        images : np.ndarray
+            3D images stack, with shape (frame, height, width).
+        time_ : np.array
+            1D vector of timestamps
+        f : h5py.File
+            Opened HDF file where the information should be saved
+        path  : str
+            Group path in the HDF file
+        bits_count : int
+            Bits depth of images
+        qt_format : int
+            QImage_Format, necessary to display images in DNS. For reference, please
+            see https://doc.qt.io/qt-6/qimage.html
 
-    Returns
-    -------
+    Returns:
 
-    Raises
-    ------
+    Raises:
 
     """
     
