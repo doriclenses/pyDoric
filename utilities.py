@@ -5,31 +5,35 @@ import numpy as np
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 def load_attributes(
-    f: h5py.File,
-    path: str
+    file_: Union[h5py.File, str],
+    path: str = ''
 ) -> dict:
 
     """
     Loads group/dataset attributes as a dictionary
 
     Args:
-        f: opened h5py file
+        f: opened h5py file or full path to a file
         path: path to the group/dataset
 
     Returns:
         dictionary of dataset/group attributes
 
     Raises:
-        TypeError: If file is not h5py.File
+        TypeError: If file is not h5py.File or hdf5 filepath
         ValueError: If file is closed
         KeyError: If path does not exist in the file
     """
 
-    if type(f) != h5py.File:
-        raise TypeError('f is not h5py.File')
+    if not (type(file_) == h5py.File or h5py.is_hdf5(file_)):
+        raise TypeError('f is not h5py.File or filepath to HDF file')
 
-    if not f.__bool__():
-        raise ValueError('File is closed')
+    if type(file_) == h5py.File:
+        f = file_
+        if not f.__bool__():
+            raise ValueError('File is closed')
+    else:
+        f = h5py.File(file_, 'r')
 
     if path not in f:
         raise KeyError(f'"{path}" path does not exist in the file')
