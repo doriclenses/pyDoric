@@ -1,6 +1,7 @@
 import os
 import cv2
 import h5py
+import warnings
 import numpy as np
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
@@ -39,29 +40,53 @@ def load_attributes(
         raise KeyError(f'"{path}" path does not exist in the file')
     
     params = {}
-    
     for key, value in f[path].attrs.items():
-
         if type(value) == np.ndarray and value.shape == (2,) and value.size == 2:
             params[key] = tuple(value)
         elif type(value) == np.ndarray:
             params[key] = value.tolist()
+        elif type(value) == bytes:
+            params[key] = value.decode("utf-8") 
         else:
             params[key] = value
+
+    if h5py.is_hdf5(file_):
+        f.close()
         
     return params
 
 
 def get_frequency(
-    fname: str,
-    path: str
+    file_: Union[h5py.File, str],
+    vdataset: str
 ) -> float:
 
-    with h5py.File(fname, 'r') as f:
-        t = np.array(f[path])
+    if not (type(file_) == h5py.File or h5py.is_hdf5(file_)):
+        raise TypeError('f is not h5py.File or filepath to HDF file')
+
+    if type(file_) == h5py.File:
+        f = file_
+        if not f.__bool__():
+            raise ValueError('File is closed')
+    else:
+        f = h5py.File(file_, 'r')
+
+    if vdataset not in f:
+        raise KeyError(f'"{vdataset}" path does not exist in the file')
+
+    if not isinstance(f[vdataset], h5py.Dataset):
+        raise ValueError(f'{vdataset} has to be a path to dataset')
+
+    t = np.array(f[vdataset])
+
+    if len(t.shape) > 1:
+        warnings.warn('The dataset is not a time vector')
 
     dt = np.diff(t)
     T = np.round(np.median(dt),10)
+
+    if h5py.is_hdf5(file_):
+        f.close()
 
     return 1/T
 
@@ -128,7 +153,6 @@ def save_images(
 
     for i, image in enumerate(images):
         dataset[:,:,i] = image
-        print(i)
         
     try:
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
