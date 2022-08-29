@@ -1,0 +1,265 @@
+import os
+import h5py
+import dask as da
+import numpy as np
+import xarray as xr
+import functools as fct
+from typing import Optional, Callable
+from minian.utilities import custom_arr_optimize
+from utilities import save_roi_signals, save_signals, save_images, load_attributes, save_attributes
+
+def load_doric_to_xarray(
+    fname: str,
+    dtype: type = np.float64,
+    h5path: Optional[str] = None,
+    downsample: Optional[dict] = None,
+    downsample_strategy="subset",
+    post_process: Optional[Callable] = None,
+) -> xr.DataArray:
+    """
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Raises
+    ------
+
+    """
+
+    file_ = h5py.File(fname)
+    varr = da.array.from_array(file_[h5path+'ImagesStack'])
+    varr = xr.DataArray(
+        varr,
+        dims=["height", "width", "frame"],
+        coords=dict(
+            height=np.arange(varr.shape[0]),
+            width=np.arange(varr.shape[1]),
+            frame=np.arange(varr.shape[2]),
+        ),
+    )
+    varr = varr.transpose('frame', 'height', 'width')
+    
+    if dtype != varr.dtype:
+        if dtype == np.uint8:
+            #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
+            bitsCount = file_[h5path+'ImagesStack'].attrs["BitsCount"]
+            varr = varr / 2**bitsCount * 2**8
+
+        varr = varr.astype(dtype)
+    
+    if downsample:
+        if downsample_strategy == "mean":
+            varr = varr.coarsen(**downsample, boundary="trim", coord_func="min").mean()
+        elif downsample_strategy == "subset":
+            varr = varr.isel(**{d: slice(None, None, w) for d, w in downsample.items()})
+        else:
+            raise NotImplementedError("unrecognized downsampling strategy")
+    varr = varr.rename("fluorescence")
+    
+    if post_process:
+        varr = post_process(varr, vpath, vlist, varr_list)
+    
+    arr_opt = fct.partial(custom_arr_optimize, keep_patterns=["^load_avi_ffmpeg"])
+    
+    with da.config.set(array_optimize=arr_opt):
+        varr = da.optimize(varr)[0]
+
+    return varr, file_
+
+
+def save_minian_to_doric(
+    Y: xr.DataArray,
+    A: Optional[xr.DataArray],
+    C: Optional[xr.DataArray],
+    S: Optional[xr.DataArray],
+    fr: int,
+    bits_count: int = 10,
+    qt_format: int = 28,
+    vname: str = "minian.doric",
+    vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
+    vdataset: str = 'Series1/Sensor1/',
+    attrs: Optional[dict] = None,
+    saveimages: bool = True,
+    saveresiduals: bool = True,
+    savespikes: bool = True
+) -> str:
+    """
+    Save MiniAn results to .doric file:
+    MiniAnImages - `AC` representing cellular activities as computed by :func:`minian.cnmf.compute_AtC`
+    MiniAnResidualImages - residule movie computed as the difference between `Y` and `AC`
+    MiniAnSignals - `C` with coordinates from `A`
+    MiniAnSpikes - `S`
+    Since the CNMF algorithm contains various arbitrary scaling process, a normalizing 
+    scalar is computed with least square using a subset of frames from `Y` and `AC` 
+    such that their numerical values matches.
+    
+    Parameters
+    ----------
+    varr : xr.DataArray
+        Input reference movie data. Should have dimensions ("frame", "height",
+        "width"), and should only be chunked along "frame" dimension.
+    Y : xr.DataArray
+        Movie data representing input to CNMF algorithm. Should have dimensions
+        ("frame", "height", "width"), and should only be chunked along "frame"
+        dimension.
+    A : xr.DataArray, optional
+        Spatial footprints of cells. Only used if `AC` is `None`. By default
+        `None`.
+    C : xr.DataArray, optional
+        Temporal activities of cells. Only used if `AC` is `None`. By default
+        `None`.
+    AC : xr.DataArray, optional
+        Spatial-temporal activities of cells. Should have dimensions ("frame",
+        "height", "width"), and should only be chunked along "frame" dimension.
+        If `None` then both `A` and `C` should be supplied and
+        :func:`minian.cnmf.compute_AtC` will be used to compute this variable.
+        By default `None`.
+    nfm_norm : int, optional
+        Number of frames to randomly draw from `Y` and `AC` to compute the
+        normalizing factor with least square. By default `None`.
+    gain : float, optional
+        A gain factor multiplied to `Y`. Useful to make the results visually
+        brighter. By default `1.5`.
+    vpath : str, optional
+        Desired folder containing the resulting video. By default `"."`.
+    vname : str, optional
+        Desired name of the video. By default `"minian.mp4"`.
+    Returns
+    -------
+    fname : str
+        Absolute path of the resulting video.
+    """
+ 
+    ROISIGNALS = 'MiniAnROISignals'
+    IMAGES = 'MiniAnImages'
+    RESIDUALS = 'MiniAnResidualImages'
+    SPIKES = 'MiniAnSpikes'
+
+    print("generating traces")
+    AC = compute_AtC(A, C)
+    print(AC)
+    res = Y - AC
+    
+    duration = Y.shape[0]
+    time_ = np.arange(0, duration/fr, 1/fr, dtype='float64')
+    
+    print("generating ROI names")
+    names = []
+    usernames = []
+    for i in range(len(C)):
+        names.append('ROI'+str(i+1).zfill(4))
+        usernames.append('ROI {}'.format(i+1))
+    
+    with h5py.File(vname, 'a') as f:
+          
+        # Check if MiniAn results already exist
+        operations = [ name for name in f[vpath] if ROISIGNALS in name ]
+
+        operationCount = ''
+        if len(operations) > 0:
+            idx = 0
+            for operation in operations:
+                operationAttrs = load_attributes(f, vpath+operation)
+                if attrs == operationAttrs:
+                    idx = len(operation) - len(ROISIGNALS)
+                    break
+
+            operationCount = str(idx+1)
+
+
+        if vpath[-1] != '/':
+            vpath += '/'
+        
+        if vdataset[-1] != '/':
+            vdataset += '/'
+        
+        print("saving ROI signals")
+        pathROIs = vpath+ROISIGNALS+operationCount+'/'
+        save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, bits_count=bits_count)
+        if attrs is not None:
+            save_attributes(attrs, f, pathROIs)
+        
+        if saveimages:
+            print("saving images")
+            pathImages = vpath+IMAGES+operationCount+'/'
+            print("getting values")
+            values = AC.values
+            print("saving")
+            save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format)
+            if attrs is not None:
+                save_attributes(attrs, f, pathImages)
+        
+        if saveresiduals:
+            print("saving residual images")
+            pathResiduals = vpath+RESIDUALS+operationCount+'/'
+            save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format)
+            if attrs is not None:
+                save_attributes(attrs, f, pathResiduals)
+            
+        if savespikes:
+            print("saving spikes")
+            pathSpikes = vpath+SPIKES+operationCount+'/'
+            save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
+            if attrs is not None:
+                save_attributes(attrs, f, pathSpikes)
+        
+    print("Saved to {}".format(vname))
+
+
+def compute_AtC(A: xr.DataArray, C: xr.DataArray) -> xr.DataArray:
+    """
+    Compute the outer product of spatial and temporal components.
+
+    This funtion computes the outer product of spatial and temporal components.
+    The result is a 3d array representing the movie data as estimated by the
+    spatial and temporal components.
+
+    Parameters
+    ----------
+    A : xr.DataArray
+        Spatial footprints of cells. Should have dimensions ("unit_id",
+        "height", "width").
+    C : xr.DataArray
+        Temporal components of cells. Should have dimensions "frame" and
+        "unit_id".
+
+    Returns
+    -------
+    AtC : xr.DataArray
+        The outer product representing estimated movie data. Has dimensions
+        ("frame", "height", "width").
+    """
+    fm, h, w = (
+        C.coords["frame"].values,
+        A.coords["height"].values,
+        A.coords["width"].values,
+    )
+    A = darr.from_array(
+        A.data.map_blocks(sparse.COO, dtype=A.dtype).compute(), chunks=-1
+    )
+    C = C.transpose("frame", "unit_id").data.map_blocks(sparse.COO, dtype=C.dtype)
+    AtC = darr.tensordot(C, A, axes=(1, 0)).map_blocks(
+        lambda a: a.todense(), dtype=A.dtype
+    )
+    arr_opt = fct.partial(
+        custom_arr_optimize, rename_dict={"tensordot": "tensordot_restricted"}
+    )
+    with da.config.set(array_optimize=arr_opt):
+        AtC = da.optimize(AtC)[0]
+    return xr.DataArray(
+        AtC,
+        dims=["frame", "height", "width"],
+        coords={"frame": fm, "height": h, "width": w},
+    )
+
+
+def round_up_to_odd(f):
+    f = int(np.ceil(f))
+    return f + 1 if f % 2 == 0 else f
+
+def round_down_to_odd(f):
+    f = int(np.ceil(f))
+    return f - 1 if f % 2 == 0 else f
