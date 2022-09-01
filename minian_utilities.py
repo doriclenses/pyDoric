@@ -10,26 +10,28 @@ from utilities import save_roi_signals, save_signals, save_images, load_attribut
 
 def load_doric_to_xarray(
     fname: str,
+    h5path: str,
     dtype: type = np.float64,
-    h5path: Optional[str] = None,
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
     post_process: Optional[Callable] = None,
 ) -> xr.DataArray:
     """
+    Loads images stack from HDF as xarray
 
-    Parameters
-    ----------
+    Args:
+        fname: full path to the file
 
-    Returns
-    -------
 
-    Raises
-    ------
+    Returns:
+    
+
+    Raises:
+    
 
     """
 
-    file_ = h5py.File(fname)
+    file_ = h5py.File(fname, 'r')
     varr = da.array.from_array(file_[h5path+'ImagesStack'])
     varr = xr.DataArray(
         varr,
@@ -72,9 +74,10 @@ def load_doric_to_xarray(
 
 def save_minian_to_doric(
     Y: xr.DataArray,
-    A: Optional[xr.DataArray],
-    C: Optional[xr.DataArray],
-    S: Optional[xr.DataArray],
+    A: xr.DataArray,
+    C: xr.DataArray,
+    AC: xr.DataArray,
+    S: xr.DataArray,
     fr: int,
     bits_count: int = 10,
     qt_format: int = 28,
@@ -138,10 +141,7 @@ def save_minian_to_doric(
     RESIDUALS = 'MiniAnResidualImages'
     SPIKES = 'MiniAnSpikes'
 
-    print("generating traces")
-    AC = compute_AtC(A, C)
-    print(AC)
-    res = Y - AC
+    res = Y - AC # residual images
     
     duration = Y.shape[0]
     time_ = np.arange(0, duration/fr, 1/fr, dtype='float64')
@@ -185,9 +185,6 @@ def save_minian_to_doric(
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
-            print("getting values")
-            values = AC.values
-            print("saving")
             save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format)
             if attrs is not None:
                 save_attributes(attrs, f, pathImages)
@@ -205,56 +202,8 @@ def save_minian_to_doric(
             save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
             if attrs is not None:
                 save_attributes(attrs, f, pathSpikes)
-        
+                
     print("Saved to {}".format(vname))
-
-
-def compute_AtC(A: xr.DataArray, C: xr.DataArray) -> xr.DataArray:
-    """
-    Compute the outer product of spatial and temporal components.
-
-    This funtion computes the outer product of spatial and temporal components.
-    The result is a 3d array representing the movie data as estimated by the
-    spatial and temporal components.
-
-    Parameters
-    ----------
-    A : xr.DataArray
-        Spatial footprints of cells. Should have dimensions ("unit_id",
-        "height", "width").
-    C : xr.DataArray
-        Temporal components of cells. Should have dimensions "frame" and
-        "unit_id".
-
-    Returns
-    -------
-    AtC : xr.DataArray
-        The outer product representing estimated movie data. Has dimensions
-        ("frame", "height", "width").
-    """
-    fm, h, w = (
-        C.coords["frame"].values,
-        A.coords["height"].values,
-        A.coords["width"].values,
-    )
-    A = darr.from_array(
-        A.data.map_blocks(sparse.COO, dtype=A.dtype).compute(), chunks=-1
-    )
-    C = C.transpose("frame", "unit_id").data.map_blocks(sparse.COO, dtype=C.dtype)
-    AtC = darr.tensordot(C, A, axes=(1, 0)).map_blocks(
-        lambda a: a.todense(), dtype=A.dtype
-    )
-    arr_opt = fct.partial(
-        custom_arr_optimize, rename_dict={"tensordot": "tensordot_restricted"}
-    )
-    with da.config.set(array_optimize=arr_opt):
-        AtC = da.optimize(AtC)[0]
-    return xr.DataArray(
-        AtC,
-        dims=["frame", "height", "width"],
-        coords={"frame": fm, "height": h, "width": w},
-    )
-
 
 def round_up_to_odd(f):
     f = int(np.ceil(f))
