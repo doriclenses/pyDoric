@@ -2,7 +2,6 @@ import os
 import h5py
 import psutil
 import logging
-#import warnings
 import numpy as np
 from tifffile import imwrite
 from caiman import stop_server
@@ -40,8 +39,6 @@ h5path = kwargs['h5path']
 fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
 T, dims = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
 params_caiman = {
-    # 'fnames': kwargs['fname'],
-    # 'var_name_hdf5' : kwargs['h5path'],
     'fr': fr,
     'dims': dims,
     'decay_time': 0.4,

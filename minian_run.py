@@ -21,7 +21,7 @@ from utilities import get_frequency, load_attributes, save_attributes
 # Read parameters
 #kwargs = eval(input("Enter paramaters:"))
 kwargs = {
-    "fname": "C:/Users/ING55/data/sampleDG.doric",
+    "fname": "C:/Users/ING55/data/sampleDG_3min.doric",
     "h5path": "DataProcessed/MicroscopeDriver-1stGen1C/ProcessedImages/Series1/Sensor1/",
 }
 dpath = os.path.join(os.path.dirname(kwargs["fname"]), "minian")
@@ -36,8 +36,8 @@ correct_motion: bool = False
 neuron_diameter: Tuple[int, int] = (5, 15)
 noise_freq: float = 0.3
 thres_corr: float = 0.8
-spatial_penalty: float = 0.05
-temporal_penalty: float = 0.5
+spatial_penalty: float = 0.03
+temporal_penalty: float = 0.3
 spatial_downsample: int = 1
 temporal_downsample: int = 1
 params = {
@@ -50,9 +50,10 @@ params = {
     "SpatialDownsample": spatial_downsample,
     "TemporalDownsample": temporal_downsample,
 }
-# for params_, dict_ in kwargs.items():
-#     for key, value in dict_.items():
-#         params[params_.replace('params_','')+'-'+key] = value
+for params_, dict_ in kwargs.items():
+    if type(dict_) is dict:
+        for key, value in dict_.items():
+            params[params_.replace('params_','')+'-'+key] = value
 
 params_LocalCluster = dict(
     n_workers=int(os.getenv("MINIAN_NWORKERS", 4)),
@@ -355,15 +356,18 @@ if __name__ == "__main__":
     c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
     A = A.sel(unit_id=C.coords["unit_id"].values)
 
+    AC = compute_AtC(A, C_chk)
+
     ### Save final results ###
     print("Saving final results...")
     A = save_minian(A.rename("A"), **params_save_minian)
     C = save_minian(C.rename("C"), **params_save_minian)
+    AC = save_minian(AC.rename("AC"), **params_save_minian)
     S = save_minian(S.rename("S"), **params_save_minian)
     c0 = save_minian(c0.rename("c0"), **params_save_minian)
     b0 = save_minian(b0.rename("b0"), **params_save_minian)
     b = save_minian(b.rename("b"), **params_save_minian)
-    f = save_minian(f.rename("f"), **params_save_minian)        
+    f = save_minian(f.rename("f"), **params_save_minian)
 
     ### Save results to doric file ###
     print("Saving data to doric file...")
@@ -384,7 +388,7 @@ if __name__ == "__main__":
     # Get the attributes of the images stack
     attrs = load_attributes(file_, h5path+'/ImagesStack')
     file_.close()
-
+    
     # Parameters
     params["OperationName"] = "MiniAn"
     if "OperationName" in params_source_data:
@@ -396,12 +400,9 @@ if __name__ == "__main__":
         del params_source_data["OperationName"]
     params = {**params, **params_source_data}
 
-    results = open_minian(params_save_minian["dpath"])
-    A = results["A"]
-    C = results["C"]
-    S = results["S"]
+    
     save_minian_to_doric(
-        Y, A, C, S, 
+        Y, A, C, AC, S,
         fr=fr,
         bits_count=attrs['BitsCount'],
         qt_format=attrs['Format'],
@@ -413,7 +414,7 @@ if __name__ == "__main__":
         saveresiduals=True, 
         savespikes=True
     )
-
+    
     # Close cluster
     client.close()
     cluster.close()
