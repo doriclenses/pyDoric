@@ -26,8 +26,9 @@ def load_attributes(
         KeyError: If path does not exist in the file
     """
 
-    if not (type(file_) == h5py.File or h5py.is_hdf5(file_)):
-        raise TypeError('f is not h5py.File or filepath to HDF file')
+    if type(file_) != h5py.File: 
+        if not h5py.is_hdf5(file_):
+            raise TypeError('f is not h5py.File or filepath to HDF file')
 
     if type(file_) == h5py.File:
         f = file_
@@ -50,7 +51,7 @@ def load_attributes(
         else:
             params[key] = value
 
-    if h5py.is_hdf5(file_):
+    if type(file_) != h5py.File and h5py.is_hdf5(file_):
         f.close()
         
     return params
@@ -61,8 +62,9 @@ def get_frequency(
     vdataset: str
 ) -> float:
 
-    if not (type(file_) == h5py.File or h5py.is_hdf5(file_)):
-        raise TypeError('f is not h5py.File or filepath to HDF file')
+    if type(file_) != h5py.File: 
+        if not h5py.is_hdf5(file_):
+            raise TypeError('f is not h5py.File or filepath to HDF file')
 
     if type(file_) == h5py.File:
         f = file_
@@ -85,21 +87,38 @@ def get_frequency(
     dt = np.diff(t)
     T = np.round(np.median(dt),10)
 
-    if h5py.is_hdf5(file_):
+    if type(file_) != h5py.File and h5py.is_hdf5(file_):
         f.close()
 
     return 1/T
 
 
 def get_dims(
-    fname: str,
+    file_: Union[h5py.File, str],
     path: str
-) -> Tuple[int, Tuple[int, int]]:
+) -> Tuple[Tuple[int, int], int]:
+
+    if type(file_) != h5py.File: 
+        if not h5py.is_hdf5(file_):
+            raise TypeError('f is not h5py.File or filepath to HDF file')
+
+    if type(file_) == h5py.File:
+        f = file_
+        if not f.__bool__():
+            raise ValueError('File is closed')
+    else:
+        f = h5py.File(file_, 'r')
+
+    if path not in f:
+        raise KeyError(f'"{path}" path does not exist in the file')
 
     with h5py.File(fname, 'r') as f:
         shape = np.array(f[path]).shape
 
-    return shape[-1], shape[:-1]
+    if type(file_) != h5py.File and h5py.is_hdf5(file_):
+        f.close()
+
+    return shape[:-1], shape[-1]
 
 
 def save_images(
@@ -129,15 +148,7 @@ def save_images(
         qt_format : int
             QImage_Format, necessary to display images in DNS. For reference, please
             see https://doc.qt.io/qt-6/qimage.html
-
-    Returns:
-
-    Raises:
-
     """
-    
-    #images = images.astype(np.uint16)
-    
     duration = images.shape[0]
     height = images.shape[1]
     width = images.shape[2]
@@ -150,7 +161,6 @@ def save_images(
         dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16', 
                                   chunks=(height,width,1), maxshape=(height,width,None))
         
-
     for i, image in enumerate(images):
         dataset[:,:,i] = image
         
