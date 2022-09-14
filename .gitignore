@@ -1,3 +1,5 @@
 dist/
 build/
+minian/
 __pycache__/
+*.doric
