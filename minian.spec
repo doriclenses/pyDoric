@@ -7,28 +7,8 @@ block_cipher = None
 
 datas = []
 binaries = []
+hiddenimports = []
 
-hiddenimports = [
-        'distributed.http.scheduler',
-        'distributed.http.scheduler.prometheus',
-        'distributed.http.scheduler.info',
-        'distributed.http.scheduler.json',
-        'distributed.http.health',
-        'distributed.http.proxy',
-        'distributed.http.statics',
-	'h5py', 'xarray'
-    ]
-
-datas += copy_metadata('xarray', recursive=True)
-datas += copy_metadata('distributed', recursive=True)
-tmp_ret = collect_all('pandas')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('numba')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('xarray')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-tmp_ret = collect_all('llvmlit')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('distributed')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
@@ -54,9 +34,6 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-#    a.binaries,
-#    a.zipfiles,
-#    a.datas,
     [],
     name='minian',
     debug=False,
