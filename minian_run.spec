@@ -1,31 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import copy_metadata
+from PyInstaller.utils.hooks import collect_dynamic_libs
 
 block_cipher = None
 
+datas = []
+binaries = []
+hiddenimports = []
+
+tmp_ret = collect_all('distributed')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
+binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
 
 a = Analysis(
-    ['minian_run.py',
-    'minian_utilities.py',
-    'utilities.py'],
+    ['minian_run.py'],
     pathex=[],
-    binaries=[
-        ('C:/Users/ING55/Anaconda3/Lib/site-packages/llvmlite/binding/llvmlite.dll','./Library/bin'),
-        ('C:/Users/ING55/Anaconda3/Lib/site-packages/distributed/dashboard/theme.yaml','./distributed/dashboard')
-    ],
-    datas=[
-        ('C:/Users/ING55/Anaconda3/Lib/site-packages/dask/dask.yaml', './dask'), 
-        ('C:/Users/ING55/Anaconda3/Lib/site-packages/distributed/distributed.yaml', './distributed')
-    ],
-    hiddenimports=[
-        'distributed.http.scheduler',
-        'distributed.http.scheduler.prometheus',
-        'distributed.http.scheduler.info',
-        'distributed.http.scheduler.json',
-        'distributed.http.health',
-        'distributed.http.proxy',
-        'distributed.http.statics'
-    ],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -40,9 +35,6 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
     name='minian',
     debug=False,
@@ -58,6 +50,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+
 coll = COLLECT(
     exe,
     a.binaries,
