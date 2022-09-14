@@ -13,6 +13,9 @@ from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_tem
 from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd
 from utilities import get_frequency, load_attributes, save_attributes
 
+from multiprocessing import freeze_support
+freeze_support()
+
 """
 {"fname": "C:/Users/ING55/data/sampleDG_3min.doric", "h5path": "DataProcessed/MicroscopeDriver-1stGen1C/ProcessedImages/Series1/Sensor1/"}
 {"fname": "C:/Users/ING55/data/sampleDG_3min.doric", "h5path": "DataAcquisition/MicroscopeDriver-1stGen1C/Images/Series1/Sensor1/", "neuron_diameter": (10, 40)}
