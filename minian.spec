@@ -2,6 +2,7 @@
 
 from PyInstaller.utils.hooks import collect_all
 from PyInstaller.utils.hooks import copy_metadata
+from PyInstaller.utils.hooks import collect_dynamic_libs
 
 block_cipher = None
 
@@ -12,7 +13,7 @@ hiddenimports = []
 tmp_ret = collect_all('distributed')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-binaries += [('C:/Users/ING57/Anaconda3/envs/minian2/Lib/site-packages/llvmlite/binding/llvmlite.dll','./Library/bin')]
+binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
 
 a = Analysis(
     ['minian_run.py'],
