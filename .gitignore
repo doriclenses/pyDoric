@@ -3,3 +3,5 @@ build/
 minian/
 __pycache__/
 *.doric
+*.hdf5
+*.mmap
