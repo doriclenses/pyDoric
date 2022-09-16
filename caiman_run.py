@@ -3,6 +3,12 @@ import h5py
 import psutil
 import logging
 import numpy as np
+from io import StringIO
+from dotenv import load_dotenv
+
+config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
+load_dotenv(stream=config)
+
 from tifffile import imwrite
 from caiman import stop_server
 from caiman.cluster import setup_cluster
