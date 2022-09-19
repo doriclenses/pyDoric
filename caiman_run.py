@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
 load_dotenv(stream=config)
 
+from multiprocessing import freeze_support
+freeze_support()
+
 from tifffile import imwrite
 from caiman import stop_server
 from caiman.cluster import setup_cluster
