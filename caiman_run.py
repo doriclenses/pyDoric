@@ -46,7 +46,7 @@ params_doric = {
 fname = kwargs['fname']
 h5path = kwargs['h5path']
 fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
-T, dims = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
+dims, T = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
 params_caiman = {
     'fr': fr,
     'dims': dims,
