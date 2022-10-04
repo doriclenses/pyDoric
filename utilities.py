@@ -112,8 +112,7 @@ def get_dims(
     if path not in f:
         raise KeyError(f'"{path}" path does not exist in the file')
 
-    with h5py.File(fname, 'r') as f:
-        shape = np.array(f[path]).shape
+    shape = np.array(f[path]).shape
 
     if type(file_) != h5py.File and h5py.is_hdf5(file_):
         f.close()

@@ -1,18 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import copy_metadata
+from PyInstaller.utils.hooks import collect_dynamic_libs
 
 block_cipher = None
 
+datas = []
+binaries = []
+hiddenimports = []
+
+tmp_ret = collect_all('distributed')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
+binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
 
 a = Analysis(
-    ['caiman_run.py'],
+    ['minian_run.py'],
     pathex=[],
-    binaries=[],
-    datas=[],
-    hiddenimports=[
-        'pynwb',
-        'hdmf'
-    ],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -28,12 +36,13 @@ exe = EXE(
     pyz,
     a.scripts,
     [],
-    exclude_binaries=True,
-    name='caiman',
+    name='minian',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -41,6 +50,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+
 coll = COLLECT(
     exe,
     a.binaries,
@@ -49,5 +59,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='caiman',
+    name='minian',
 )

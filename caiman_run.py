@@ -3,6 +3,15 @@ import h5py
 import psutil
 import logging
 import numpy as np
+from io import StringIO
+from dotenv import load_dotenv
+
+config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
+load_dotenv(stream=config)
+
+from multiprocessing import freeze_support
+freeze_support()
+
 from tifffile import imwrite
 from caiman import stop_server
 from caiman.cluster import setup_cluster
@@ -37,7 +46,7 @@ params_doric = {
 fname = kwargs['fname']
 h5path = kwargs['h5path']
 fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
-T, dims = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
+dims, T = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
 params_caiman = {
     'fr': fr,
     'dims': dims,
