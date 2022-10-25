@@ -18,17 +18,13 @@ from utilities import get_frequency, load_attributes, save_attributes
 from multiprocessing import freeze_support
 freeze_support()
 
-"""
-{"fname": "C:/Users/ING55/data/sampleDG_3min.doric", "h5path": "DataProcessed/MicroscopeDriver-1stGen1C/ProcessedImages/Series1/Sensor1/"}
-{"fname": "C:/Users/ING55/data/sampleDG_3min.doric", "h5path": "DataAcquisition/MicroscopeDriver-1stGen1C/Images/Series1/Sensor1/", "neuron_diameter": (10, 40)}
-"""
 
-# Read parameters
-#kwargs = eval(input("Enter paramaters:"))
-kwargs = {
-    "fname": "C:/Users/ING55/data/sampleDG_3min.doric",
-    "h5path": "DataProcessed/MicroscopeDriver-1stGen1C/ProcessedImages/Series1/Sensor1/",
-}
+import sys
+
+kwargs = {}
+for arg in sys.argv[1:]:
+    exec(arg)
+
 dpath = os.path.join(os.path.dirname(kwargs["fname"]), "minian")
 fr = get_frequency(kwargs["fname"], kwargs['h5path']+'Time')
 
@@ -37,24 +33,27 @@ os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
-correct_motion: bool = False
-neuron_diameter: Tuple[int, int] = (5, 15)
-noise_freq: float = 0.3
-thres_corr: float = 0.8
-spatial_penalty: float = 0.03
-temporal_penalty: float = 0.3
-spatial_downsample: int = 1
-temporal_downsample: int = 1
-params = {
-    "CorrectMotion": correct_motion,
-    "NeuronDiameter": neuron_diameter,
-    "NoiseFreq": noise_freq,
-    "ThresCorr": thres_corr,
-    "SpatialPenalty": spatial_penalty,
-    "TemporalPenalty": temporal_penalty,
-    "SpatialDownsample": spatial_downsample,
-    "TemporalDownsample": temporal_downsample,
-}
+#params = {
+#    "CorrectMotion": bool(kwargs["CorrectMotion"]),
+#    "NeuronDiameter": eval(kwargs["NeuronDiameter"]),
+#    "NoiseFreq": kwargs["NoiseFreq"],
+#    "ThresCorr": kwargs["ThresCorr"],
+#    "SpatialPenalty": kwargs["SpatialPenalty"],
+#    "TemporalPenalty": kwargs["TemporalPenalty"],
+#    "SpatialDownsample": kwargs["SpatialDownsample"],
+#    "TemporalDownsample": kwargs["TemporalDownsample"],
+#}
+
+params = params_doric
+
+neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
+noise_freq: float           = params["NoiseFreq"]
+thres_corr: float           = params["ThresCorr"]
+spatial_penalty: float      = params["SpatialPenalty"]
+temporal_penalty: float     = params["TemporalPenalty"]
+spatial_downsample: int     = params["SpatialDownsample"]
+temporal_downsample: int    = params["TemporalDownsample"]
+
 for params_, dict_ in kwargs.items():
     if type(dict_) is dict:
         for key, value in dict_.items():
