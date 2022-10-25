@@ -23,30 +23,33 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Read parameters
 #kwargs = eval(input("Enter paramaters:"))
-kwargs = {
-    "fname": "C:/Users/ING55/data/sampleDG.doric",
-    "h5path": "/DataProcessed/MicroscopeDriver-1stGen1C/ProcessedImages/Series1/Sensor1/",
-}
 
-correct_motion: bool = False
-neuron_diameter: str = (5, 15)
-pnr_thres: float = 10
-corr_thres: float = 0.8
-spatial_downsample: int = 1
-temporal_downsample: int = 1
+import sys
 
-params_doric = {
-    "CorrectMotion": correct_motion,
-    "NeuronDiameter": neuron_diameter,
-    "PNRThreshold": pnr_thres,
-    "CorrelationThreshold": corr_thres,
-    "SpatialDownsample": spatial_downsample,
-    "TemporalDownsample": temporal_downsample,
-}
+for arg in sys.argv[1:]:
+    exec(arg)
+
+#params_doric = {
+#    "CorrectMotion": bool(kwargs["CorrectMotion"]),
+#    "NeuronDiameter": eval(kwargs["NeuronDiameter"]),
+#    "PNRThreshold": kwargs["PNRThreshold"],
+#    "CorrelationThreshold": kwargs["CorrelationThreshold"],
+#    "SpatialDownsample": kwargs["SpatialDownsample"],
+#    "TemporalDownsample": kwargs["TemporalDownsample"],
+#}
+
+correct_motion: bool        = bool(params_doric["CorrectMotion"])
+neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
+pnr_thres: float            = params_doric["PNRThreshold"]
+corr_thres: float           = params_doric["CorrelationThreshold"]
+spatial_downsample: int     = params_doric["SpatialDownsample"]
+temporal_downsample: int    = params_doric["TemporalDownsample"]
+
 fname = kwargs['fname']
 h5path = kwargs['h5path']
 fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
 dims, T = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
+
 params_caiman = {
     'fr': fr,
     'dims': dims,
@@ -80,6 +83,7 @@ params_caiman = {
     'ring_size_factor': 1.4,
     'del_duplicates': True
 }
+
 for params_, dict_ in kwargs.items():
     if type(dict_) is dict:
         for key, value in dict_.items():
