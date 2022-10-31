@@ -120,11 +120,12 @@ if __name__ == "__main__":
     
     params_caiman['fnames'] = fname_tif
     opts = params.CNMFParams(params_dict=params_caiman)
+    sys.stdout.write("Starting CNMF")
     cnm = cnmf.CNMF(n_processes, dview=dview, params=opts)
     cnm = cnm.fit_file(motion_correct=correct_motion, include_eval=True)
 
     ### Save results to doric file ###
-    print("Saving data to doric file...")
+    sys.stdout.write("Saving data to doric file...")
     if h5path[0] == '/': 
         h5path = h5path[1:]
     if h5path[-1] == '/':
