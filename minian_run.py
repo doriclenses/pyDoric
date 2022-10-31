@@ -1,25 +1,28 @@
+
+# Import miscellaneous and utilities librarys
 import os
+import sys
 import h5py
 import dask as da
 import numpy as np
 import xarray as xr
 import functools as fct
-
-
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
+from utilities import get_frequency, load_attributes, save_attributes
+
+# Import for MiniAn lib
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
 from minian.preprocessing import denoise, remove_background
 from minian.initialization import seeds_init, pnr_refine, ks_refine, seeds_merge, initA, initC
 from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC
 from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd
-from utilities import get_frequency, load_attributes, save_attributes
 
+# Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
 
 
-import sys
 for arg in sys.argv[1:]:
     exec(arg)
 
