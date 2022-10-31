@@ -1,28 +1,33 @@
+
+# Import miscellaneous and utilities librarys
 import os
+import sys
 import h5py
 import psutil
 import logging
 import numpy as np
-from io import StringIO
-from dotenv import load_dotenv
-
-config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
-load_dotenv(stream=config)
-
-from multiprocessing import freeze_support
-freeze_support()
-
 from tifffile import imwrite
+from utilities import get_frequency, get_dims, load_attributes, save_attributes
+
+# Import for CaimAn lib
 from caiman import stop_server
 from caiman.cluster import setup_cluster
 from caiman.source_extraction import cnmf
 from caiman.source_extraction.cnmf import params
 from caiman_utilities import save_caiman_to_doric
-from utilities import get_frequency, get_dims, load_attributes, save_attributes
+
+# Import for PyInstaller
+from io import StringIO
+from dotenv import load_dotenv
+from multiprocessing import freeze_support
+
 logging.basicConfig(level=logging.DEBUG)
 
+config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
+load_dotenv(stream=config)
 
-import sys
+freeze_support()
+
 
 for arg in sys.argv[1:]:
     exec(arg)
