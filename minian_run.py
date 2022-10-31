@@ -20,8 +20,6 @@ freeze_support()
 
 
 import sys
-
-kwargs = {}
 for arg in sys.argv[1:]:
     exec(arg)
 
