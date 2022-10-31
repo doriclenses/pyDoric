@@ -201,7 +201,7 @@ if "params_update_temporal" in kwargs:
 if __name__ == "__main__":
 
     # Start cluster
-    print("Starting cluster...")
+    print("Starting cluster...", flush=True)
     cluster = LocalCluster(**params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     subset = dict(frame=slice(0, None))
 
     ### Load and chunk the data ###
-    print("Loading dataset to MiniAn...")
+    print("Loading dataset to MiniAn...", flush=True)
     varr, file_ = load_doric_to_xarray(**params_load_doric)
     chk, _ = get_optimal_chk(varr, **params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"), 
@@ -220,90 +220,90 @@ if __name__ == "__main__":
     varr_ref = varr.sel(subset)
 
     ### Pre-process data ###
-    print("Pre-processing...")
+    print("Pre-processing...", flush=True)
     # 1. Glow removal
-    print("Pre-processing: removing glow...")
+    print("Pre-processing: removing glow...", flush=True)
     varr_min = varr_ref.min("frame").compute()
     varr_ref = varr_ref - varr_min
     # 2. Denoise
-    print("Pre-processing: denoising...")
+    print("Pre-processing: denoising...", flush=True)
     varr_ref = denoise(varr_ref, **params_denoise)
     # 3. Background removal
-    print("Pre-processing: removing background...")
+    print("Pre-processing: removing background...", flush=True)
     varr_ref = remove_background(varr_ref, **params_remove_background)
     # Save
-    print("Pre-processing: saving...")
+    print("Pre-processing: saving...", flush=True)
     varr_ref = save_minian(varr_ref.rename("varr_ref"), intpath, overwrite=True)
 
     ### Motion correction ###
     if params["CorrectMotion"]:
-        print("Correcting motion: estimating shifts...")
+        print("Correcting motion: estimating shifts...", flush=True)
         motion = estimate_motion(varr_ref, **params_estimate_motion)
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **params_save_minian)
-        print("Correcting motion: applying shifts...")
+        print("Correcting motion: applying shifts...", flush=True)
         Y = apply_transform(varr_ref, motion, **params_apply_transform)
 
     else:
         Y = varr_ref
 
-    print("Preparing data for initialization...")
+    print("Preparing data for initialization...", flush=True)
     Y_fm_chk = save_minian(Y.astype(float).rename("Y_fm_chk"), intpath, overwrite=True)
     Y_hw_chk = save_minian(Y_fm_chk.rename("Y_hw_chk"), intpath, overwrite=True,
                            chunks={"frame": -1, "height": chk["height"], "width": chk["width"]})
 
     ### Seed initialization ###
-    print("Initializing seeds...")
+    print("Initializing seeds...", flush=True)
     # 1. Compute max projection
     max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **params_save_minian).compute()
     # 2. Generating over-complete set of seeds
     seeds = seeds_init(Y_fm_chk, **params_seeds_init)
     # 3. Peak-Noise-Ratio refine
-    print("Initializing seeds: PNR refinement...")
+    print("Initializing seeds: PNR refinement...", flush=True)
     seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **params_pnr_refine)
     # 4. Kolmogorov-Smirnov refine
-    print("Initializing seeds: Kolmogorov-Smirnov refinement...")
+    print("Initializing seeds: Kolmogorov-Smirnov refinement...", flush=True)
     seeds = ks_refine(Y_hw_chk, seeds, **params_ks_refine)
     # 5. Merge seeds
-    print("Initializing seeds: merging...")
+    print("Initializing seeds: merging...", flush=True)
     seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
     seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **params_seeds_merge)
     
     ### Component initialization ###
-    print("Initializing components...")
+    print("Initializing components...", flush=True)
     # 1. Initialize spatial
-    print("Initializing components: spatial...")
+    print("Initializing components: spatial...", flush=True)
     A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
     A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
     # 2. Initialize temporal
-    print("Initializing components: temporal...")
+    print("Initializing components: temporal...", flush=True)
     C_init = initC(Y_fm_chk, A_init)
     C_init = save_minian(C_init.rename("C_init"), intpath, overwrite=True, 
                          chunks={"unit_id": 1, "frame": -1})
     # 3. Merge components
-    print("Initializing components: merging...")
+    print("Initializing components: merging...", flush=True)
     A, C = unit_merge(A_init, C_init, **params_unit_merge)
     A = save_minian(A.rename("A"), intpath, overwrite=True)
     C = save_minian(C.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
                         chunks={"unit_id": -1, "frame": chk["frame"]})
     # 4. Initialize background
-    print("Initializing components: background...")
+    print("Initializing components: background...", flush=True)
     b, f = update_background(Y_fm_chk, A, C_chk)
     f = save_minian(f.rename("f"), intpath, overwrite=True)
     b = save_minian(b.rename("b"), intpath, overwrite=True)
 
     ### CNMF 1st itteration ###
     # 1. Estimate spatial noise
-    print("Running CNMF 1st itteration: estimating noise...")
+    print("Running CNMF 1st itteration: estimating noise...", flush=True)
     sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
     sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
     # 2. First spatial update
-    print("Running CNMF 1st itteration: updating spatial components...")
+    print("Running CNMF 1st itteration: updating spatial components...", flush=True)
     A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
     C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
     C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
     # 3. Update background
-    print("Running CNMF 1st itteration: updating background components...")
+    print("Running CNMF 1st itteration: updating background components...", flush=True)
     b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
     A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
     b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     C = save_minian(C_new.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
     # 4. First temporal update
-    print("Running CNMF 1st itteration: updating temporal components...")
+    print("Running CNMF 1st itteration: updating temporal components...", flush=True)
     YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                       chunks={"unit_id": 1, "frame": -1})
     C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
@@ -322,10 +322,10 @@ if __name__ == "__main__":
     c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
     A = A.sel(unit_id=C.coords["unit_id"].values)
     # 5. Merge components
-    print("Running CNMF 1st itteration: merging components...")
+    print("Running CNMF 1st itteration: merging components...", flush=True)
     A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
     # Save
-    print("Running CNMF 1st itteration: saving intermediate results...")
+    print("Running CNMF 1st itteration: saving intermediate results...", flush=True)
     A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
     C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
     C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
@@ -334,12 +334,12 @@ if __name__ == "__main__":
 
     ### CNMF 2nd itteration ###
     # 5. Second spatial update
-    print("Running CNMF 2nd itteration: updating spatial components...")
+    print("Running CNMF 2nd itteration: updating spatial components...", flush=True)
     A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
     C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
     C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
     # 6. Second background update
-    print("Running CNMF 2nd itteration: updating background components...")
+    print("Running CNMF 2nd itteration: updating background components...", flush=True)
     b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
     A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
     b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -347,12 +347,12 @@ if __name__ == "__main__":
     C = save_minian(C_new.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
     # 7. Second temporal update
-    print("Running CNMF 2nd itteration: updating temporal components...")
+    print("Running CNMF 2nd itteration: updating temporal components...", flush=True)
     YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                       chunks={"unit_id": 1, "frame": -1})
     C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
     # Save
-    print("Running CNMF 2nd itteration: saving intermediate results...")
+    print("Running CNMF 2nd itteration: saving intermediate results...", flush=True)
     C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
     C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
                         chunks={"unit_id": -1, "frame": chk["frame"]})
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     AC = compute_AtC(A, C_chk)
 
     ### Save final results ###
-    print("Saving final results...")
+    print("Saving final results...", flush=True)
     A = save_minian(A.rename("A"), **params_save_minian)
     C = save_minian(C.rename("C"), **params_save_minian)
     AC = save_minian(AC.rename("AC"), **params_save_minian)
@@ -375,7 +375,7 @@ if __name__ == "__main__":
     f = save_minian(f.rename("f"), **params_save_minian)
 
     ### Save results to doric file ###
-    print("Saving data to doric file...")
+    print("Saving data to doric file...", flush=True)
     # Get the path from the source data
     h5path = params_load_doric['h5path']
     if h5path[0] == '/': 
