@@ -21,8 +21,6 @@ from caiman_utilities import save_caiman_to_doric
 from utilities import get_frequency, get_dims, load_attributes, save_attributes
 logging.basicConfig(level=logging.DEBUG)
 
-# Read parameters
-#kwargs = eval(input("Enter paramaters:"))
 
 import sys
 
