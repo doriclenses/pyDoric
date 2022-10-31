@@ -116,15 +116,18 @@ if __name__ == "__main__":
     h5path_list = kwargs['h5path'].split('/')
     fname_tif = os.path.splitext(kwargs["fname"])[0] + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif'
     logging.info(fname_tif)
+    print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
     
     params_caiman['fnames'] = fname_tif
     opts = params.CNMFParams(params_dict=params_caiman)
+    print("Starting CNMF...", flush=True)
     cnm = cnmf.CNMF(n_processes, dview=dview, params=opts)
+    print("Fitting...", flush=True)
     cnm = cnm.fit_file(motion_correct=correct_motion, include_eval=True)
 
     ### Save results to doric file ###
-    print("Saving data to doric file...")
+    print("Saving data to doric file...", flush=True)
     if h5path[0] == '/': 
         h5path = h5path[1:]
     if h5path[-1] == '/':
