@@ -115,7 +115,6 @@ if __name__ == "__main__":
     images = images.transpose(2, 0, 1)
     h5path_list = kwargs['h5path'].split('/')
     fname_tif = os.path.splitext(kwargs["fname"])[0] + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif'
-    logging.info(fname_tif)
     print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
     
@@ -156,8 +155,6 @@ if __name__ == "__main__":
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
-    logging.info(Yr.shape,cnm.estimates.A.shape, cnm.estimates.C.shape, cnm.estimates.S.shape)
-    logging.info(cnm.estimates.idx_components)
     save_caiman_to_doric(
         Yr, 
         cnm.estimates.A[:,cnm.estimates.idx_components], 
