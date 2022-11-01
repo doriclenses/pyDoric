@@ -72,14 +72,16 @@ def save_caiman_to_doric(
         if vpath in f:
             operations = [ name for name in f[vpath] if ROISIGNALS in name ]
             if len(operations) > 0:
-                idx = 0
+                operationCount = str(len(operations))
                 for operation in operations:
                     operationAttrs = load_attributes(f, vpath+operation)
                     if attrs == operationAttrs:
-                        idx = len(operation) - len(ROISIGNALS)
-                        break
+                        if(len(operation) == len(ROISIGNALS)):
+                            operationCount = ''
+                        else:
+                            operationCount = operation[-1]
 
-                operationCount = str(idx+1)
+                        break
 
 
         if vpath[-1] != '/':
