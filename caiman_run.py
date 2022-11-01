@@ -9,6 +9,15 @@ import numpy as np
 from tifffile import imwrite
 from utilities import get_frequency, get_dims, load_attributes, save_attributes
 
+# Import for PyInstaller
+from io import StringIO
+from dotenv import load_dotenv
+from multiprocessing import freeze_support
+
+# Change CaimAn_Data Path to local "pyinstaller packaged /!\ need to be before importing CaImAn librarry"
+config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
+load_dotenv(stream=config)
+
 # Import for CaimAn lib
 from caiman import stop_server
 from caiman.cluster import setup_cluster
@@ -16,16 +25,8 @@ from caiman.source_extraction import cnmf
 from caiman.source_extraction.cnmf import params
 from caiman_utilities import save_caiman_to_doric
 
-# Import for PyInstaller
-from io import StringIO
-from dotenv import load_dotenv
-from multiprocessing import freeze_support
-
+# Miscellaneous configuration for CaImAn
 logging.basicConfig(level=logging.DEBUG)
-
-config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
-load_dotenv(stream=config)
-
 freeze_support()
 
 
