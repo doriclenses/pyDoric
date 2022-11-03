@@ -23,7 +23,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('skimage')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-datas += [( './caiman_data', 'caiman_data')]
+datas += [( './caiman_data/model', 'caiman_data/model')]
 
 #binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
 

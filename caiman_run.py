@@ -1,52 +1,59 @@
+
+# Import miscellaneous and utilities librarys
 import os
+import sys
 import h5py
 import psutil
 import logging
 import numpy as np
+from tifffile import imwrite
+from utilities import get_frequency, get_dims, load_attributes, save_attributes
+
+# Import for PyInstaller
 from io import StringIO
 from dotenv import load_dotenv
+from multiprocessing import freeze_support
 
+# Change CaimAn_Data Path to local "pyinstaller packaged /!\ need to be before importing CaImAn librarry"
 config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
 load_dotenv(stream=config)
 
-from multiprocessing import freeze_support
-freeze_support()
-
-from tifffile import imwrite
+# Import for CaimAn lib
 from caiman import stop_server
 from caiman.cluster import setup_cluster
 from caiman.source_extraction import cnmf
 from caiman.source_extraction.cnmf import params
 from caiman_utilities import save_caiman_to_doric
-from utilities import get_frequency, get_dims, load_attributes, save_attributes
+
+# Miscellaneous configuration for CaImAn
 logging.basicConfig(level=logging.DEBUG)
+freeze_support()
 
-# Read parameters
-#kwargs = eval(input("Enter paramaters:"))
-kwargs = {
-    "fname": "C:/Users/ING55/data/sampleDG.doric",
-    "h5path": "/DataProcessed/MicroscopeDriver-1stGen1C/ProcessedImages/Series1/Sensor1/",
-}
 
-correct_motion: bool = False
-neuron_diameter: str = (5, 15)
-pnr_thres: float = 10
-corr_thres: float = 0.8
-spatial_downsample: int = 1
-temporal_downsample: int = 1
+for arg in sys.argv[1:]:
+    exec(arg)
 
-params_doric = {
-    "CorrectMotion": correct_motion,
-    "NeuronDiameter": neuron_diameter,
-    "PNRThreshold": pnr_thres,
-    "CorrelationThreshold": corr_thres,
-    "SpatialDownsample": spatial_downsample,
-    "TemporalDownsample": temporal_downsample,
-}
+#params_doric = {
+#    "CorrectMotion": bool(kwargs["CorrectMotion"]),
+#    "NeuronDiameter": eval(kwargs["NeuronDiameter"]),
+#    "PNRThreshold": kwargs["PNRThreshold"],
+#    "CorrelationThreshold": kwargs["CorrelationThreshold"],
+#    "SpatialDownsample": kwargs["SpatialDownsample"],
+#    "TemporalDownsample": kwargs["TemporalDownsample"],
+#}
+
+correct_motion: bool        = bool(params_doric["CorrectMotion"])
+neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
+pnr_thres: float            = params_doric["PNRThreshold"]
+corr_thres: float           = params_doric["CorrelationThreshold"]
+spatial_downsample: int     = params_doric["SpatialDownsample"]
+temporal_downsample: int    = params_doric["TemporalDownsample"]
+
 fname = kwargs['fname']
 h5path = kwargs['h5path']
 fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
 dims, T = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
+
 params_caiman = {
     'fr': fr,
     'dims': dims,
@@ -80,6 +87,7 @@ params_caiman = {
     'ring_size_factor': 1.4,
     'del_duplicates': True
 }
+
 for params_, dict_ in kwargs.items():
     if type(dict_) is dict:
         for key, value in dict_.items():
@@ -108,16 +116,18 @@ if __name__ == "__main__":
     images = images.transpose(2, 0, 1)
     h5path_list = kwargs['h5path'].split('/')
     fname_tif = os.path.splitext(kwargs["fname"])[0] + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif'
-    logging.info(fname_tif)
+    print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
     
     params_caiman['fnames'] = fname_tif
     opts = params.CNMFParams(params_dict=params_caiman)
+    print("Starting CNMF...", flush=True)
     cnm = cnmf.CNMF(n_processes, dview=dview, params=opts)
+    print("Fitting...", flush=True)
     cnm = cnm.fit_file(motion_correct=correct_motion, include_eval=True)
 
     ### Save results to doric file ###
-    print("Saving data to doric file...")
+    print("Saving data to doric file...", flush=True)
     if h5path[0] == '/': 
         h5path = h5path[1:]
     if h5path[-1] == '/':
@@ -146,8 +156,6 @@ if __name__ == "__main__":
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
-    logging.info(Yr.shape,cnm.estimates.A.shape, cnm.estimates.C.shape, cnm.estimates.S.shape)
-    logging.info(cnm.estimates.idx_components)
     save_caiman_to_doric(
         Yr, 
         cnm.estimates.A[:,cnm.estimates.idx_components], 

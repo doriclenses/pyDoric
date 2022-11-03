@@ -1,6 +1,7 @@
 dist/
 build/
 minian/
+caiman_data/
 __pycache__/
 
 *.doric
