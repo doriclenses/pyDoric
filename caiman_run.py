@@ -29,18 +29,13 @@ from caiman_utilities import save_caiman_to_doric
 logging.basicConfig(level=logging.DEBUG)
 freeze_support()
 
-
 for arg in sys.argv[1:]:
     exec(arg)
 
-#params_doric = {
-#    "CorrectMotion": bool(kwargs["CorrectMotion"]),
-#    "NeuronDiameter": eval(kwargs["NeuronDiameter"]),
-#    "PNRThreshold": kwargs["PNRThreshold"],
-#    "CorrelationThreshold": kwargs["CorrelationThreshold"],
-#    "SpatialDownsample": kwargs["SpatialDownsample"],
-#    "TemporalDownsample": kwargs["TemporalDownsample"],
-#}
+fname = kwargs['fname']
+h5path = kwargs['h5path']
+fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
+dims, T = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
 
 correct_motion: bool        = bool(params_doric["CorrectMotion"])
 neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
@@ -48,11 +43,6 @@ pnr_thres: float            = params_doric["PNRThreshold"]
 corr_thres: float           = params_doric["CorrelationThreshold"]
 spatial_downsample: int     = params_doric["SpatialDownsample"]
 temporal_downsample: int    = params_doric["TemporalDownsample"]
-
-fname = kwargs['fname']
-h5path = kwargs['h5path']
-fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
-dims, T = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
 
 params_caiman = {
     'fr': fr,
@@ -70,8 +60,8 @@ params_caiman = {
     'gSig': (neuron_diameter[0], neuron_diameter[0]),
     'merge_thr': 0.8,
     'p': 1,
-    'tsub': 1,
-    'ssub': 1,
+    'tsub': temporal_downsample,
+    'ssub': spatial_downsample,
     'rf': neuron_diameter[-1]*4,
     'only_init': True,    # set it to True to run CNMF-E
     'nb': 0,
@@ -79,21 +69,14 @@ params_caiman = {
     'method_deconvolution': 'oasis',       # could use 'cvxpy' alternatively
     'low_rank_background': None,
     'update_background_components': True,  # sometimes setting to False improve the results
-    'min_corr': 0.8,
-    'min_pnr': 10,
+    'min_corr': corr_thres,
+    'min_pnr': pnr_thres,
     'normalize_init': False,               # just leave as is
     'center_psf': True,                    # leave as is for 1 photon
     'ssub_B': 2,
     'ring_size_factor': 1.4,
     'del_duplicates': True
 }
-
-for params_, dict_ in kwargs.items():
-    if type(dict_) is dict:
-        for key, value in dict_.items():
-            params_doric[params_+'-'+key] = value
-            params_caiman[key] = value
-
 
 if __name__ == "__main__":
 
