@@ -4,6 +4,10 @@ from PyInstaller.utils.hooks import collect_all
 from PyInstaller.utils.hooks import copy_metadata
 from PyInstaller.utils.hooks import collect_dynamic_libs
 
+#
+# for maim CaimAn python script
+#
+
 block_cipher = None
 
 datas = []
@@ -64,6 +68,10 @@ exe_caimAn = EXE(
     entitlements_file=None,
 )
 
+#
+# for pnrCorr python script
+#
+
 block_cipher = None
 
 datas = []
@@ -109,6 +117,11 @@ exe_pnrCorr = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+
+#
+# Do the collection
+#
+
 coll = COLLECT(
     exe_caimAn,
     a_caimAn.binaries,
