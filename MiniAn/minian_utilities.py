@@ -1,4 +1,5 @@
 import os
+import sys
 import h5py
 import dask as da
 import numpy as np
@@ -6,6 +7,7 @@ import xarray as xr
 import functools as fct
 from typing import Optional, Callable
 from minian.utilities import custom_arr_optimize
+sys.path.append('..')
 from utilities import save_roi_signals, save_signals, save_images, load_attributes, save_attributes
 
 def load_doric_to_xarray(

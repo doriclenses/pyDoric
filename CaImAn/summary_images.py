@@ -26,7 +26,7 @@ from scipy.ndimage import convolve, generate_binary_structure
 from scipy.sparse import coo_matrix
 from typing import Any, List, Optional, Tuple
 
-from .pre_processing import get_noise_fft
+from pre_processing import get_noise_fft
 
 #%%
 def local_correlations_fft(Y,

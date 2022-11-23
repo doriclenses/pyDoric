@@ -10,7 +10,7 @@ from tifffile import imread
 from tifffile import imwrite
 
 # Import for CaimAn lib
-from caiman_correlation_pnr_functions.summary_images import correlation_pnr
+from summary_images import correlation_pnr
 
 
 

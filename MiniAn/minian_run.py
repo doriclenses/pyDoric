@@ -9,6 +9,7 @@ import xarray as xr
 import functools as fct
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
+sys.path.append('..')
 from utilities import get_frequency, load_attributes, save_attributes
 
 # Import for MiniAn lib

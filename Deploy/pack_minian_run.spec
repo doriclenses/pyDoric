@@ -16,8 +16,8 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
 
 a = Analysis(
-    ['minian_run.py'],
-    pathex=[],
+    ['../MiniAn/minian_run.py'],
+    pathex=['../'],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,

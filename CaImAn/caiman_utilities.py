@@ -5,6 +5,8 @@ import h5py
 import numpy as np
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 import caiman
+
+sys.path.append('..')
 from utilities import (
     save_attributes, 
     load_attributes,

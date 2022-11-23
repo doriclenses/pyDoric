@@ -7,7 +7,10 @@ import psutil
 import logging
 import numpy as np
 from tifffile import imwrite
+sys.path.append('..')
 from utilities import get_frequency, get_dims, load_attributes, save_attributes
+
+
 
 # Import for PyInstaller
 from io import StringIO
