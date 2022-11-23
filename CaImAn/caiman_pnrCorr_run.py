@@ -34,10 +34,10 @@ if __name__ == "__main__":
 
 
     cr_th = cr
-    cr_th[cr_th < params_doric['CorrelationThreshold']] = 0
+    #cr_th[cr_th < params_doric['CorrelationThreshold']] = 0
 
     pnr_th = pnr
-    pnr_th[pnr_th < params_doric['PNRThreshold']] = 0
+    #pnr_th[pnr_th < params_doric['PNRThreshold']] = 0
 
 
     fname_Correlation_tif = os.path.splitext(kwargs["fname"])[0] + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + 'correlation.tif'
