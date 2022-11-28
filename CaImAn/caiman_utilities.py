@@ -56,9 +56,8 @@ def save_caiman_to_doric(
     res = res.reshape(shape, order='F').transpose((-1, 0, 1)) 
     A = A.toarray()
     A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1)) 
-    
-    duration = Y.shape[0]
-    time_ = np.arange(0, duration/fr, 1/fr, dtype='float64')
+
+    time_ = np.arange(0, shape[2]/fr, 1/fr, dtype='float64')
     
     print("generating ROI names")
     names = []
