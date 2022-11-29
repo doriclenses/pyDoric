@@ -221,7 +221,7 @@ def save_roi_signals(
         coords = footprint_to_coords(footprints[i])
         
         attrs = {
-            'ID': i+1,
+            'ID': i,
             'Index': i+1,
             'Name': 'ROI {}'.format(i+1),
             'Username': 'ROI {}'.format(i+1),
