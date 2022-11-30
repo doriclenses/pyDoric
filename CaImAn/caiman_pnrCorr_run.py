@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     images = images.transpose(2, 0, 1)
     h5path_list = kwargs['h5path'].split('/')
-    fname_tif = os.path.splitext(kwargs["fname"])[0] + '_' + 'tmp' + '.tif'
+    fname_tif = os.path.splitext(kwargs["fnametmp"])[0]+ '.tif'
 
 
     print("Write image in tiff...", flush=True)
