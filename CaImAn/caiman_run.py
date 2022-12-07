@@ -1,6 +1,7 @@
 
 # Import miscellaneous and utilities librarys
 import os
+import cv2
 import sys
 import h5py
 import psutil
@@ -22,11 +23,14 @@ config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\
 load_dotenv(stream=config)
 
 # Import for CaimAn lib
+import caiman as cm
 from caiman import stop_server
 from caiman.cluster import setup_cluster
 from caiman.source_extraction import cnmf
 from caiman.source_extraction.cnmf import params
 from caiman_utilities import save_caiman_to_doric
+from caiman.motion_correction import MotionCorrect
+
 
 # Miscellaneous configuration for CaImAn
 logging.basicConfig(level=logging.DEBUG)
@@ -90,8 +94,12 @@ if __name__ == "__main__":
     except:
         pass
 
-    if 'dview' in locals():
-        stop_server(dview=dview)
+    # start the cluster
+    try:
+        cm.stop_server()  # stop it if it was running
+    except():
+        pass
+        
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
     with h5py.File(kwargs["fname"], 'r') as f:
@@ -106,12 +114,44 @@ if __name__ == "__main__":
     imwrite(fname_tif, images)
     
     params_caiman['fnames'] = [fname_tif]
-    opts = params.CNMFParams(params_dict=params_caiman)
-    print("Starting CNMF...", flush=True)
-    cnm = cnmf.CNMF(n_processes, dview=dview, params=opts)
-    print("Fitting...", flush=True)
-    cnm = cnm.fit_file(motion_correct=correct_motion, include_eval=True)
 
+    opts = params.CNMFParams(params_dict=params_caiman)
+    
+    # MOTION CORRECTION
+    print("MOTION CORRECTION",  flush=True)
+    
+    if correct_motion:
+        # do motion correction rigid
+        mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
+        mc.motion_correct(save_movie=True)
+        fname_mc = mc.fname_tot_els if params_caiman['pw_rigid'] else mc.fname_tot_rig
+
+        bord_px = 0 if params_caiman['border_nan'] == 'copy' else params_caiman['bord_px']
+        fname_new = cm.save_memmap(fname_mc, base_name='memmap_', order='C', border_to_0=bord_px)
+    
+    else:  # if no motion correction just memory map the file
+        fname_new = cm.save_memmap(params_caiman['fnames'], base_name='memmap_', order='C', border_to_0=0)
+
+
+    # load memory mappable file
+    Yr, dims, T = cm.load_memmap(fname_new)
+    images = Yr.T.reshape((T,) + dims, order='F')
+    
+    print("Starting CNMF...", flush=True)
+    cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
+    print("Fitting...", flush=True)
+    cnm.fit(images)
+    
+    print("evaluate_components...", flush=True)
+    # DISCARD LOW QUALITY COMPONENTS
+    min_SNR = 2.5           # adaptive way to set threshold on the transient size
+    r_values_min = 0.85    # threshold on space consistency (if you lower more components
+    #                        will be accepted, potentially with worst quality)
+    cnm.params.set('quality', {'min_SNR': min_SNR,
+                               'rval_thr': r_values_min,
+                               'use_cnn': False})
+    cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
+    
     ### Save results to doric file ###
     print("Saving data to doric file...", flush=True)
     if h5path[0] == '/': 
