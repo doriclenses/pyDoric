@@ -105,7 +105,7 @@ if __name__ == "__main__":
     print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
     
-    params_caiman['fnames'] = fname_tif
+    params_caiman['fnames'] = [fname_tif]
     opts = params.CNMFParams(params_dict=params_caiman)
     print("Starting CNMF...", flush=True)
     cnm = cnmf.CNMF(n_processes, dview=dview, params=opts)
