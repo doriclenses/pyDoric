@@ -154,7 +154,7 @@ if __name__ == "__main__":
         vname=fname, 
         vpath='DataProcessed/'+driver+'/',
         vdataset=series+'/'+sensor+'/',
-        attrs=params, 
+        attrs=params_doric, 
         saveimages=True, 
         saveresiduals=True, 
         savespikes=True)
