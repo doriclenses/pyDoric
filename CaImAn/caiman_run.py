@@ -132,11 +132,10 @@ if __name__ == "__main__":
     # Parameters
     if "OperationName" in params_source_data:
         if "Operations" in params_source_data:
-            params_doric["Operations"] = params_source_data["Operations"] + " > CaImAn"
+            params_doric["Operations"] = "Find Cells"
             del params_source_data["Operations"]
-        else:
-            params_doric["Operations"] = params_source_data["OperationName"] + " > CaImAn"
-        del params_source_data["OperationName"]
+            del params_source_data["OperationName"]
+    
     params = {**params_doric, **params_source_data}
     params["OperationName"] = "CaImAn"
 
