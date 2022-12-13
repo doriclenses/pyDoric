@@ -171,14 +171,14 @@ if __name__ == "__main__":
 
     # Parameters
     if "OperationName" in params_source_data:
-        if "Operations" in params_source_data:
-            params_doric["Operations"] = "Find Cells"
-            del params_source_data["Operations"]
-            del params_source_data["OperationName"]
-    
-    params = {**params_doric, **params_source_data}
-    params["OperationName"] = "CaImAn"
+        del params_source_data["OperationName"]
 
+    if "Operations" in params_source_data:
+        del params_source_data["Operations"]
+
+    params = {**params_doric, **params_source_data}
+    
+    
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
     save_caiman_to_doric(
