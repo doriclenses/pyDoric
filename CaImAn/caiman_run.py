@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     images = images.transpose(2, 0, 1)
     h5path_list = kwargs['h5path'].split('/')
-    fname_tif = os.path.splitext(kwargs["fname"])[0] + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif'
+    fname_tif = os.path.join(kwargs['tmpDir'], 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
     print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
     
