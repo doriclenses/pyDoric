@@ -27,7 +27,7 @@ freeze_support()
 for arg in sys.argv[1:]:
     exec(arg)
 
-dpath = os.path.join(os.path.dirname(kwargs["fname"]), "minian")
+dpath = os.path.join(kwargs['tmpDir'], "minian")
 fr = get_frequency(kwargs["fname"], kwargs['h5path']+'Time')
 
 os.environ["OMP_NUM_THREADS"] = "1"
