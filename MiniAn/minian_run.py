@@ -3,6 +3,7 @@
 import os
 import sys
 import h5py
+import tempfile
 import dask as da
 import numpy as np
 import xarray as xr
@@ -27,7 +28,8 @@ freeze_support()
 for arg in sys.argv[1:]:
     exec(arg)
 
-dpath = os.path.join(kwargs['tmpDir'], "minian")
+tmpDir = tempfile.TemporaryDirectory(prefix="minian_")
+dpath = tmpDir.name
 fr = get_frequency(kwargs["fname"], kwargs['h5path']+'Time')
 
 os.environ["OMP_NUM_THREADS"] = "1"

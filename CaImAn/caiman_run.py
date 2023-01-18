@@ -6,6 +6,7 @@ import sys
 import h5py
 import psutil
 import logging
+import tempfile
 import numpy as np
 from tifffile import imwrite
 sys.path.append('..')
@@ -39,6 +40,8 @@ freeze_support()
 for arg in sys.argv[1:]:
     exec(arg)
 
+tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
+tmpDirName = tmpDir.name
 fname = kwargs['fname']
 h5path = kwargs['h5path']
 fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
@@ -109,7 +112,7 @@ if __name__ == "__main__":
 
     images = images.transpose(2, 0, 1)
     h5path_list = kwargs['h5path'].split('/')
-    fname_tif = os.path.join(kwargs['tmpDir'], 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
+    fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
     print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
     
