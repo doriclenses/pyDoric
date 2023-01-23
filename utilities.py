@@ -127,6 +127,7 @@ def save_images(
     path: str, 
     bits_count: int = 16,
     qt_format: int = 28,
+    attrs: Optional[dict] = None
 ):
     """
     Saves images and time vector in HDF file as 'ImagesStack' and 'Time' 
@@ -169,6 +170,13 @@ def save_images(
         del f[path+'Time']
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
+
+    if attrs is not None:
+        save_attributes(attrs, f, path+'ImagesStack')
+    
+    if 'Username' not in f[path+'ImagesStack'].attrs:
+        f[path+'ImagesStack'].attrs['Username'] = 'ImagesStack'
+    
     f[path+'ImagesStack'].attrs['BitsCount'] = bits_count
     f[path+'ImagesStack'].attrs['Format'] = qt_format
     f[path+'ImagesStack'].attrs['Height'] = height
