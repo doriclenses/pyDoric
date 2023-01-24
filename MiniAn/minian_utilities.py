@@ -83,6 +83,7 @@ def save_minian_to_doric(
     fr: int,
     bits_count: int = 10,
     qt_format: int = 28,
+    imagesStackUsername:str = "ImagesStack",
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
@@ -189,14 +190,14 @@ def save_minian_to_doric(
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
-            save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format)
+            save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             if attrs is not None:
                 save_attributes(attrs, f, pathImages)
         
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
-            save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format)
+            save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             if attrs is not None:
                 save_attributes(attrs, f, pathResiduals)
             
