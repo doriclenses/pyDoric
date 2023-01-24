@@ -24,6 +24,7 @@ def save_caiman_to_doric(
     fr: int,
     bits_count: int,
     qt_format: int,
+    imagesStackUsername: str = "ImagesStack",
     vname: str = "caiman.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
@@ -61,10 +62,10 @@ def save_caiman_to_doric(
     
     print("generating ROI names")
     names = []
-    usernames = []
+    roiUsernames = []
     for i in range(len(C)):
         names.append('ROI'+str(i+1).zfill(4))
-        usernames.append('ROI {}'.format(i+1))
+        roiUsernames.append('ROI {}'.format(i+1))
     
     with h5py.File(vname, 'a') as f:
           
@@ -100,21 +101,21 @@ def save_caiman_to_doric(
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
-            save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format)
+            save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             if attrs is not None:
                 save_attributes(attrs, f, pathImages)
         
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
-            save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format)
+            save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             if attrs is not None:
                 save_attributes(attrs, f, pathResiduals)
             
         if savespikes:
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
-            save_signals(S > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
+            save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
             if attrs is not None:
                 save_attributes(attrs, f, pathSpikes)
         
