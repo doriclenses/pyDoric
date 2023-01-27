@@ -120,10 +120,10 @@ if __name__ == "__main__":
 
     opts = params.CNMFParams(params_dict=params_caiman)
     
-    # MOTION CORRECTION
-    print("MOTION CORRECTION",  flush=True)
-    
+        
     if correct_motion:
+        # MOTION CORRECTION
+        print("MOTION CORRECTION",  flush=True)
         # do motion correction rigid
         mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True)
