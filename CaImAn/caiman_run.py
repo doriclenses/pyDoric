@@ -184,22 +184,26 @@ if __name__ == "__main__":
     
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
-    save_caiman_to_doric(
-        Yr, 
-        cnm.estimates.A[:,cnm.estimates.idx_components], 
-        cnm.estimates.C[cnm.estimates.idx_components,:],
-        cnm.estimates.S[cnm.estimates.idx_components,:], 
-        fr=fr,
-        shape=(dims[0],dims[1],T),
-        bits_count=attrs['BitsCount'],
-        qt_format=attrs['Format'],
-        imagesStackUsername=attrs['Username'] if 'Username' in attrs else 'ImagesStack',
-        vname=fname, 
-        vpath='DataProcessed/'+driver+'/',
-        vdataset=series+'/'+sensor+'/',
-        attrs=params, 
-        saveimages=True, 
-        saveresiduals=True, 
-        savespikes=True)
+
+    if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
+        print("[intercept] No cells where found [end]", flush=True)
+    else :
+        save_caiman_to_doric(
+            Yr, 
+            cnm.estimates.A[:,cnm.estimates.idx_components], 
+            cnm.estimates.C[cnm.estimates.idx_components,:],
+            cnm.estimates.S[cnm.estimates.idx_components,:], 
+            fr=fr,
+            shape=(dims[0],dims[1],T),
+            bits_count=attrs['BitsCount'],
+            qt_format=attrs['Format'],
+            imagesStackUsername=attrs['Username'] if 'Username' in attrs else 'Caiman',
+            vname=fname, 
+            vpath='DataProcessed/'+driver+'/',
+            vdataset=series+'/'+sensor+'/',
+            attrs=params, 
+            saveimages=True, 
+            saveresiduals=True, 
+            savespikes=True)
 
     stop_server(dview=dview)
