@@ -296,76 +296,82 @@ if __name__ == "__main__":
     b = save_minian(b.rename("b"), intpath, overwrite=True)
 
     ### CNMF 1st itteration ###
-    # 1. Estimate spatial noise
-    print("Running CNMF 1st itteration: estimating noise...", flush=True)
-    sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
-    sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
-    # 2. First spatial update
-    print("Running CNMF 1st itteration: updating spatial components...", flush=True)
-    A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
-    C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
-    C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
-    # 3. Update background
-    print("Running CNMF 1st itteration: updating background components...", flush=True)
-    b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
-    A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
-    b = save_minian(b_new.rename("b"), intpath, overwrite=True)
-    f = save_minian(f_new.chunk({"frame": chk["frame"]}).rename("f"), intpath, overwrite=True)
-    C = save_minian(C_new.rename("C"), intpath, overwrite=True)
-    C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
-    # 4. First temporal update
-    print("Running CNMF 1st itteration: updating temporal components...", flush=True)
-    YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
-                      chunks={"unit_id": 1, "frame": -1})
-    C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
-    C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]},)
-    S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    b0 = save_minian(b0_new.rename("b0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    A = A.sel(unit_id=C.coords["unit_id"].values)
-    # 5. Merge components
-    print("Running CNMF 1st itteration: merging components...", flush=True)
-    A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
-    # Save
-    print("Running CNMF 1st itteration: saving intermediate results...", flush=True)
-    A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
-    C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
-    C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
-                        chunks={"unit_id": -1, "frame": chk["frame"]})
-    sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
+    try:
+        # 1. Estimate spatial noise
+        print("Running CNMF 1st itteration: estimating noise...", flush=True)
+        sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
+        sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
+        # 2. First spatial update
+        print("Running CNMF 1st itteration: updating spatial components...", flush=True)
+        A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
+        C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
+        C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
+        # 3. Update background
+        print("Running CNMF 1st itteration: updating background components...", flush=True)
+        b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
+        A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
+        b = save_minian(b_new.rename("b"), intpath, overwrite=True)
+        f = save_minian(f_new.chunk({"frame": chk["frame"]}).rename("f"), intpath, overwrite=True)
+        C = save_minian(C_new.rename("C"), intpath, overwrite=True)
+        C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
+        # 4. First temporal update
+        print("Running CNMF 1st itteration: updating temporal components...", flush=True)
+        YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
+                        chunks={"unit_id": 1, "frame": -1})
+        C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
+        C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]},)
+        S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        b0 = save_minian(b0_new.rename("b0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        A = A.sel(unit_id=C.coords["unit_id"].values)
+        # 5. Merge components
+        print("Running CNMF 1st itteration: merging components...", flush=True)
+        A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
+        # Save
+        print("Running CNMF 1st itteration: saving intermediate results...", flush=True)
+        A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
+        C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
+        C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
+                            chunks={"unit_id": -1, "frame": chk["frame"]})
+        sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
+    except:
+        print("[intercept] No cells where found [end]", flush=True)
 
     ### CNMF 2nd itteration ###
-    # 5. Second spatial update
-    print("Running CNMF 2nd itteration: updating spatial components...", flush=True)
-    A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
-    C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
-    C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
-    # 6. Second background update
-    print("Running CNMF 2nd itteration: updating background components...", flush=True)
-    b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
-    A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
-    b = save_minian(b_new.rename("b"), intpath, overwrite=True)
-    f = save_minian(f_new.chunk({"frame": chk["frame"]}).rename("f"), intpath, overwrite=True)
-    C = save_minian(C_new.rename("C"), intpath, overwrite=True)
-    C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
-    # 7. Second temporal update
-    print("Running CNMF 2nd itteration: updating temporal components...", flush=True)
-    YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
-                      chunks={"unit_id": 1, "frame": -1})
-    C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
-    # Save
-    print("Running CNMF 2nd itteration: saving intermediate results...", flush=True)
-    C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
-                        chunks={"unit_id": -1, "frame": chk["frame"]})
-    S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    b0 = save_minian(b0_new.rename("b0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-    A = A.sel(unit_id=C.coords["unit_id"].values)
+    try:
+        # 5. Second spatial update
+        print("Running CNMF 2nd itteration: updating spatial components...", flush=True)
+        A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
+        C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
+        C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
+        # 6. Second background update
+        print("Running CNMF 2nd itteration: updating background components...", flush=True)
+        b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
+        A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
+        b = save_minian(b_new.rename("b"), intpath, overwrite=True)
+        f = save_minian(f_new.chunk({"frame": chk["frame"]}).rename("f"), intpath, overwrite=True)
+        C = save_minian(C_new.rename("C"), intpath, overwrite=True)
+        C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
+        # 7. Second temporal update
+        print("Running CNMF 2nd itteration: updating temporal components...", flush=True)
+        YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
+                        chunks={"unit_id": 1, "frame": -1})
+        C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
+        # Save
+        print("Running CNMF 2nd itteration: saving intermediate results...", flush=True)
+        C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
+                            chunks={"unit_id": -1, "frame": chk["frame"]})
+        S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        b0 = save_minian(b0_new.rename("b0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
+        A = A.sel(unit_id=C.coords["unit_id"].values)
 
-    AC = compute_AtC(A, C_chk)
-
+        AC = compute_AtC(A, C_chk)
+    except:
+        print("[intercept] No cells where found [end]", flush=True)
+        
     ### Save final results ###
     print("Saving final results...", flush=True)
     A = save_minian(A.rename("A"), **params_save_minian)
