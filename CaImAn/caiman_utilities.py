@@ -24,7 +24,7 @@ def save_caiman_to_doric(
     fr: int,
     bits_count: int,
     qt_format: int,
-    imagesStackUsername: str = "caimanImagesStack",
+    imagesStackUsername: str = "ImagesStack",
     vname: str = "caiman.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',

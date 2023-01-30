@@ -83,7 +83,7 @@ def save_minian_to_doric(
     fr: int,
     bits_count: int = 10,
     qt_format: int = 28,
-    imagesStackUsername:str = "minianImagesStack",
+    imagesStackUsername:str = "ImagesStack",
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
