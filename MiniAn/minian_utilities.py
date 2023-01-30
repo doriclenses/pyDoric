@@ -183,7 +183,7 @@ def save_minian_to_doric(
         
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
-        save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": AU})
+        save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         if attrs is not None:
             save_attributes(attrs, f, pathROIs)
         
