@@ -148,6 +148,8 @@ def save_images(
         qt_format : int
             QImage_Format, necessary to display images in DNS. For reference, please
             see https://doc.qt.io/qt-6/qimage.html
+        username: Optional[str] 
+            Give an username for Danse
     """
     duration = images.shape[0]
     height = images.shape[1]
@@ -185,7 +187,8 @@ def save_roi_signals(
     path: str,
     names: Optional[List[str]] = None,
     usernames: Optional[List[str]] = None,
-    bits_count: int = 16,
+    bits_count: int = -1,
+    attrs_add: Optional[dict] = None
 ):
 
     """
@@ -228,9 +231,14 @@ def save_roi_signals(
             'Name': 'ROI {}'.format(i+1),
             'Username': 'ROI {}'.format(i+1),
             'Shape': 0,
-            'BitsCount': bits_count,
             'Coordinates': coords
         }
+
+        if attrs_add is not None:
+            attrs = {**attrs, **attrs_add}
+
+        if bits_count > -1:
+            attrs['BitsCount'] = bits_count
 
         if names is not None:
             attrs['Name'] = names[i]
