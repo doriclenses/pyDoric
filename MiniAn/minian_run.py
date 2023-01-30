@@ -256,44 +256,53 @@ if __name__ == "__main__":
 
     ### Seed initialization ###
     print("Initializing seeds...", flush=True)
-    # 1. Compute max projection
-    max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **params_save_minian).compute()
-    # 2. Generating over-complete set of seeds
-    seeds = seeds_init(Y_fm_chk, **params_seeds_init)
-    # 3. Peak-Noise-Ratio refine
-    print("Initializing seeds: PNR refinement...", flush=True)
-    seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **params_pnr_refine)
-    # 4. Kolmogorov-Smirnov refine
-    print("Initializing seeds: Kolmogorov-Smirnov refinement...", flush=True)
-    seeds = ks_refine(Y_hw_chk, seeds, **params_ks_refine)
-    # 5. Merge seeds
-    print("Initializing seeds: merging...", flush=True)
-    seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
-    seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **params_seeds_merge)
-    
+    try:
+        # 1. Compute max projection
+        max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **params_save_minian).compute()
+        # 2. Generating over-complete set of seeds
+        seeds = seeds_init(Y_fm_chk, **params_seeds_init)
+        # 3. Peak-Noise-Ratio refine
+        print("Initializing seeds: PNR refinement...", flush=True)
+        seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **params_pnr_refine)
+        # 4. Kolmogorov-Smirnov refine
+        print("Initializing seeds: Kolmogorov-Smirnov refinement...", flush=True)
+        seeds = ks_refine(Y_hw_chk, seeds, **params_ks_refine)
+        # 5. Merge seeds
+        print("Initializing seeds: merging...", flush=True)
+        seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
+        seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **params_seeds_merge)
+    except:
+        print("[intercept] No cells where found [end]", flush=True)
+        sys.exit()
+
     ### Component initialization ###
     print("Initializing components...", flush=True)
-    # 1. Initialize spatial
-    print("Initializing components: spatial...", flush=True)
-    A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
-    A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
-    # 2. Initialize temporal
-    print("Initializing components: temporal...", flush=True)
-    C_init = initC(Y_fm_chk, A_init)
-    C_init = save_minian(C_init.rename("C_init"), intpath, overwrite=True, 
-                         chunks={"unit_id": 1, "frame": -1})
-    # 3. Merge components
-    print("Initializing components: merging...", flush=True)
-    A, C = unit_merge(A_init, C_init, **params_unit_merge)
-    A = save_minian(A.rename("A"), intpath, overwrite=True)
-    C = save_minian(C.rename("C"), intpath, overwrite=True)
-    C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
-                        chunks={"unit_id": -1, "frame": chk["frame"]})
-    # 4. Initialize background
-    print("Initializing components: background...", flush=True)
-    b, f = update_background(Y_fm_chk, A, C_chk)
-    f = save_minian(f.rename("f"), intpath, overwrite=True)
-    b = save_minian(b.rename("b"), intpath, overwrite=True)
+    try:
+        # 1. Initialize spatial
+        print("Initializing components: spatial...", flush=True)
+        A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
+        A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
+        # 2. Initialize temporal
+        print("Initializing components: temporal...", flush=True)
+        C_init = initC(Y_fm_chk, A_init)
+        C_init = save_minian(C_init.rename("C_init"), intpath, overwrite=True, 
+                            chunks={"unit_id": 1, "frame": -1})
+        # 3. Merge components
+        print("Initializing components: merging...", flush=True)
+        A, C = unit_merge(A_init, C_init, **params_unit_merge)
+        A = save_minian(A.rename("A"), intpath, overwrite=True)
+        C = save_minian(C.rename("C"), intpath, overwrite=True)
+        C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
+                            chunks={"unit_id": -1, "frame": chk["frame"]})
+        # 4. Initialize background
+        print("Initializing components: background...", flush=True)
+        b, f = update_background(Y_fm_chk, A, C_chk)
+        f = save_minian(f.rename("f"), intpath, overwrite=True)
+        b = save_minian(b.rename("b"), intpath, overwrite=True)
+    except:
+        print("[intercept] No cells where found [end]", flush=True)
+        sys.exit()
+
 
     ### CNMF 1st itteration ###
     try:
@@ -337,6 +346,8 @@ if __name__ == "__main__":
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
     except:
         print("[intercept] No cells where found [end]", flush=True)
+        sys.exit()
+
 
     ### CNMF 2nd itteration ###
     try:
@@ -371,6 +382,7 @@ if __name__ == "__main__":
         AC = compute_AtC(A, C_chk)
     except:
         print("[intercept] No cells where found [end]", flush=True)
+        sys.exit()
         
     ### Save final results ###
     print("Saving final results...", flush=True)
