@@ -94,7 +94,7 @@ def save_caiman_to_doric(
         
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
-        save_roi_signals(C, A, time_, f, pathROIs+vdataset, bits_count=bits_count)
+        save_roi_signals(C, A, time_, f, pathROIs+vdataset, bits_count=bits_count, attrs_add={"Unit": "Intensity"})
         if attrs is not None:
             save_attributes(attrs, f, pathROIs)
         
