@@ -417,16 +417,13 @@ if __name__ == "__main__":
     file_.close()
     
     # Parameters
-    params["OperationName"] = "MiniAn"
     if "OperationName" in params_source_data:
-        if "Operations" in params_source_data:
-            params["Operations"] = params_source_data["Operations"] + " > MiniAn"
-            del params_source_data["Operations"]
-        else:
-            params["Operations"] = params_source_data["OperationName"] + " > MiniAn"
         del params_source_data["OperationName"]
-    params = {**params, **params_source_data}
 
+    if "Operations" in params_source_data:
+        del params_source_data["Operations"]
+
+    params = {**params, **params_source_data}
     
     save_minian_to_doric(
         Y, A, C, AC, S,
