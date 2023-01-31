@@ -424,6 +424,7 @@ if __name__ == "__main__":
         del params_source_data["Operations"]
 
     params = {**params, **params_source_data}
+    params["BinningFactor"] *= spatial_downsample
     
     save_minian_to_doric(
         Y, A, C, AC, S,
