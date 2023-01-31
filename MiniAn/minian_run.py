@@ -418,9 +418,10 @@ if __name__ == "__main__":
     
     # Parameters
     if "OperationName" in params_source_data:
+        params["Operations"] = params_source_data["OperationName"] + " > " + params["Operations"]
         del params_source_data["OperationName"]
-
-    if "Operations" in params_source_data:
+    elif "Operations" in params_source_data:
+        params["Operations"] = params_source_data["Operations"] + " > " + params["Operations"]
         del params_source_data["Operations"]
 
     params = {**params, **params_source_data}
@@ -429,7 +430,7 @@ if __name__ == "__main__":
         params["BinningFactor"] *= spatial_downsample
     elif spatial_downsample > 1 :
         params["BinningFactor"] = spatial_downsample
-    
+
     save_minian_to_doric(
         Y, A, C, AC, S,
         fr=fr,

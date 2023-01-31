@@ -174,14 +174,14 @@ if __name__ == "__main__":
 
     # Parameters
     if "OperationName" in params_source_data:
+        params_doric["Operations"] = params_source_data["OperationName"] + " > " + params_doric["Operations"]
         del params_source_data["OperationName"]
-
-    if "Operations" in params_source_data:
+    elif "Operations" in params_source_data:
+        params_doric["Operations"] = params_source_data["Operations"] + " > " + params_doric["Operations"]
         del params_source_data["Operations"]
 
     params = {**params_doric, **params_source_data}
-    
-    
+
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
 
