@@ -88,6 +88,11 @@ params_caiman = {
     'del_duplicates': True
 }
 
+if "AdvancedSetting" in params_doric:
+    AdvancedSetting = params_doric["AdvancedSetting"]
+    params_caiman = {**params_caiman, **AdvancedSetting}
+    params_doric["AdvancedSetting"] = str(AdvancedSetting) # for saving as attribut
+
 if __name__ == "__main__":
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
