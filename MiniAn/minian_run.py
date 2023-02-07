@@ -59,10 +59,10 @@ temporal_penalty: float     = params["TemporalPenalty"]
 spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
 
-AdvancedSetting = {}
-if "AdvancedSetting" in params_doric:
-    AdvancedSetting = params_doric["AdvancedSetting"]
-    del params_doric["AdvancedSetting"]
+advanced_settings = {}
+if "AdvancedSettings" in params_doric:
+    advanced_settings = params_doric["AdvancedSettings"]
+    del params_doric["AdvancedSettings"]
 
 for params_, dict_ in kwargs.items():
     if type(dict_) is dict:
@@ -77,8 +77,8 @@ params_LocalCluster = dict(
     dashboard_address=":8787",
     local_directory=dpath
 )
-if "LocalCluster" in AdvancedSetting:
-    for key, value in AdvancedSetting["LocalCluster"].items():
+if "LocalCluster" in advanced_settings:
+    for key, value in advanced_settings["LocalCluster"].items():
         params_LocalCluster[key] = value
 
 params_load_doric = {
@@ -100,38 +100,38 @@ params_save_minian = {
 params_get_optimal_chk = {
     "dtype": float
 }
-if "get_optimal_chk" in AdvancedSetting:
-    for key, value in AdvancedSetting["get_optimal_chk"].items():
+if "get_optimal_chk" in advanced_settings:
+    for key, value in advanced_settings["get_optimal_chk"].items():
         params_get_optimal_chk[key] = value
 
 params_denoise = {
     'method': 'median',
     'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
 }
-if "denoise" in AdvancedSetting:
-    for key, value in AdvancedSetting["denoise"].items():
+if "denoise" in advanced_settings:
+    for key, value in advanced_settings["denoise"].items():
         params_denoise[key] = value
 
 params_remove_background = {
     'method': 'tophat',
     'wnd': np.ceil(neuron_diameter[-1]) # largest neuron diameter
 }
-if "remove_background" in AdvancedSetting:
-    for key, value in AdvancedSetting["remove_background"].items():
+if "remove_background" in advanced_settings:
+    for key, value in advanced_settings["remove_background"].items():
         params_remove_background[key] = value
 
 params_estimate_motion = {
     'dim': 'frame'
 }
-if "estimate_motion" in AdvancedSetting:
-    for key, value in AdvancedSetting["estimate_motion"].items():
+if "estimate_motion" in advanced_settings:
+    for key, value in advanced_settings["estimate_motion"].items():
         params_estimate_motion[key] = value
 
 params_apply_transform = {
     'fill': 0
 }
-if "apply_transform" in AdvancedSetting:
-    for key, value in AdvancedSetting["apply_transform"].items():
+if "apply_transform" in advanced_settings:
+    for key, value in advanced_settings["apply_transform"].items():
         params_apply_transform[key] = value
 
 wnd = 60 # time window of 60 seconds
@@ -142,23 +142,23 @@ params_seeds_init = {
         'max_wnd': neuron_diameter[-1],
         'diff_thres': 3
 }
-if "seeds_init" in AdvancedSetting:
-    for key, value in AdvancedSetting["seeds_init"].items():
+if "seeds_init" in advanced_settings:
+    for key, value in advanced_settings["seeds_init"].items():
         params_seeds_init[key] = value
 
 params_pnr_refine = {
     "noise_freq": noise_freq,
     "thres": 1
 }
-if "pnr_refine" in AdvancedSetting:
-    for key, value in AdvancedSetting["pnr_refine"].items():
+if "pnr_refine" in advanced_settings:
+    for key, value in advanced_settings["pnr_refine"].items():
         params_pnr_refine[key] = value
 
 params_ks_refine = {
     "sig": 0.05
 }
-if "ks_refine" in AdvancedSetting:
-    for key, value in AdvancedSetting["ks_refine"].items():
+if "ks_refine" in advanced_settings:
+    for key, value in advanced_settings["ks_refine"].items():
         params_ks_refine[key] = value
 
 params_seeds_merge = {
@@ -166,8 +166,8 @@ params_seeds_merge = {
     'thres_corr': thres_corr,
     'noise_freq': noise_freq
 }
-if "seeds_merge" in AdvancedSetting:
-    for key, value in AdvancedSetting["seeds_merge"].items():
+if "seeds_merge" in advanced_settings:
+    for key, value in advanced_settings["seeds_merge"].items():
         params_seeds_merge[key] = value
 
 params_initA = {
@@ -175,22 +175,22 @@ params_initA = {
     'wnd': neuron_diameter[-1],
     'noise_freq': noise_freq
 }
-if "initA" in AdvancedSetting:
-    for key, value in AdvancedSetting["initA"].items():
+if "initA" in advanced_settings:
+    for key, value in advanced_settings["initA"].items():
         params_initA[key] = value
 
 params_unit_merge = {
     'thres_corr': thres_corr
 }
-if "unit_merge" in AdvancedSetting:
-    for key, value in AdvancedSetting["unit_merge"].items():
+if "unit_merge" in advanced_settings:
+    for key, value in advanced_settings["unit_merge"].items():
         params_unit_merge[key] = value
 
 params_get_noise_fft = {
     'noise_range': (noise_freq, 0.5)
 }
-if "get_noise_fft" in AdvancedSetting:
-    for key, value in AdvancedSetting["get_noise_fft"].items():
+if "get_noise_fft" in advanced_settings:
+    for key, value in advanced_settings["get_noise_fft"].items():
         params_get_noise_fft[key] = value
 
 params_update_spatial = {
@@ -198,8 +198,8 @@ params_update_spatial = {
     'sparse_penal': spatial_penalty,
     'size_thres': (np.ceil(0.9*np.pi*neuron_diameter[0]), np.ceil(1.1*np.pi*neuron_diameter[-1]**2))
 }
-if "update_spatial" in AdvancedSetting:
-    for key, value in AdvancedSetting["update_spatial"].items():
+if "update_spatial" in advanced_settings:
+    for key, value in advanced_settings["update_spatial"].items():
         params_update_spatial[key] = value
 
 params_update_temporal = {
@@ -209,8 +209,8 @@ params_update_temporal = {
     'add_lag': 20,
     'jac_thres': 0.2
 }
-if "update_temporal" in AdvancedSetting:
-    for key, value in AdvancedSetting["update_temporal"].items():
+if "update_temporal" in advanced_settings:
+    for key, value in advanced_settings["update_temporal"].items():
         params_update_temporal[key] = value
 
 if __name__ == "__main__":
@@ -437,7 +437,7 @@ if __name__ == "__main__":
 
     params = {**params, **params_source_data}
 
-    for funcName, funcValue in AdvancedSetting.items():
+    for funcName, funcValue in advanced_settings.items():
         if type(funcValue) is dict:
             for variableName, variableValue in funcValue.items():
                 params["Advanced : "+funcName+" > "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
