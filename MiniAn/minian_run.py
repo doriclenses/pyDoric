@@ -77,10 +77,9 @@ params_LocalCluster = dict(
     dashboard_address=":8787",
     local_directory=dpath
 )
-if "params_LocalCluster" in kwargs:
-    for key, value in kwargs["params_LocalCluster"].items():
+if "LocalCluster" in AdvancedSetting:
+    for key, value in AdvancedSetting["LocalCluster"].items():
         params_LocalCluster[key] = value
-    del kwargs["params_LocalCluster"]
 
 params_load_doric = {
     "fname": kwargs["fname"],
@@ -101,37 +100,38 @@ params_save_minian = {
 params_get_optimal_chk = {
     "dtype": float
 }
-if "params_get_optimal_chk" in kwargs:
-    for key, value in kwargs["params_get_optimal_chk"].items():
+if "get_optimal_chk" in AdvancedSetting:
+    for key, value in AdvancedSetting["get_optimal_chk"].items():
         params_get_optimal_chk[key] = value
 
 params_denoise = {
     'method': 'median',
     'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
 }
-if "params_denoise" in kwargs:
-    for key, value in kwargs["params_denoise"].items():
+if "denoise" in AdvancedSetting:
+    for key, value in AdvancedSetting["denoise"].items():
         params_denoise[key] = value
 
 params_remove_background = {
     'method': 'tophat',
     'wnd': np.ceil(neuron_diameter[-1]) # largest neuron diameter
 }
-if "params_remove_background" in kwargs:
-    for key, value in kwargs["params_remove_background"].items():
+if "remove_background" in AdvancedSetting:
+    for key, value in AdvancedSetting["remove_background"].items():
         params_remove_background[key] = value
 
 params_estimate_motion = {
     'dim': 'frame'
 }
-if "params_estimate_motion" in kwargs:
-    for key, value in kwargs["params_estimate_motion"].items():
+if "estimate_motion" in AdvancedSetting:
+    for key, value in AdvancedSetting["estimate_motion"].items():
         params_estimate_motion[key] = value
+
 params_apply_transform = {
     'fill': 0
 }
-if "params_apply_transform" in kwargs:
-    for key, value in kwargs["params_apply_transform"].items():
+if "apply_transform" in AdvancedSetting:
+    for key, value in AdvancedSetting["apply_transform"].items():
         params_apply_transform[key] = value
 
 wnd = 60 # time window of 60 seconds
@@ -142,29 +142,32 @@ params_seeds_init = {
         'max_wnd': neuron_diameter[-1],
         'diff_thres': 3
 }
-if "params_seeds_init" in kwargs:
-    for key, value in kwargs["params_seeds_init"].items():
+if "seeds_init" in AdvancedSetting:
+    for key, value in AdvancedSetting["seeds_init"].items():
         params_seeds_init[key] = value
+
 params_pnr_refine = {
     "noise_freq": noise_freq,
     "thres": 1
 }
-if "params_pnr_refine" in kwargs:
-    for key, value in kwargs["params_pnr_refine"].items():
+if "pnr_refine" in AdvancedSetting:
+    for key, value in AdvancedSetting["pnr_refine"].items():
         params_pnr_refine[key] = value
+
 params_ks_refine = {
     "sig": 0.05
 }
-if "params_ks_refine" in kwargs:
-    for key, value in kwargs["params_ks_refine"].items():
+if "ks_refine" in AdvancedSetting:
+    for key, value in AdvancedSetting["ks_refine"].items():
         params_ks_refine[key] = value
+
 params_seeds_merge = {
     'thres_dist': neuron_diameter[0],
     'thres_corr': thres_corr,
     'noise_freq': noise_freq
 }
-if "params_seeds_merge" in kwargs:
-    for key, value in kwargs["params_seeds_merge"].items():
+if "seeds_merge" in AdvancedSetting:
+    for key, value in AdvancedSetting["seeds_merge"].items():
         params_seeds_merge[key] = value
 
 params_initA = {
@@ -172,30 +175,33 @@ params_initA = {
     'wnd': neuron_diameter[-1],
     'noise_freq': noise_freq
 }
-if "params_initA" in kwargs:
-    for key, value in kwargs["params_initA"].items():
+if "initA" in AdvancedSetting:
+    for key, value in AdvancedSetting["initA"].items():
         params_initA[key] = value
+
 params_unit_merge = {
     'thres_corr': thres_corr
 }
-if "params_unit_merge" in kwargs:
-    for key, value in kwargs["params_unit_merge"].items():
+if "unit_merge" in AdvancedSetting:
+    for key, value in AdvancedSetting["unit_merge"].items():
         params_unit_merge[key] = value
 
 params_get_noise_fft = {
     'noise_range': (noise_freq, 0.5)
 }
-if "params_get_noise_fft" in kwargs:
-    for key, value in kwargs["params_get_noise_fft"].items():
+if "get_noise_fft" in AdvancedSetting:
+    for key, value in AdvancedSetting["get_noise_fft"].items():
         params_get_noise_fft[key] = value
+
 params_update_spatial = {
     'dl_wnd': neuron_diameter[-1],
     'sparse_penal': spatial_penalty,
     'size_thres': (np.ceil(0.9*np.pi*neuron_diameter[0]), np.ceil(1.1*np.pi*neuron_diameter[-1]**2))
 }
-if "params_update_spatial" in kwargs:
-    for key, value in kwargs["params_update_spatial"].items():
+if "update_spatial" in AdvancedSetting:
+    for key, value in AdvancedSetting["update_spatial"].items():
         params_update_spatial[key] = value
+
 params_update_temporal = {
     'noise_freq': noise_freq,
     'sparse_penal': temporal_penalty,
@@ -203,8 +209,8 @@ params_update_temporal = {
     'add_lag': 20,
     'jac_thres': 0.2
 }
-if "params_update_temporal" in kwargs:
-    for key, value in kwargs["params_update_temporal"].items():
+if "update_temporal" in AdvancedSetting:
+    for key, value in AdvancedSetting["update_temporal"].items():
         params_update_temporal[key] = value
 
 if __name__ == "__main__":
