@@ -59,6 +59,11 @@ temporal_penalty: float     = params["TemporalPenalty"]
 spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
 
+AdvancedSetting = {}
+if "AdvancedSetting" in params_doric:
+    AdvancedSetting = params_doric["AdvancedSetting"]
+    del params_doric["AdvancedSetting"]
+
 for params_, dict_ in kwargs.items():
     if type(dict_) is dict:
         for key, value in dict_.items():
@@ -425,6 +430,11 @@ if __name__ == "__main__":
         del params_source_data["Operations"]
 
     params = {**params, **params_source_data}
+
+    for funcName, funcValue in AdvancedSetting.items():
+        if type(funcValue) is dict:
+            for variableName, variableValue in funcValue.items():
+                params["Advanced : "+funcName+" > "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
 
     if "BinningFactor" in params:
         params["BinningFactor"] *= spatial_downsample
