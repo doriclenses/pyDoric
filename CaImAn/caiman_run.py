@@ -88,10 +88,11 @@ params_caiman = {
     'del_duplicates': True
 }
 
+AdvancedSetting = {}
 if "AdvancedSetting" in params_doric:
     AdvancedSetting = params_doric["AdvancedSetting"]
     params_caiman = {**params_caiman, **AdvancedSetting}
-    params_doric["AdvancedSetting"] = str(AdvancedSetting) # for saving as attribut
+    del params_doric["AdvancedSetting"]
 
 if __name__ == "__main__":
 
@@ -184,8 +185,11 @@ if __name__ == "__main__":
     elif "Operations" in params_source_data:
         params_doric["Operations"] = params_source_data["Operations"] + " > " + params_doric["Operations"]
         del params_source_data["Operations"]
-
+        
     params = {**params_doric, **params_source_data}
+    
+    for variableName, variableValue in AdvancedSetting.items():
+        params["Advanced : "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
