@@ -88,11 +88,16 @@ params_caiman = {
     'del_duplicates': True
 }
 
+# extract advanced settings as variable advanced_settings
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
     advanced_settings = params_doric["AdvancedSettings"]
-    params_caiman = {**params_caiman, **advanced_settings}
     del params_doric["AdvancedSettings"]
+
+# keep only keys that are in params_caiman
+advanced_settings = {key: advanced_settings[key]  for key in advanced_settings.keys() if key in params_caiman}
+
+params_caiman = {**params_caiman, **advanced_settings}
 
 if __name__ == "__main__":
 
