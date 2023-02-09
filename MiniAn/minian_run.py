@@ -12,7 +12,7 @@ from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
 from utilities import get_frequency, load_attributes, save_attributes
-from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd
+from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd , set_advanced_parameters_for_func_params
 
 # Import for MiniAn lib
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
@@ -86,8 +86,8 @@ params_LocalCluster = dict(
     local_directory=dpath
 )
 if "LocalCluster" in advanced_settings:
-    for key, value in advanced_settings["LocalCluster"].items():
-        params_LocalCluster[key] = value
+    params_LocalCluster, advanced_settings["LocalCluster"] = set_advanced_parameters_for_func_params(params_LocalCluster, advanced_settings["LocalCluster"], LocalCluster)
+
 
 params_load_doric = {
     "fname": kwargs["fname"],
@@ -109,38 +109,38 @@ params_get_optimal_chk = {
     "dtype": float
 }
 if "get_optimal_chk" in advanced_settings:
-    for key, value in advanced_settings["get_optimal_chk"].items():
-        params_get_optimal_chk[key] = value
+    params_get_optimal_chk, advanced_settings["get_optimal_chk"] = set_advanced_parameters_for_func_params(params_get_optimal_chk, advanced_settings["get_optimal_chk"], get_optimal_chk)
+
 
 params_denoise = {
     'method': 'median',
     'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
 }
 if "denoise" in advanced_settings:
-    for key, value in advanced_settings["denoise"].items():
-        params_denoise[key] = value
+    params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_func_params(params_denoise, advanced_settings["denoise"], denoise)
+
 
 params_remove_background = {
     'method': 'tophat',
     'wnd': np.ceil(neuron_diameter[-1]) # largest neuron diameter
 }
 if "remove_background" in advanced_settings:
-    for key, value in advanced_settings["remove_background"].items():
-        params_remove_background[key] = value
+    params_remove_background, advanced_settings["remove_background"] = set_advanced_parameters_for_func_params(params_remove_background, advanced_settings["remove_background"], remove_background)
+
 
 params_estimate_motion = {
     'dim': 'frame'
 }
 if "estimate_motion" in advanced_settings:
-    for key, value in advanced_settings["estimate_motion"].items():
-        params_estimate_motion[key] = value
+    params_estimate_motion, advanced_settings["estimate_motion"] = set_advanced_parameters_for_func_params(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
+
 
 params_apply_transform = {
     'fill': 0
 }
 if "apply_transform" in advanced_settings:
-    for key, value in advanced_settings["apply_transform"].items():
-        params_apply_transform[key] = value
+    params_apply_transform, advanced_settings["apply_transform"] = set_advanced_parameters_for_func_params(params_apply_transform, advanced_settings["apply_transform"], apply_transform)
+
 
 wnd = 60 # time window of 60 seconds
 params_seeds_init = {
@@ -151,23 +151,23 @@ params_seeds_init = {
         'diff_thres': 3
 }
 if "seeds_init" in advanced_settings:
-    for key, value in advanced_settings["seeds_init"].items():
-        params_seeds_init[key] = value
+    params_seeds_init, advanced_settings["seeds_init"] = set_advanced_parameters_for_func_params(params_seeds_init, advanced_settings["seeds_init"], seeds_init)
+
 
 params_pnr_refine = {
     "noise_freq": noise_freq,
     "thres": 1
 }
 if "pnr_refine" in advanced_settings:
-    for key, value in advanced_settings["pnr_refine"].items():
-        params_pnr_refine[key] = value
+    params_pnr_refine, advanced_settings["pnr_refine"] = set_advanced_parameters_for_func_params(params_pnr_refine, advanced_settings["pnr_refine"], pnr_refine)
+
 
 params_ks_refine = {
     "sig": 0.05
 }
 if "ks_refine" in advanced_settings:
-    for key, value in advanced_settings["ks_refine"].items():
-        params_ks_refine[key] = value
+    params_ks_refine, advanced_settings["ks_refine"] = set_advanced_parameters_for_func_params(params_ks_refine, advanced_settings["ks_refine"], ks_refine)
+
 
 params_seeds_merge = {
     'thres_dist': neuron_diameter[0],
@@ -175,8 +175,8 @@ params_seeds_merge = {
     'noise_freq': noise_freq
 }
 if "seeds_merge" in advanced_settings:
-    for key, value in advanced_settings["seeds_merge"].items():
-        params_seeds_merge[key] = value
+    params_seeds_merge, advanced_settings["seeds_merge"] = set_advanced_parameters_for_func_params(params_seeds_merge, advanced_settings["seeds_merge"], seeds_merge)
+
 
 params_initA = {
     'thres_corr': thres_corr,
@@ -184,22 +184,22 @@ params_initA = {
     'noise_freq': noise_freq
 }
 if "initA" in advanced_settings:
-    for key, value in advanced_settings["initA"].items():
-        params_initA[key] = value
+    params_initA, advanced_settings["initA"] = set_advanced_parameters_for_func_params(params_initA, advanced_settings["initA"], initA)
+
 
 params_unit_merge = {
     'thres_corr': thres_corr
 }
 if "unit_merge" in advanced_settings:
-    for key, value in advanced_settings["unit_merge"].items():
-        params_unit_merge[key] = value
+    params_unit_merge, advanced_settings["unit_merge"] = set_advanced_parameters_for_func_params(params_unit_merge, advanced_settings["unit_merge"], unit_merge)
+
 
 params_get_noise_fft = {
     'noise_range': (noise_freq, 0.5)
 }
 if "get_noise_fft" in advanced_settings:
-    for key, value in advanced_settings["get_noise_fft"].items():
-        params_get_noise_fft[key] = value
+    params_get_noise_fft, advanced_settings["get_noise_fft"] = set_advanced_parameters_for_func_params(params_get_noise_fft, advanced_settings["get_noise_fft"], get_noise_fft)
+
 
 params_update_spatial = {
     'dl_wnd': neuron_diameter[-1],
@@ -207,8 +207,8 @@ params_update_spatial = {
     'size_thres': (np.ceil(0.9*np.pi*neuron_diameter[0]), np.ceil(1.1*np.pi*neuron_diameter[-1]**2))
 }
 if "update_spatial" in advanced_settings:
-    for key, value in advanced_settings["update_spatial"].items():
-        params_update_spatial[key] = value
+    params_update_spatial, advanced_settings["update_spatial"] = set_advanced_parameters_for_func_params(params_update_spatial, advanced_settings["update_spatial"], update_spatial)
+
 
 params_update_temporal = {
     'noise_freq': noise_freq,
@@ -218,8 +218,8 @@ params_update_temporal = {
     'jac_thres': 0.2
 }
 if "update_temporal" in advanced_settings:
-    for key, value in advanced_settings["update_temporal"].items():
-        params_update_temporal[key] = value
+    params_update_temporal, advanced_settings["update_temporal"] = set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
+
 
 if __name__ == "__main__":
 

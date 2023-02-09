@@ -9,6 +9,7 @@ from typing import Optional, Callable
 from minian.utilities import custom_arr_optimize
 sys.path.append('..')
 from utilities import save_roi_signals, save_signals, save_images, load_attributes, save_attributes
+import inspect
 
 def load_doric_to_xarray(
     fname: str,
@@ -217,3 +218,25 @@ def round_up_to_odd(f):
 def round_down_to_odd(f):
     f = int(np.ceil(f))
     return f - 1 if f % 2 == 0 else f
+
+def remove_keys_not_in_function_argument(
+    input_dic:dict, func
+) -> dict:
+    
+    func_arguments = inspect.getfullargspec(func).args
+    new_dictionary = {key: input_dic[key] for key in input_dic if key in func_arguments}
+    return new_dictionary
+
+
+
+def set_advanced_parameters_for_func_params(
+    param_func,
+    advanced_parameters,
+    func
+    ):
+    
+    advanced_parameters = remove_keys_not_in_function_argument(advanced_parameters, func)
+    for key, value in advanced_parameters.items():
+        param_func[key] = value
+
+    return [param_func, advanced_parameters]
