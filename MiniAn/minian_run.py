@@ -68,7 +68,7 @@ if "AdvancedSettings" in params_doric:
 minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize", "save_minian", "open_minian", "denoise",
                         "remove_background", "seeds_init", "pnr_refine", "ks_refine", "seeds_merge", "initA", "initC",
                         "compute_trace", "get_noise_fft", "update_spatial", "update_temporal", "unit_merge", "update_background", "compute_AtC",
-                        "apply_transform", "estimate_motion"]
+                        "apply_transform", "estimate_motion"] + ["LocalCluster"]
 
 advanced_settings = {key: advanced_settings[key] for key in advanced_settings if key in minian_functions_list}
 
