@@ -121,6 +121,29 @@ def save_caiman_to_doric(
         
     print("Saved to {}".format(vname))
 
-def set_advanced_parameters(param: CNMFParams, advanced_parameters: dict) -> [CNMFParams, dict]:
-    
+def set_advanced_parameters(
+    param,
+    advanced_parameters
+):
+
+    '''
+    input:
+    param: is a class CNMFParams
+    advanced_parameters: dict
+
+    ouput:
+    new param: is a class CNMFParams
+    new advanced_parameters: dict
+    '''
+    param_dict = param.to_dict()
+    advan_param_keys_used = []
+    for param_part_key, param_part_value in param_dict.items():
+        for part_key, part_value in param_part_value.items():
+            if part_key in advanced_parameters:
+               param_dict[param_part_key][part_key] = advanced_parameters[part_key]
+               advan_param_keys_used.append(part_key)
+
+    #keep only used keys in andvanced parameters
+    advanced_parameters = {key: advanced_parameters[key] for key in advan_param_keys_used}
+
     return [param, advanced_parameters]

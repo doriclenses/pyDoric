@@ -154,7 +154,7 @@ if __name__ == "__main__":
     
     print("evaluate_components...", flush=True)
 
-    set_advanced_parameters(cnm.params, advanced_settings)
+    cnm.params, advanced_settings = set_advanced_parameters(cnm.params, advanced_settings)
     cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     
     ### Save results to doric file ###
