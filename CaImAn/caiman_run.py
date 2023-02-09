@@ -157,13 +157,6 @@ if __name__ == "__main__":
     cnm.fit(images)
     
     print("evaluate_components...", flush=True)
-    # DISCARD LOW QUALITY COMPONENTS
-    min_SNR = 2.5           # adaptive way to set threshold on the transient size
-    r_values_min = 0.85    # threshold on space consistency (if you lower more components
-    #                        will be accepted, potentially with worst quality)
-    cnm.params.set('quality', {'min_SNR': min_SNR,
-                               'rval_thr': r_values_min,
-                               'use_cnn': False})
     cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     
     ### Save results to doric file ###
