@@ -11,7 +11,7 @@ import numpy as np
 from tifffile import imwrite
 sys.path.append('..')
 from utilities import get_frequency, get_dims, load_attributes, save_attributes
-
+from caiman_utilities import save_caiman_to_doric, set_advanced_parameters
 
 
 # Import for PyInstaller
@@ -29,7 +29,6 @@ from caiman import stop_server
 from caiman.cluster import setup_cluster
 from caiman.source_extraction import cnmf
 from caiman.source_extraction.cnmf import params
-from caiman_utilities import save_caiman_to_doric
 from caiman.motion_correction import MotionCorrect
 
 
@@ -94,10 +93,7 @@ if "AdvancedSettings" in params_doric:
     advanced_settings = params_doric["AdvancedSettings"]
     del params_doric["AdvancedSettings"]
 
-# keep only keys that are in params_caiman
-advanced_settings = {key: advanced_settings[key]  for key in advanced_settings.keys() if key in params_caiman}
-
-params_caiman = {**params_caiman, **advanced_settings}
+params_caiman = {**params_caiman}
 
 if __name__ == "__main__":
 
@@ -157,6 +153,8 @@ if __name__ == "__main__":
     cnm.fit(images)
     
     print("evaluate_components...", flush=True)
+
+    set_advanced_parameters(cnm.params, advanced_settings)
     cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     
     ### Save results to doric file ###

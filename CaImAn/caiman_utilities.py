@@ -120,3 +120,7 @@ def save_caiman_to_doric(
                 save_attributes(attrs, f, pathSpikes)
         
     print("Saved to {}".format(vname))
+
+def set_advanced_parameters(param: CNMFParams, advanced_parameters: dict) -> [CNMFParams, dict]:
+    
+    return [param, advanced_parameters]
