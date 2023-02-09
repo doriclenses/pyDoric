@@ -194,7 +194,7 @@ if __name__ == "__main__":
     params = {**params_doric, **params_source_data}
     
     for variableName, variableValue in advanced_settings.items():
-        params["Advanced : "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
+        params["Advanced: "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))

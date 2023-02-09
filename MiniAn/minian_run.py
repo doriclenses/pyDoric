@@ -440,7 +440,7 @@ if __name__ == "__main__":
     for funcName, funcValue in advanced_settings.items():
         if type(funcValue) is dict:
             for variableName, variableValue in funcValue.items():
-                params["Advanced : "+funcName+" > "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
+                params["Advanced: "+funcName+" > "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
 
     if "BinningFactor" in params:
         params["BinningFactor"] *= spatial_downsample
