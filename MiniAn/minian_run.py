@@ -253,10 +253,18 @@ if __name__ == "__main__":
     varr_ref = varr_ref - varr_min
     # 2. Denoise
     print("Pre-processing: denoising...", flush=True)
-    varr_ref = denoise(varr_ref, **params_denoise)
+    try:
+        varr_ref = denoise(varr_ref, **params_denoise)
+    except TypeError:
+        print("[intercept] One parameter of denoise function is of the wrong type  [end]", flush=True)
+        sys.exit()
     # 3. Background removal
     print("Pre-processing: removing background...", flush=True)
-    varr_ref = remove_background(varr_ref, **params_remove_background)
+    try:
+        varr_ref = remove_background(varr_ref, **params_remove_background)
+    except TypeError:
+        print("[intercept] One parameter of remove_background function is of the wrong type  [end]", flush=True)
+        sys.exit()
     # Save
     print("Pre-processing: saving...", flush=True)
     varr_ref = save_minian(varr_ref.rename("varr_ref"), intpath, overwrite=True)
@@ -264,7 +272,11 @@ if __name__ == "__main__":
     ### Motion correction ###
     if params["CorrectMotion"]:
         print("Correcting motion: estimating shifts...", flush=True)
-        motion = estimate_motion(varr_ref, **params_estimate_motion)
+        try:
+            motion = estimate_motion(varr_ref, **params_estimate_motion)
+        except TypeError:
+            print("[intercept] One parameter of estimate_motion function is of the wrong type  [end]", flush=True)
+            sys.exit()   
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **params_save_minian)
         print("Correcting motion: applying shifts...", flush=True)
         Y = apply_transform(varr_ref, motion, **params_apply_transform)
@@ -283,17 +295,33 @@ if __name__ == "__main__":
         # 1. Compute max projection
         max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **params_save_minian).compute()
         # 2. Generating over-complete set of seeds
-        seeds = seeds_init(Y_fm_chk, **params_seeds_init)
+        try:
+            seeds = seeds_init(Y_fm_chk, **params_seeds_init)
+        except TypeError:
+            print("[intercept] One parameter of seeds_init function is of the wrong type  [end]", flush=True)
+            sys.exit()
         # 3. Peak-Noise-Ratio refine
         print("Initializing seeds: PNR refinement...", flush=True)
-        seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **params_pnr_refine)
+        try:
+            seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **params_pnr_refine)
+        except TypeError:
+            print("[intercept] One parameter of pnr_refine function is of the wrong type  [end]", flush=True)
+            sys.exit()
         # 4. Kolmogorov-Smirnov refine
         print("Initializing seeds: Kolmogorov-Smirnov refinement...", flush=True)
-        seeds = ks_refine(Y_hw_chk, seeds, **params_ks_refine)
+        try:
+            seeds = ks_refine(Y_hw_chk, seeds, **params_ks_refine)
+        except TypeError:
+            print("[intercept] One parameter of ks_refine function is of the wrong type  [end]", flush=True)
+            sys.exit()
         # 5. Merge seeds
         print("Initializing seeds: merging...", flush=True)
         seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
-        seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **params_seeds_merge)
+        try:
+            seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **params_seeds_merge)
+        except TypeError:
+            print("[intercept] One parameter of seeds_merge function is of the wrong type  [end]", flush=True)
+            sys.exit()
     except:
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
@@ -303,7 +331,11 @@ if __name__ == "__main__":
     try:
         # 1. Initialize spatial
         print("Initializing components: spatial...", flush=True)
-        A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
+        try:
+            A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
+        except TypeError:
+            print("[intercept] One parameter of initA function is of the wrong type  [end]", flush=True)
+            sys.exit() 
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
         # 2. Initialize temporal
         print("Initializing components: temporal...", flush=True)
@@ -312,7 +344,11 @@ if __name__ == "__main__":
                             chunks={"unit_id": 1, "frame": -1})
         # 3. Merge components
         print("Initializing components: merging...", flush=True)
-        A, C = unit_merge(A_init, C_init, **params_unit_merge)
+        try:
+            A, C = unit_merge(A_init, C_init, **params_unit_merge)
+        except TypeError:
+            print("[intercept] One parameter of unit_merge function is of the wrong type  [end]", flush=True)
+            sys.exit() 
         A = save_minian(A.rename("A"), intpath, overwrite=True)
         C = save_minian(C.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
@@ -322,6 +358,7 @@ if __name__ == "__main__":
         b, f = update_background(Y_fm_chk, A, C_chk)
         f = save_minian(f.rename("f"), intpath, overwrite=True)
         b = save_minian(b.rename("b"), intpath, overwrite=True)
+    
     except:
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
@@ -331,11 +368,19 @@ if __name__ == "__main__":
     try:
         # 1. Estimate spatial noise
         print("Running CNMF 1st itteration: estimating noise...", flush=True)
-        sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
+        try:
+            sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
+        except TypeError:
+            print("[intercept] One parameter of get_noise_fft function is of the wrong type  [end]", flush=True)
+            sys.exit()
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
         # 2. First spatial update
         print("Running CNMF 1st itteration: updating spatial components...", flush=True)
-        A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
+        try:
+            A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
+        except TypeError:
+            print("[intercept] One parameter of update_spatial function is of the wrong type  [end]", flush=True)
+            sys.exit()
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
         # 3. Update background
@@ -350,7 +395,11 @@ if __name__ == "__main__":
         print("Running CNMF 1st itteration: updating temporal components...", flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
-        C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
+        try:
+            C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
+        except TypeError:
+            print("[intercept] One parameter of update_temporal function is of the wrong type  [end]", flush=True)
+            sys.exit()
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]},)
         S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
@@ -359,7 +408,11 @@ if __name__ == "__main__":
         A = A.sel(unit_id=C.coords["unit_id"].values)
         # 5. Merge components
         print("Running CNMF 1st itteration: merging components...", flush=True)
-        A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
+        try:
+            A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
+        except TypeError:
+            print("[intercept] One parameter of unit_merge function is of the wrong type  [end]", flush=True)
+            sys.exit()
         # Save
         print("Running CNMF 1st itteration: saving intermediate results...", flush=True)
         A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
@@ -367,6 +420,7 @@ if __name__ == "__main__":
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
+    
     except:
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
@@ -376,7 +430,11 @@ if __name__ == "__main__":
     try:
         # 5. Second spatial update
         print("Running CNMF 2nd itteration: updating spatial components...", flush=True)
-        A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
+        try:
+            A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
+        except TypeError:
+            print("[intercept] One parameter of update_spatial function is of the wrong type  [end]", flush=True)
+            sys.exit()
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
         # 6. Second background update
@@ -391,7 +449,11 @@ if __name__ == "__main__":
         print("Running CNMF 2nd itteration: updating temporal components...", flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
-        C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
+        try:
+            C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
+        except TypeError:
+            print("[intercept] One parameter of update_temporal function is of the wrong type  [end]", flush=True)
+            sys.exit()
         # Save
         print("Running CNMF 2nd itteration: saving intermediate results...", flush=True)
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
@@ -403,6 +465,7 @@ if __name__ == "__main__":
         A = A.sel(unit_id=C.coords["unit_id"].values)
 
         AC = compute_AtC(A, C_chk)
+
     except:
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
