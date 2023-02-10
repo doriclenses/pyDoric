@@ -136,7 +136,12 @@ if __name__ == "__main__":
         # MOTION CORRECTION
         print("MOTION CORRECTION",  flush=True)
         # do motion correction rigid
-        mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
+        try:
+            mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
+        except TypeError:
+            print("[intercept] One parameter is of the wrong type [end]", flush=True)
+            sys.exit()
+
         mc.motion_correct(save_movie=True)
         fname_mc = mc.fname_tot_els if params_caiman['pw_rigid'] else mc.fname_tot_rig
 
@@ -151,13 +156,17 @@ if __name__ == "__main__":
     Yr, dims, T = cm.load_memmap(fname_new)
     images = Yr.T.reshape((T,) + dims, order='F')
     
-    print("Starting CNMF...", flush=True)
-    cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
-    print("Fitting...", flush=True)
-    cnm.fit(images)
+    try:
+        print("Starting CNMF...", flush=True)
+        cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
+        print("Fitting...", flush=True)
+        cnm.fit(images)
     
-    print("evaluate_components...", flush=True)
-    cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
+        print("evaluate_components...", flush=True)
+        cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
+    except TypeError:
+        print("[intercept] One parameter is of the wrong type [end]", flush=True)
+        sys.exit()
     
     ### Save results to doric file ###
     print("Saving data to doric file...", flush=True)
