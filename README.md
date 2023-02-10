@@ -1,5 +1,5 @@
 # pyDoric
-Python scripts used in danse software.
+Python scripts used in [danse](https://neuro.doriclenses.com/collections/software/products/danse) software.
 
 ## MiniAn
 ---
