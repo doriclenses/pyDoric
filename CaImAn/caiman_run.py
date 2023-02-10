@@ -126,7 +126,7 @@ if __name__ == "__main__":
     params_caiman['fnames'] = [fname_tif]
 
     opts = params.CNMFParams(params_dict=params_caiman)
-    
+    opts, advanced_settings = set_advanced_parameters(opts, advanced_settings)
         
     if correct_motion:
         # MOTION CORRECTION
@@ -153,8 +153,6 @@ if __name__ == "__main__":
     cnm.fit(images)
     
     print("evaluate_components...", flush=True)
-
-    cnm.params, advanced_settings = set_advanced_parameters(cnm.params, advanced_settings)
     cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     
     ### Save results to doric file ###
