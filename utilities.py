@@ -127,6 +127,7 @@ def save_images(
     path: str, 
     bits_count: int = 16,
     qt_format: int = 28,
+    username: Optional[str] = "ImagesStack"
 ):
     """
     Saves images and time vector in HDF file as 'ImagesStack' and 'Time' 
@@ -147,6 +148,8 @@ def save_images(
         qt_format : int
             QImage_Format, necessary to display images in DNS. For reference, please
             see https://doc.qt.io/qt-6/qimage.html
+        username: Optional[str] 
+            Give an username for Danse
     """
     duration = images.shape[0]
     height = images.shape[1]
@@ -169,6 +172,7 @@ def save_images(
         del f[path+'Time']
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
+    f[path+'ImagesStack'].attrs['Username'] = username
     f[path+'ImagesStack'].attrs['BitsCount'] = bits_count
     f[path+'ImagesStack'].attrs['Format'] = qt_format
     f[path+'ImagesStack'].attrs['Height'] = height
@@ -183,7 +187,8 @@ def save_roi_signals(
     path: str,
     names: Optional[List[str]] = None,
     usernames: Optional[List[str]] = None,
-    bits_count: int = 16,
+    bits_count: int = -1,
+    attrs_add: Optional[dict] = None
 ):
 
     """
@@ -221,14 +226,19 @@ def save_roi_signals(
         coords = footprint_to_coords(footprints[i])
         
         attrs = {
-            'ID': i+1,
+            'ID': i,
             'Index': i+1,
             'Name': 'ROI {}'.format(i+1),
             'Username': 'ROI {}'.format(i+1),
             'Shape': 0,
-            'BitsCount': bits_count,
             'Coordinates': coords
         }
+
+        if attrs_add is not None:
+            attrs = {**attrs, **attrs_add}
+
+        if bits_count > -1:
+            attrs['BitsCount'] = bits_count
 
         if names is not None:
             attrs['Name'] = names[i]

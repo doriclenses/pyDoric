@@ -1,4 +1,5 @@
 import os
+import sys
 import h5py
 import dask as da
 import numpy as np
@@ -6,7 +7,9 @@ import xarray as xr
 import functools as fct
 from typing import Optional, Callable
 from minian.utilities import custom_arr_optimize
+sys.path.append('..')
 from utilities import save_roi_signals, save_signals, save_images, load_attributes, save_attributes
+import inspect
 
 def load_doric_to_xarray(
     fname: str,
@@ -81,6 +84,7 @@ def save_minian_to_doric(
     fr: int,
     bits_count: int = 10,
     qt_format: int = 28,
+    imagesStackUsername:str = "ImagesStack",
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
@@ -180,21 +184,21 @@ def save_minian_to_doric(
         
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
-        save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, bits_count=bits_count)
+        save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         if attrs is not None:
             save_attributes(attrs, f, pathROIs)
         
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
-            save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format)
+            save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             if attrs is not None:
                 save_attributes(attrs, f, pathImages)
         
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
-            save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format)
+            save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             if attrs is not None:
                 save_attributes(attrs, f, pathResiduals)
             
@@ -214,3 +218,25 @@ def round_up_to_odd(f):
 def round_down_to_odd(f):
     f = int(np.ceil(f))
     return f - 1 if f % 2 == 0 else f
+
+def remove_keys_not_in_function_argument(
+    input_dic:dict, func
+) -> dict:
+    
+    func_arguments = inspect.getfullargspec(func).args
+    new_dictionary = {key: input_dic[key] for key in input_dic if key in func_arguments}
+    return new_dictionary
+
+
+
+def set_advanced_parameters_for_func_params(
+    param_func,
+    advanced_parameters,
+    func
+    ):
+    
+    advanced_parameters = remove_keys_not_in_function_argument(advanced_parameters, func)
+    for key, value in advanced_parameters.items():
+        param_func[key] = value
+
+    return [param_func, advanced_parameters]

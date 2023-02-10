@@ -10,13 +10,11 @@ datas = []
 binaries = []
 hiddenimports = []
 
-tmp_ret = collect_all('distributed')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
+tmp_ret = collect_all('hdmf')
+datas += tmp_ret[0]
 
 a = Analysis(
-    ['minian_run.py'],
+    ['caiman_pnrCorr_run.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -30,13 +28,14 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
     pyz,
     a.scripts,
     [],
-    name='minian',
+    name='caiman_pnrCorr',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -59,5 +58,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='minian',
+    name='caiman_pnrCorr',
 )
