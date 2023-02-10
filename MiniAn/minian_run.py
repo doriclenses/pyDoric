@@ -25,9 +25,12 @@ from minian.motion_correction import apply_transform, estimate_motion
 from multiprocessing import freeze_support
 freeze_support()
 
-
-for arg in sys.argv[1:]:
-    exec(arg)
+try:
+    for arg in sys.argv[1:]:
+        exec(arg)
+except SyntaxError:
+    print("[intercept] One of the advanced settings is not of a python type [end]", flush=True)
+    sys.exit()
 
 tmpDir = tempfile.TemporaryDirectory(prefix="minian_")
 dpath = tmpDir.name

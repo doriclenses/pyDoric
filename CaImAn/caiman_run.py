@@ -36,8 +36,12 @@ from caiman.motion_correction import MotionCorrect
 logging.basicConfig(level=logging.DEBUG)
 freeze_support()
 
-for arg in sys.argv[1:]:
-    exec(arg)
+try:
+    for arg in sys.argv[1:]:
+        exec(arg)
+except SyntaxError:
+    print("[intercept] One of the advanced settings is not of a python type [end]", flush=True)
+    sys.exit()
 
 tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
 tmpDirName = tmpDir.name
