@@ -1,5 +1,5 @@
 # pyDoric
-Python scripts used in [danse](https://neuro.doriclenses.com/collections/software/products/danse) software.
+This repository contains python scripts and [Pyinstaller](https://pyinstaller.org/en/stable/) spec files that are used to create executable files. These executables are called by [danse](https://neuro.doriclenses.com/collections/software/products/danse) software.
 
 ## MiniAn
 ---
