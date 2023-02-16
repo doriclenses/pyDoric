@@ -51,7 +51,7 @@ spatial_penalty: float      = params["SpatialPenalty"]
 temporal_penalty: float     = params["TemporalPenalty"]
 spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
-csv_path: str               = kwargs["fnameSeed"]
+json_path: str               = kwargs["fnameSeed"]
 max_projection_path: str    = kwargs["fnameMaxProjection"]
 video_start_frame           = params["videoStartFrame"]
 video_stop_frame            = params["videoStopFrame"]
@@ -288,7 +288,7 @@ if __name__ == "__main__":
         sys.exit()
 
     imwrite(max_projection_path, max_proj.values)
-    seeds_final.to_csv(csv_path)
+    seeds_final.to_json(json_path, orient="split", indent=4)
 
 
     # Close cluster
