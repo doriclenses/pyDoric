@@ -1,5 +1,5 @@
 # pyDoric
-Python scripts to contribute to Doric Neuroscience Studio Analyzers
+This repository contains python scripts and [Pyinstaller](https://pyinstaller.org/en/stable/) spec files that are used to create executable files. These executables are distributes as libraries of [danse](https://neuro.doriclenses.com/collections/software/products/danse) software.
 
 ## MiniAn
 ---
@@ -21,7 +21,7 @@ pyinstaller pack_minian_run.spec
 ## Caiman
 ---
 
-[Install Caiman](https://caiman.readthedocs.io/en/master/Installation.html) and Pyinstaller in the same anaconda environment and set up caimanmanager to get **caiman_data** folder. ⚠️Then copy **caiman_data** folder into the folder where Caiman will be compiled (git folder)
+[Install CaImAn](https://caiman.readthedocs.io/en/master/Installation.html) and Pyinstaller in the same anaconda environment and set up caimanmanager to get **caiman_data** folder. ⚠️Then copy **caiman_data** folder into the folder where Caiman will be compiled (git folder)
 
 Start a command prompt in Caiman environment and go to the git directory.
 
