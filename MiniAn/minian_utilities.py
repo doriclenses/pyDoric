@@ -42,7 +42,7 @@ def load_doric_to_xarray(
         coords=dict(
             height=np.arange(varr.shape[0]),
             width=np.arange(varr.shape[1]),
-            frame=np.arange(varr.shape[2]),
+            frame=np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
         ),
     )
     varr = varr.transpose('frame', 'height', 'width')
