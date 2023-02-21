@@ -8,7 +8,7 @@ import dask as da
 import numpy as np
 import xarray as xr
 import functools as fct
-from tifffile import imread, imwrite
+from PIL import Image
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
@@ -51,7 +51,7 @@ spatial_penalty: float      = params["SpatialPenalty"]
 temporal_penalty: float     = params["TemporalPenalty"]
 spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
-csv_path: str               = kwargs["fnameSeed"]
+json_path: str               = kwargs["fnameSeed"]
 max_projection_path: str    = kwargs["fnameMaxProjection"]
 video_start_frame           = params["videoStartFrame"]
 video_stop_frame            = params["videoStopFrame"]
@@ -287,8 +287,11 @@ if __name__ == "__main__":
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
 
-    imwrite(max_projection_path, max_proj.values)
-    seeds_final.to_csv(csv_path)
+    max_proj.values[np.isnan(max_proj.values)] = 0
+    max_proj_image = Image.fromarray(max_proj.values)
+    max_proj_image.save(max_projection_path)
+
+    seeds_final.to_json(json_path, orient="split", indent=4)
 
 
     # Close cluster
