@@ -8,7 +8,7 @@ import dask as da
 import numpy as np
 import xarray as xr
 import functools as fct
-from tifffile import imread, imwrite
+from PIL import Image
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
@@ -287,7 +287,10 @@ if __name__ == "__main__":
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
 
-    imwrite(max_projection_path, max_proj.values)
+    max_proj.values[np.isnan(max_proj.values)] = 0
+    max_proj_image = Image.fromarray(max_proj.values)
+    max_proj_image.save(max_projection_path)
+
     seeds_final.to_json(json_path, orient="split", indent=4)
 
 
