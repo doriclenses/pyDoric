@@ -290,9 +290,9 @@ if __name__ == "__main__":
     max_proj.values[np.isnan(max_proj.values)] = 0
     max_proj_image = Image.fromarray(max_proj.values)
     max_proj_image.save(max_projection_path)
-
-    seeds_final.to_json(json_path, orient="split", indent=4)
-
+    
+    #save seed that was keeped after merging
+    seeds_final[seeds_final.mask_mrg].to_json(json_path, orient="split", indent=4)
 
     # Close cluster
     client.close()
