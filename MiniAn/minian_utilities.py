@@ -42,7 +42,7 @@ def load_doric_to_xarray(
         coords=dict(
             height=np.arange(varr.shape[0]),
             width=np.arange(varr.shape[1]),
-            frame=np.arange(varr.shape[2]),
+            frame=np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
         ),
     )
     varr = varr.transpose('frame', 'height', 'width')
@@ -222,11 +222,17 @@ def round_down_to_odd(f):
 def remove_keys_not_in_function_argument(
     input_dic:dict, func
 ) -> dict:
-    
+    '''
+    This function while keep the keys in input_dic that are not use in the function func
+
+    Returns
+    -------
+    The new dictionary new_dictionary
+    '''
     func_arguments = inspect.getfullargspec(func).args
     new_dictionary = {key: input_dic[key] for key in input_dic if key in func_arguments}
     return new_dictionary
-
+  
 
 
 def set_advanced_parameters_for_func_params(
@@ -234,7 +240,15 @@ def set_advanced_parameters_for_func_params(
     advanced_parameters,
     func
     ):
+    '''
+    This function while change the value of the key from the dictionary param with the value of the key from the dictionary advanced_parameters.
+    It while also remove the keys from the dictionary advanced_parameters that are not used in the function func
     
+    Returns
+    -------
+    it while return the dictionary param_func with the new values and also the new advanced_parameters with only the used keys
+
+    ''' 
     advanced_parameters = remove_keys_not_in_function_argument(advanced_parameters, func)
     for key, value in advanced_parameters.items():
         param_func[key] = value
