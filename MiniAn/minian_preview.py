@@ -3,6 +3,7 @@
 import os
 import sys
 import h5py
+import json
 import tempfile
 import dask as da
 import numpy as np
@@ -19,7 +20,7 @@ from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_u
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
 from minian.preprocessing import denoise, remove_background
 from minian.initialization import seeds_init, pnr_refine, ks_refine, seeds_merge, initA, initC
-from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC
+from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC, smooth_sig
 from minian.motion_correction import apply_transform, estimate_motion
 
 # Import for PyInstaller
@@ -290,9 +291,9 @@ if __name__ == "__main__":
     max_proj.values[np.isnan(max_proj.values)] = 0
     max_proj_image = Image.fromarray(max_proj.values)
     max_proj_image.save(max_projection_path)
-
-    seeds_final.to_json(json_path, orient="split", indent=4)
-
+    
+    #save seed that was keeped after merging
+    seeds_final[seeds_final.mask_mrg].to_json(json_path, orient="split", indent=4)
 
     # Close cluster
     client.close()
