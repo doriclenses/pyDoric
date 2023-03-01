@@ -54,8 +54,8 @@ spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
 json_path: str               = kwargs["fnameSeed"]
 max_projection_path: str    = kwargs["fnameMaxProjection"]
-video_start_frame           = params["videoStartFrame"]
-video_stop_frame            = params["videoStopFrame"]
+video_start_frame           = params["VideoStartFrame"]
+video_stop_frame            = params["VideoStopFrame"]
 
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
