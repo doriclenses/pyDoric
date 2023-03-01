@@ -23,19 +23,14 @@ if __name__ == "__main__":
 
 
     images = images.transpose(2, 0, 1)
-    h5path_list = kwargs['h5path'].split('/')
 
     cr, pnr = correlation_pnr(images,swap_dim = False)
 
     cr[np.isnan(cr)] = 0
     pnr[np.isnan(pnr)] = 0
-
-
-    fname_Correlation_tif = os.path.splitext(kwargs["fnamecorr"])[0]+ '.tif'
-    fname_PNR_tif = os.path.splitext(kwargs["fnamePNR"])[0]+ '.tif'
     
     print("Write Correlation and PNR tiff images...", flush=True)
-    imwrite(fname_Correlation_tif, cr)
-    imwrite(fname_PNR_tif, pnr)
+    imwrite(kwargs["fnamecorr"], cr)
+    imwrite(kwargs["fnamePNR"], pnr)
 
 
