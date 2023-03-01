@@ -16,8 +16,8 @@ from summary_images import correlation_pnr
 for arg in sys.argv[1:]:
     exec(arg)
 
-video_start_frame   = params_doric["videoStartFrame"]
-video_stop_frame    = params_doric["videoStopFrame"]
+video_start_frame   = params_doric["VideoStartFrame"]
+video_stop_frame    = params_doric["VideoStopFrame"]
 
 if __name__ == "__main__":
     
