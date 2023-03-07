@@ -3,12 +3,13 @@
 import os
 import sys
 import h5py
+import json
 import tempfile
 import dask as da
 import numpy as np
 import xarray as xr
 import functools as fct
-from tifffile import imread, imwrite
+from PIL import Image
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
@@ -19,7 +20,7 @@ from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_u
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
 from minian.preprocessing import denoise, remove_background
 from minian.initialization import seeds_init, pnr_refine, ks_refine, seeds_merge, initA, initC
-from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC
+from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC, smooth_sig
 from minian.motion_correction import apply_transform, estimate_motion
 
 # Import for PyInstaller
@@ -51,10 +52,10 @@ spatial_penalty: float      = params["SpatialPenalty"]
 temporal_penalty: float     = params["TemporalPenalty"]
 spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
-csv_path: str               = kwargs["fnameSeed"]
+json_path: str               = kwargs["fnameSeed"]
 max_projection_path: str    = kwargs["fnameMaxProjection"]
-video_start_frame           = params["videoStartFrame"]
-video_stop_frame            = params["videoStopFrame"]
+video_start_frame           = params["VideoStartFrame"]
+video_stop_frame            = params["VideoStopFrame"]
 
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
@@ -287,9 +288,12 @@ if __name__ == "__main__":
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
 
-    imwrite(max_projection_path, max_proj.values)
-    seeds_final.to_csv(csv_path)
-
+    max_proj.values[np.isnan(max_proj.values)] = 0
+    max_proj_image = Image.fromarray(max_proj.values)
+    max_proj_image.save(max_projection_path)
+    
+    #save seed that was keeped after merging
+    seeds_final[seeds_final.mask_mrg].to_json(json_path, orient="split", indent=4)
 
     # Close cluster
     client.close()
