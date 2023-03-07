@@ -347,3 +347,13 @@ def footprint_to_coords(
     coords = np.squeeze(contours[maxI])
     
     return coords
+
+def print_to_intercept(msg):
+    print("[intercept] " + msg + " [end]", flush=True)
+
+def print_group_path_for_DANSE(path):
+    if(path[-1] == "/"):
+        path = path[:-1]
+
+    print_to_intercept("[pathgroup] " + "/" + path)
+
