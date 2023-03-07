@@ -16,26 +16,26 @@ from summary_images import correlation_pnr
 for arg in sys.argv[1:]:
     exec(arg)
 
+video_start_frame   = params_doric["VideoStartFrame"]
+video_stop_frame    = params_doric["VideoStopFrame"]
 
 if __name__ == "__main__":
+    
     with h5py.File(kwargs["fname"], 'r') as f:
         images = np.array(f[kwargs['h5path']+'ImagesStack'])
 
+    images = images[:, :, (video_start_frame-1):video_stop_frame]
+    images = images[:, :, ::params_doric['TemporalDownsample']]
 
     images = images.transpose(2, 0, 1)
-    h5path_list = kwargs['h5path'].split('/')
 
-    cr, pnr = correlation_pnr(images,swap_dim = False)
+    cr, pnr = correlation_pnr(images, swap_dim = False)
 
     cr[np.isnan(cr)] = 0
     pnr[np.isnan(pnr)] = 0
-
-
-    fname_Correlation_tif = os.path.splitext(kwargs["fnamecorr"])[0]+ '.tif'
-    fname_PNR_tif = os.path.splitext(kwargs["fnamePNR"])[0]+ '.tif'
     
     print("Write Correlation and PNR tiff images...", flush=True)
-    imwrite(fname_Correlation_tif, cr)
-    imwrite(fname_PNR_tif, pnr)
+    imwrite(kwargs["fnamecorr"], cr)
+    imwrite(kwargs["fnamePNR"], pnr)
 
 
