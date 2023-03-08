@@ -12,7 +12,9 @@ from utilities import (
     load_attributes,
     save_roi_signals,
     save_signals,
-    save_images
+    save_images,
+    print_to_intercept,
+    print_group_path_for_DANSE
 )
 
 def save_caiman_to_doric(
@@ -95,6 +97,7 @@ def save_caiman_to_doric(
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
         save_roi_signals(C, A, time_, f, pathROIs+vdataset, bits_count=bits_count, attrs_add={"Unit": "Intensity"})
+        print_group_path_for_DANSE(pathROIs+vdataset)
         if attrs is not None:
             save_attributes(attrs, f, pathROIs)
         
@@ -102,6 +105,7 @@ def save_caiman_to_doric(
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            print_group_path_for_DANSE(pathImages+vdataset)
             if attrs is not None:
                 save_attributes(attrs, f, pathImages)
         
@@ -109,6 +113,7 @@ def save_caiman_to_doric(
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            print_group_path_for_DANSE(pathResiduals+vdataset)
             if attrs is not None:
                 save_attributes(attrs, f, pathResiduals)
             
@@ -116,6 +121,7 @@ def save_caiman_to_doric(
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
+            print_group_path_for_DANSE(pathSpikes+vdataset)
             if attrs is not None:
                 save_attributes(attrs, f, pathSpikes)
         
