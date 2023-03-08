@@ -8,7 +8,14 @@ import functools as fct
 from typing import Optional, Callable
 from minian.utilities import custom_arr_optimize
 sys.path.append('..')
-from utilities import save_roi_signals, save_signals, save_images, load_attributes, save_attributes
+from utilities import (
+    save_roi_signals,
+    save_signals,
+    save_images,
+    load_attributes,
+    save_attributes,
+    print_group_path_for_DANSE
+)
 import inspect
 
 def load_doric_to_xarray(
@@ -185,6 +192,7 @@ def save_minian_to_doric(
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
         save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
+        print_group_path_for_DANSE(pathROIs+vdataset)
         if attrs is not None:
             save_attributes(attrs, f, pathROIs)
         
@@ -192,6 +200,7 @@ def save_minian_to_doric(
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            print_group_path_for_DANSE(pathImages+vdataset)
             if attrs is not None:
                 save_attributes(attrs, f, pathImages)
         
@@ -199,6 +208,7 @@ def save_minian_to_doric(
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            print_group_path_for_DANSE(pathResiduals+vdataset)
             if attrs is not None:
                 save_attributes(attrs, f, pathResiduals)
             
@@ -206,6 +216,7 @@ def save_minian_to_doric(
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
+            print_group_path_for_DANSE(pathSpikes+vdataset)
             if attrs is not None:
                 save_attributes(attrs, f, pathSpikes)
                 
