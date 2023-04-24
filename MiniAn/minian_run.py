@@ -502,24 +502,29 @@ if __name__ == "__main__":
     file_.close()
     
     # Parameters
+    paramfinal = params.copy()
+    minian_operation_name = params_doric["Operations"]
     if "OperationName" in params_source_data:
-        params["Operations"] = params_source_data["OperationName"] + " > " + params["Operations"]
+        paramfinal["Operations"] = params_source_data["OperationName"] + " > " + params["Operations"]
         del params_source_data["OperationName"]
     elif "Operations" in params_source_data:
-        params["Operations"] = params_source_data["Operations"] + " > " + params["Operations"]
+        paramfinal["Operations"] = params_source_data["Operations"] + " > " + params["Operations"]
         del params_source_data["Operations"]
-
-    params = {**params, **params_source_data}
 
     for funcName, funcValue in advanced_settings.items():
         if type(funcValue) is dict:
             for variableName, variableValue in funcValue.items():
-                params["Advanced: "+funcName+" > "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
+                paramfinal["Advanced-" + funcName + "-" + variableName] = str(variableValue) if type(variableValue) is not str else '"' + variableValue + '"'
+    
+    #if spatial_downsample > 1 :
+    #    paramfinal["BinningFactor"] = spatial_downsample
+    
+    # Add operation name to the params keys
+    for key in paramfinal.copy():
+        if key != "Operations":
+            paramfinal[minian_operation_name + "-" + key] = paramfinal.pop(key)
 
-    if "BinningFactor" in params:
-        params["BinningFactor"] *= spatial_downsample
-    elif spatial_downsample > 1 :
-        params["BinningFactor"] = spatial_downsample
+    paramfinal = {**paramfinal, **params_source_data}
 
     save_minian_to_doric(
         Y, A, C, AC, S,
@@ -530,7 +535,7 @@ if __name__ == "__main__":
         vname=params_load_doric['fname'], 
         vpath='DataProcessed/'+driver+'/',
         vdataset=series+'/'+sensor+'/',
-        attrs=params, 
+        attrs=paramfinal, 
         saveimages=True, 
         saveresiduals=True, 
         savespikes=True
