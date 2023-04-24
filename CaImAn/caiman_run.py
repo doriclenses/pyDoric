@@ -186,17 +186,24 @@ if __name__ == "__main__":
     attrs = load_attributes(fname, h5path+'/ImagesStack')
 
     # Parameters
+    params = params_doric.copy()
+    caiman_operation_name = params_doric["Operations"]
     if "OperationName" in params_source_data:
-        params_doric["Operations"] = params_source_data["OperationName"] + " > " + params_doric["Operations"]
+        params["Operations"] = params_source_data["OperationName"] + " > " + params_doric["Operations"]
         del params_source_data["OperationName"]
     elif "Operations" in params_source_data:
-        params_doric["Operations"] = params_source_data["Operations"] + " > " + params_doric["Operations"]
+        params["Operations"] = params_source_data["Operations"] + " > " + params_doric["Operations"]
         del params_source_data["Operations"]
-        
-    params = {**params_doric, **params_source_data}
     
     for variableName, variableValue in advanced_settings.items():
-        params["Advanced: "+variableName ] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
+        params["Advanced-"+variableName] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
+
+    # Add operation name to the params keys
+    for key in params.copy():
+        if key != "Operations":
+            params[caiman_operation_name+"-"+key] = params.pop(key)
+
+    params = {**params, **params_source_data}
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
