@@ -95,7 +95,8 @@ def save_minian_to_doric(
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
-    attrs: Optional[dict] = None,
+    params_doric: Optional[dict] = None,
+    params_source: Optional[dict] = None,
     saveimages: bool = True,
     saveresiduals: bool = True,
     savespikes: bool = True
@@ -174,7 +175,7 @@ def save_minian_to_doric(
                 operationCount = str(len(operations))
                 for operation in operations:
                     operationAttrs = load_attributes(f, vpath+operation)
-                    if attrs == operationAttrs:
+                    if create_param_attribut_to_save(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(ROISIGNALS)):
                             operationCount = ''
                         else:
@@ -189,36 +190,38 @@ def save_minian_to_doric(
         if vdataset[-1] != '/':
             vdataset += '/'
         
+        params_doric["Operations"] += operationCount
+
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
         save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         print_group_path_for_DANSE(pathROIs+vdataset)
-        if attrs is not None:
-            save_attributes(attrs, f, pathROIs)
+        if params_doric is not None and params_source is not None:
+            save_attributes(create_param_attribut_to_save(params_doric, params_source), f, pathROIs)
         
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathImages+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathImages)
+        if params_doric is not None and params_source is not None:
+                save_attributes(create_param_attribut_to_save(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
         
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathResiduals+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathResiduals)
+        if params_doric is not None and params_source is not None:
+                save_attributes(create_param_attribut_to_save(params_doric, params_source,  params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
             
         if savespikes:
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
             print_group_path_for_DANSE(pathSpikes+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathSpikes)
+        if params_doric is not None and params_source is not None:
+                save_attributes(create_param_attribut_to_save(params_doric, params_source), f, pathSpikes)
                 
     print("Saved to {}".format(vname))
 
@@ -265,3 +268,35 @@ def set_advanced_parameters_for_func_params(
         param_func[key] = value
 
     return [param_func, advanced_parameters]
+
+
+def create_param_attribut_to_save(
+    params_minian,
+    params_source,
+    operation_Name = None
+    ):
+
+    params_final = {}
+    params_operation    = params_minian.copy()
+    params_from_source  = params_source.copy()
+
+    params_final["Operations"] = params_from_source["Operations"] + " > " + params_operation["Operations"]
+    del params_from_source["Operations"]
+
+    for key in params_operation:
+        if key == "Operations": continue
+
+        if key == "AdvancedSettings":
+            for funcName, funcValue in params_operation[key].items():
+                if type(funcValue) is dict:
+                    for variableName, variableValue in funcValue.items():
+                        params_final["Advanced-" + funcName + "-" + variableName] = str(variableValue) if type(variableValue) is not str else '"' + variableValue + '"'
+        else:
+            params_final[key] = params_operation[key]
+
+    for key in params_final.copy():
+        if key == "Operations": continue
+    
+        params_final[(operation_Name if operation_Name else params_operation["Operations"]) + "-" + key] = params_final.pop(key)
+
+    return {**params_final, **params_from_source}

@@ -65,7 +65,6 @@ temporal_downsample: int    = params["TemporalDownsample"]
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
     advanced_settings = params_doric["AdvancedSettings"]
-    del params_doric["AdvancedSettings"]
 
 # removing advanced_sesttings function keys that are not in the minian functions list
 minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize", "save_minian", "open_minian", "denoise",
@@ -502,29 +501,11 @@ if __name__ == "__main__":
     file_.close()
     
     # Parameters
-    paramfinal = params.copy()
-    minian_operation_name = params_doric["Operations"]
+    # Set only "Operations" for params_srouce_data
     if "OperationName" in params_source_data:
-        paramfinal["Operations"] = params_source_data["OperationName"] + " > " + params["Operations"]
+        if "Operations" not in params_source_data:
+                params_source_data["Operations"] = params_source_data["OperationName"]
         del params_source_data["OperationName"]
-    elif "Operations" in params_source_data:
-        paramfinal["Operations"] = params_source_data["Operations"] + " > " + params["Operations"]
-        del params_source_data["Operations"]
-
-    for funcName, funcValue in advanced_settings.items():
-        if type(funcValue) is dict:
-            for variableName, variableValue in funcValue.items():
-                paramfinal["Advanced-" + funcName + "-" + variableName] = str(variableValue) if type(variableValue) is not str else '"' + variableValue + '"'
-    
-    #if spatial_downsample > 1 :
-    #    paramfinal["BinningFactor"] = spatial_downsample
-    
-    # Add operation name to the params keys
-    for key in paramfinal.copy():
-        if key != "Operations":
-            paramfinal[minian_operation_name + "-" + key] = paramfinal.pop(key)
-
-    paramfinal = {**paramfinal, **params_source_data}
 
     save_minian_to_doric(
         Y, A, C, AC, S,
@@ -535,7 +516,8 @@ if __name__ == "__main__":
         vname=params_load_doric['fname'], 
         vpath='DataProcessed/'+driver+'/',
         vdataset=series+'/'+sensor+'/',
-        attrs=paramfinal, 
+        params_doric = params_doric,
+        params_source = params_source_data,
         saveimages=True, 
         saveresiduals=True, 
         savespikes=True
