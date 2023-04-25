@@ -280,6 +280,9 @@ def create_param_attribut_to_save(
     params_operation    = params_minian.copy()
     params_from_source  = params_source.copy()
 
+    if operation_Name:
+        params_operation["Operations"] = operation_Name
+
     params_final["Operations"] = params_from_source["Operations"] + " > " + params_operation["Operations"]
     del params_from_source["Operations"]
 
@@ -297,6 +300,6 @@ def create_param_attribut_to_save(
     for key in params_final.copy():
         if key == "Operations": continue
     
-        params_final[(operation_Name if operation_Name else params_operation["Operations"]) + "-" + key] = params_final.pop(key)
+        params_final[params_operation["Operations"] + "-" + key] = params_final.pop(key)
 
     return {**params_final, **params_from_source}
