@@ -512,7 +512,7 @@ if __name__ == "__main__":
         fr=fr,
         bits_count=attrs['BitsCount'],
         qt_format=attrs['Format'],
-        imagesStackUsername=attrs['Username'] if 'Username' in attrs else 'MiniAn',
+        imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
         vname=params_load_doric['fname'], 
         vpath='DataProcessed/'+driver+'/',
         vdataset=series+'/'+sensor+'/',
