@@ -14,7 +14,8 @@ from utilities import (
     save_images,
     load_attributes,
     save_attributes,
-    print_group_path_for_DANSE
+    print_group_path_for_DANSE,
+    print_to_intercept,
 )
 import inspect
 
@@ -204,7 +205,7 @@ def save_minian_to_doric(
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathImages+vdataset)
-        if params_doric is not None and params_source is not None:
+            if params_doric is not None and params_source is not None:
                 save_attributes(create_param_attribut_to_save(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
         
         if saveresiduals:
@@ -212,7 +213,7 @@ def save_minian_to_doric(
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathResiduals+vdataset)
-        if params_doric is not None and params_source is not None:
+            if params_doric is not None and params_source is not None:
                 save_attributes(create_param_attribut_to_save(params_doric, params_source,  params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
             
         if savespikes:
@@ -220,7 +221,7 @@ def save_minian_to_doric(
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
             print_group_path_for_DANSE(pathSpikes+vdataset)
-        if params_doric is not None and params_source is not None:
+            if params_doric is not None and params_source is not None:
                 save_attributes(create_param_attribut_to_save(params_doric, params_source), f, pathSpikes)
                 
     print("Saved to {}".format(vname))

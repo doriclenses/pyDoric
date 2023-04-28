@@ -11,7 +11,7 @@ import functools as fct
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
-from utilities import get_frequency, load_attributes, save_attributes
+from utilities import get_frequency, load_attributes, save_attributes, print_to_intercept
 from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd , set_advanced_parameters_for_func_params
 
 # Import for MiniAn lib
@@ -222,6 +222,8 @@ params_update_temporal = {
 if "update_temporal" in advanced_settings:
     params_update_temporal, advanced_settings["update_temporal"] = set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
 
+# Update AdvancedSettings in params_doric
+params_doric["AdvancedSettings"] = advanced_settings.copy()
 
 if __name__ == "__main__":
 
@@ -504,7 +506,8 @@ if __name__ == "__main__":
     # Set only "Operations" for params_srouce_data
     if "OperationName" in params_source_data:
         if "Operations" not in params_source_data:
-                params_source_data["Operations"] = params_source_data["OperationName"]
+            params_source_data["Operations"] = params_source_data["OperationName"]
+        
         del params_source_data["OperationName"]
 
     save_minian_to_doric(
