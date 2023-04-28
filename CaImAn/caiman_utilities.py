@@ -80,7 +80,7 @@ def save_caiman_to_doric(
                 operationCount = str(len(operations))
                 for operation in operations:
                     operationAttrs = load_attributes(f, vpath+operation)
-                    if create_param_attribut_to_save(params_doric, params_source) == operationAttrs:
+                    if merge_params(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(ROISIGNALS)):
                             operationCount = ''
                         else:
@@ -102,7 +102,7 @@ def save_caiman_to_doric(
         save_roi_signals(C, A, time_, f, pathROIs+vdataset, bits_count=bits_count, attrs_add={"Unit": "Intensity"})
         print_group_path_for_DANSE(pathROIs+vdataset)
         if params_doric is not None and params_source is not None:
-            save_attributes(create_param_attribut_to_save(params_doric, params_source), f, pathROIs)
+            save_attributes(merge_params(params_doric, params_source), f, pathROIs)
         
         if saveimages:
             print("saving images")
@@ -110,7 +110,7 @@ def save_caiman_to_doric(
             save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathImages+vdataset)
             if params_doric is not None and params_source is not None:
-                save_attributes(create_param_attribut_to_save(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
+                save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
         
         if saveresiduals:
             print("saving residual images")
@@ -118,7 +118,7 @@ def save_caiman_to_doric(
             save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathResiduals+vdataset)
             if params_doric is not None and params_source is not None:
-                save_attributes(create_param_attribut_to_save(params_doric, params_source, params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
+                save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
             
         if savespikes:
             print("saving spikes")
@@ -126,7 +126,7 @@ def save_caiman_to_doric(
             save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
             print_group_path_for_DANSE(pathSpikes+vdataset)
             if params_doric is not None and params_source is not None:
-                save_attributes(create_param_attribut_to_save(params_doric, params_source), f, pathSpikes)
+                save_attributes(merge_params(params_doric, params_source), f, pathSpikes)
         
     print("Saved to {}".format(vname))
 
@@ -158,18 +158,18 @@ def set_advanced_parameters(
     return [param, advanced_parameters]
 
 
-def create_param_attribut_to_save(
+def merge_params(
     params_caiman,
     params_source,
-    operation_Name = None
+    operation_name = None
 ):
 
     params_final = {}
     params_operation    = params_caiman.copy()
     params_from_source  = params_source.copy()
 
-    if operation_Name:
-        params_operation["Operations"] = operation_Name
+    if operation_name:
+        params_operation["Operations"] = operation_name
 
     params_final["Operations"] = params_from_source["Operations"] + " > " + params_operation["Operations"]
     del params_from_source["Operations"]
