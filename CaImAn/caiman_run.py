@@ -208,7 +208,7 @@ if __name__ == "__main__":
             shape=(dims[0],dims[1],T),
             bits_count=attrs['BitsCount'],
             qt_format=attrs['Format'],
-            imagesStackUsername=attrs['Username'] if 'Username' in attrs else 'ImagesStack',
+            imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
             vname=fname, 
             vpath='DataProcessed/'+driver+'/',
             vdataset=series+'/'+sensor+'/',
