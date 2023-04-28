@@ -11,7 +11,7 @@ import functools as fct
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
-from utilities import get_frequency, load_attributes, save_attributes
+from utilities import get_frequency, load_attributes, save_attributes, print_to_intercept
 from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd , set_advanced_parameters_for_func_params
 
 # Import for MiniAn lib
@@ -65,7 +65,6 @@ temporal_downsample: int    = params["TemporalDownsample"]
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
     advanced_settings = params_doric["AdvancedSettings"]
-    del params_doric["AdvancedSettings"]
 
 # removing advanced_sesttings function keys that are not in the minian functions list
 minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize", "save_minian", "open_minian", "denoise",
@@ -223,6 +222,8 @@ params_update_temporal = {
 if "update_temporal" in advanced_settings:
     params_update_temporal, advanced_settings["update_temporal"] = set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
 
+# Update AdvancedSettings in params_doric
+params_doric["AdvancedSettings"] = advanced_settings.copy()
 
 if __name__ == "__main__":
 
@@ -502,40 +503,24 @@ if __name__ == "__main__":
     file_.close()
     
     # Parameters
-    paramfinal = params.copy()
-    minian_operation_name = params_doric["Operations"]
+    # Set only "Operations" for params_srouce_data
     if "OperationName" in params_source_data:
-        paramfinal["Operations"] = params_source_data["OperationName"] + " > " + params["Operations"]
+        if "Operations" not in params_source_data:
+            params_source_data["Operations"] = params_source_data["OperationName"]
+        
         del params_source_data["OperationName"]
-    elif "Operations" in params_source_data:
-        paramfinal["Operations"] = params_source_data["Operations"] + " > " + params["Operations"]
-        del params_source_data["Operations"]
-
-    for funcName, funcValue in advanced_settings.items():
-        if type(funcValue) is dict:
-            for variableName, variableValue in funcValue.items():
-                paramfinal["Advanced-" + funcName + "-" + variableName] = str(variableValue) if type(variableValue) is not str else '"' + variableValue + '"'
-    
-    #if spatial_downsample > 1 :
-    #    paramfinal["BinningFactor"] = spatial_downsample
-    
-    # Add operation name to the params keys
-    for key in paramfinal.copy():
-        if key != "Operations":
-            paramfinal[minian_operation_name + "-" + key] = paramfinal.pop(key)
-
-    paramfinal = {**paramfinal, **params_source_data}
 
     save_minian_to_doric(
         Y, A, C, AC, S,
         fr=fr,
         bits_count=attrs['BitsCount'],
         qt_format=attrs['Format'],
-        imagesStackUsername=attrs['Username'] if 'Username' in attrs else 'ImagesStack',
+        imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
         vname=params_load_doric['fname'], 
         vpath='DataProcessed/'+driver+'/',
         vdataset=series+'/'+sensor+'/',
-        attrs=paramfinal, 
+        params_doric = params_doric,
+        params_source = params_source_data,
         saveimages=True, 
         saveresiduals=True, 
         savespikes=True
