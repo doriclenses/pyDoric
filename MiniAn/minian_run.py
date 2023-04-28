@@ -510,6 +510,9 @@ if __name__ == "__main__":
         
         del params_source_data["OperationName"]
 
+    if spatial_downsample > 1:
+        params_doric["BinningFactor"] = spatial_downsample
+
     save_minian_to_doric(
         Y, A, C, AC, S,
         fr=fr,
