@@ -10,7 +10,7 @@ import tempfile
 import numpy as np
 from tifffile import imwrite
 sys.path.append('..')
-from utilities import get_frequency, get_dims, load_attributes, save_attributes
+from utilities import get_frequency, get_dims, load_attributes, save_attributes, print_to_intercept
 from caiman_utilities import save_caiman_to_doric, set_advanced_parameters
 
 
@@ -95,9 +95,6 @@ params_caiman = {
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
     advanced_settings = params_doric["AdvancedSettings"]
-    del params_doric["AdvancedSettings"]
-
-params_caiman = {**params_caiman}
 
 if __name__ == "__main__":
 
@@ -131,6 +128,8 @@ if __name__ == "__main__":
 
     opts = params.CNMFParams(params_dict=params_caiman)
     opts, advanced_settings = set_advanced_parameters(opts, advanced_settings)
+    #Update AdvancedSettings
+    params_doric["AdvancedSettings"] = advanced_settings.copy()
         
     if correct_motion:
         # MOTION CORRECTION
@@ -186,24 +185,13 @@ if __name__ == "__main__":
     attrs = load_attributes(fname, h5path+'/ImagesStack')
 
     # Parameters
-    params = params_doric.copy()
-    caiman_operation_name = params_doric["Operations"]
+    # Set only "Operations" for params_srouce_data
     if "OperationName" in params_source_data:
-        params["Operations"] = params_source_data["OperationName"] + " > " + params_doric["Operations"]
+        if "Operations" not in params_source_data:
+            params_source_data["Operations"] = params_source_data["OperationName"]
+
         del params_source_data["OperationName"]
-    elif "Operations" in params_source_data:
-        params["Operations"] = params_source_data["Operations"] + " > " + params_doric["Operations"]
-        del params_source_data["Operations"]
-    
-    for variableName, variableValue in advanced_settings.items():
-        params["Advanced-"+variableName] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
 
-    # Add operation name to the params keys
-    for key in params.copy():
-        if key != "Operations":
-            params[caiman_operation_name+"-"+key] = params.pop(key)
-
-    params = {**params, **params_source_data}
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
@@ -224,7 +212,8 @@ if __name__ == "__main__":
             vname=fname, 
             vpath='DataProcessed/'+driver+'/',
             vdataset=series+'/'+sensor+'/',
-            attrs=params, 
+            params_doric = params_doric,
+            params_source = params_source_data,
             saveimages=True, 
             saveresiduals=True, 
             savespikes=True)
