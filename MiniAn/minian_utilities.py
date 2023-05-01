@@ -17,6 +17,7 @@ from utilities import (
     save_attributes,
     print_group_path_for_DANSE,
     print_to_intercept,
+    merge_params,
 )
 
 def load_doric_to_xarray(
@@ -269,43 +270,3 @@ def set_advanced_parameters_for_func_params(
         param_func[key] = value
 
     return [param_func, advanced_parameters]
-
-
-def merge_params(
-    params_minian,
-    params_source,
-    operation_name = None
-    ):
-    '''
-    Merge params
-    '''
-
-    params_final = {}
-
-    if operation_name is None:
-        operation_name = params_minian["Operations"]
-
-    params_final["Operations"] = params_source["Operations"] + " > " + operation_name
-
-    # Set the advanced Settings keys
-    for key in params_minian:
-        if key != "Operations":
-            if key == "AdvancedSettings":
-                for func_name, func_value in params_minian[key].items():
-                    if isinstance(func_value, dict):
-                        for variable_name, variable_value in func_value.items():
-                            params_final["Advanced-" + func_name + "-" + variable_name] = str(variable_value) if not isinstance(variable_value, str) else '"' + variable_value + '"'
-            else:
-                params_final[key] = params_minian[key]
-
-    # Add Operations operation_name- to the keys
-    for key in params_final.copy():
-        if key != "Operations":
-            params_final[operation_name + "-" + key] = params_final.pop(key)
-
-    # Merging with params source
-    for key in params_source:
-        if key != "Operations":
-            params_final[key] = params_source[key]
-
-    return params_final

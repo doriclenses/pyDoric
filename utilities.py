@@ -357,3 +357,54 @@ def print_group_path_for_DANSE(path):
 
     print_to_intercept("[pathgroup] " + "/" + path)
 
+def merge_params(
+    params_current,
+    params_source,
+    operation_name = None
+):
+    '''
+    Merge params
+    '''
+    params_final = {}
+
+    if operation_name is None:
+        operation_name = params_current["Operations"]
+
+    params_final["Operations"] = params_source["Operations"] + " > " + operation_name
+
+    # Set the advanced Settings keys
+    for key in params_current:
+        if key == "Operations":
+            continue
+
+        if key == "AdvancedSettings":
+            for variable_name, variable_value in params_current[key].items():
+                if isinstance(variable_value, dict): # MinIan case
+                    for sub_variable_name, sub_variable_value in variable_value.items():
+                        if not isinstance(sub_variable_value, str):
+                            param_value = str(sub_variable_value)
+                        else:
+                            param_value = '"' + sub_variable_value + '"'
+
+                        params_final["Advanced-" + variable_name + "-" + sub_variable_name] = param_value
+                else : # Caiman case
+                    if not isinstance(variable_value, str):
+                        param_value = str(variable_value)
+                    else:
+                        param_value = '"' + variable_value + '"'
+
+                    params_final["Advanced-" + variable_name] = param_value
+        else:
+            params_final[key] = params_current[key]
+
+    # Add Operations operation_name- to the keys
+    for key in params_final.copy():
+        if key != "Operations":
+            params_final[operation_name + "-" + key] = params_final.pop(key)
+
+    # Merging with params source
+    for key in params_source:
+        if key != "Operations":
+            params_final[key] = params_source[key]
+
+    return params_final
