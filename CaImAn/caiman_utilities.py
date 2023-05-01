@@ -163,29 +163,34 @@ def merge_params(
     params_source,
     operation_name = None
 ):
+    '''
+    Merge params
+    '''
 
     params_final = {}
-    params_operation    = params_caiman.copy()
-    params_from_source  = params_source.copy()
 
-    if operation_name:
-        params_operation["Operations"] = operation_name
+    if operation_name is None:
+        operation_name = params_caiman["Operations"]
 
-    params_final["Operations"] = params_from_source["Operations"] + " > " + params_operation["Operations"]
-    del params_from_source["Operations"]
+    params_final["Operations"] = params_source["Operations"] + " > " + operation_name
 
-    for key in params_operation:
-        if key == "Operations": continue
+    # Set the advanced Settings keys
+    for key in params_caiman:
+        if key != "Operations":
+            if key == "AdvancedSettings":
+                for variable_name, variable_value in params_caiman[key].items():
+                    params_final["Advanced-"+variable_name] = str(variable_value) if not isinstance(variable_value, str) else '"'+variable_value+'"'
+            else:
+                params_final[key] = params_caiman[key]
 
-        if key == "AdvancedSettings":
-            for variableName, variableValue in params_caiman["AdvancedSettings"].items():
-                params_final["Advanced-"+variableName] = str(variableValue) if type(variableValue) is not str else '"'+variableValue+'"'
-        else:
-            params_final[key] = params_operation[key]
-
+    # Add Operations operation_name- to the keys
     for key in params_final.copy():
-        if key == "Operations": continue
+        if key != "Operations":
+            params_final[operation_name + "-" + key] = params_final.pop(key)
 
-        params_final[params_operation["Operations"] + "-" + key] = params_final.pop(key)
+    # Merging with params source
+    for key in params_source:
+        if key != "Operations":
+            params_final[key] = params_source[key]
 
-    return {**params_final, **params_from_source}
+    return params_final

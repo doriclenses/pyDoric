@@ -1,5 +1,6 @@
 import os
 import sys
+import inspect
 import h5py
 import dask as da
 import numpy as np
@@ -17,7 +18,6 @@ from utilities import (
     print_group_path_for_DANSE,
     print_to_intercept,
 )
-import inspect
 
 def load_doric_to_xarray(
     fname: str,
@@ -276,31 +276,36 @@ def merge_params(
     params_source,
     operation_name = None
     ):
+    '''
+    Merge params
+    '''
 
     params_final = {}
-    params_operation    = params_minian.copy()
-    params_from_source  = params_source.copy()
 
-    if operation_name:
-        params_operation["Operations"] = operation_name
+    if operation_name is None:
+        operation_name = params_minian["Operations"]
 
-    params_final["Operations"] = params_from_source["Operations"] + " > " + params_operation["Operations"]
-    del params_from_source["Operations"]
+    params_final["Operations"] = params_source["Operations"] + " > " + operation_name
 
-    for key in params_operation:
-        if key == "Operations": continue
+    # Set the advanced Settings keys
+    for key in params_minian:
+        if key != "Operations":
+            if key == "AdvancedSettings":
+                for func_name, func_value in params_minian[key].items():
+                    if isinstance(func_value, dict):
+                        for variable_name, variable_value in func_value.items():
+                            params_final["Advanced-" + func_name + "-" + variable_name] = str(variable_value) if not isinstance(variable_value, str) else '"' + variable_value + '"'
+            else:
+                params_final[key] = params_minian[key]
 
-        if key == "AdvancedSettings":
-            for funcName, funcValue in params_operation[key].items():
-                if type(funcValue) is dict:
-                    for variableName, variableValue in funcValue.items():
-                        params_final["Advanced-" + funcName + "-" + variableName] = str(variableValue) if type(variableValue) is not str else '"' + variableValue + '"'
-        else:
-            params_final[key] = params_operation[key]
-
+    # Add Operations operation_name- to the keys
     for key in params_final.copy():
-        if key == "Operations": continue
-    
-        params_final[params_operation["Operations"] + "-" + key] = params_final.pop(key)
+        if key != "Operations":
+            params_final[operation_name + "-" + key] = params_final.pop(key)
 
-    return {**params_final, **params_from_source}
+    # Merging with params source
+    for key in params_source:
+        if key != "Operations":
+            params_final[key] = params_source[key]
+
+    return params_final
