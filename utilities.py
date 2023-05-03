@@ -359,7 +359,7 @@ def print_group_path_for_DANSE(path):
 
 def merge_params(
     params_current,
-    params_source,
+    params_source = None,
     operation_name = None
 ):
     '''
@@ -370,7 +370,10 @@ def merge_params(
     if operation_name is None:
         operation_name = params_current["Operations"]
 
-    params_final["Operations"] = params_source["Operations"] + " > " + operation_name
+    if params_source is None:
+        params_final["Operations"] = operation_name
+    else:
+        params_final["Operations"] = params_source["Operations"] + " > " + operation_name
 
     # Set the advanced Settings keys
     for key in params_current:
@@ -393,9 +396,10 @@ def merge_params(
             params_final[operation_name + "-" + key] = params_final.pop(key)
 
     # Merging with params source
-    for key in params_source:
-        if key != "Operations":
-            params_final[key] = params_source[key]
+    if params_source is not None:
+        for key in params_source:
+            if key != "Operations":
+                params_final[key] = params_source[key]
 
     return params_final
 
