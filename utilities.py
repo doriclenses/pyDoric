@@ -381,9 +381,9 @@ def merge_params(
             for variable_name, variable_value in params_current[key].items():
                 if isinstance(variable_value, dict): # MinIan case
                     for sub_variable_name, sub_variable_value in variable_value.items():
-                        params_final.update(creat_params_item(["Advanced", variable_name, sub_variable_name], sub_variable_value))
+                        params_final.update(create_params_item(["Advanced", variable_name, sub_variable_name], sub_variable_value))
                 else : # Caiman case
-                    params_final.update(creat_params_item(["Advanced", variable_name], variable_value))
+                    params_final.update(create_params_item(["Advanced", variable_name], variable_value))
         else:
             params_final[key] = params_current[key]
 
@@ -399,7 +399,7 @@ def merge_params(
 
     return params_final
 
-def creat_params_item(
+def create_params_item(
     key: List[str],
     value
 ):
