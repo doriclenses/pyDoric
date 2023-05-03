@@ -97,8 +97,8 @@ def save_minian_to_doric(
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
-    params_doric: Optional[dict] = None,
-    params_source: Optional[dict] = None,
+    params_doric: Optional[dict] = {},
+    params_source: Optional[dict] = {},
     saveimages: bool = True,
     saveresiduals: bool = True,
     savespikes: bool = True
