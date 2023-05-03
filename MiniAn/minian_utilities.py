@@ -198,32 +198,28 @@ def save_minian_to_doric(
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
         save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         print_group_path_for_DANSE(pathROIs+vdataset)
-        if params_doric is not None and params_source is not None:
-            save_attributes(merge_params(params_doric, params_source), f, pathROIs)
+        save_attributes(merge_params(params_doric, params_source), f, pathROIs)
         
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathImages+vdataset)
-            if params_doric is not None and params_source is not None:
-                save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
+            save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
         
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathResiduals+vdataset)
-            if params_doric is not None and params_source is not None:
-                save_attributes(merge_params(params_doric, params_source,  params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
+            save_attributes(merge_params(params_doric, params_source,  params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
             
         if savespikes:
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
             print_group_path_for_DANSE(pathSpikes+vdataset)
-            if params_doric is not None and params_source is not None:
-                save_attributes(merge_params(params_doric, params_source), f, pathSpikes)
+            save_attributes(merge_params(params_doric, params_source), f, pathSpikes)
                 
     print("Saved to {}".format(vname))
 
