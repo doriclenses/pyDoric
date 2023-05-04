@@ -20,7 +20,7 @@ video_start_frame   = params_doric["VideoStartFrame"]
 video_stop_frame    = params_doric["VideoStopFrame"]
 
 if __name__ == "__main__":
-    
+
     with h5py.File(kwargs["fname"], 'r') as f:
         images = np.array(f[kwargs['h5path']+'ImagesStack'])
 
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     cr[np.isnan(cr)] = 0
     pnr[np.isnan(pnr)] = 0
-    
+
     print("Write Correlation and PNR tiff images...", flush=True)
     imwrite(kwargs["fnamecorr"], cr)
     imwrite(kwargs["fnamePNR"], pnr)
