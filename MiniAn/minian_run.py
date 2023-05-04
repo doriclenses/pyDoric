@@ -88,7 +88,8 @@ params_LocalCluster = dict(
     local_directory=dpath
 )
 if "LocalCluster" in advanced_settings:
-    params_LocalCluster, advanced_settings["LocalCluster"] = set_advanced_parameters_for_func_params(params_LocalCluster, advanced_settings["LocalCluster"], LocalCluster)
+    advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in params_LocalCluster.keys()}
+    params_LocalCluster.update(advanced_settings["LocalCluster"])
 
 
 params_load_doric = {
