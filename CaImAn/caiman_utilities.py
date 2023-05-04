@@ -8,7 +8,7 @@ import caiman
 
 sys.path.append('..')
 from utilities import (
-    save_attributes, 
+    save_attributes,
     load_attributes,
     save_roi_signals,
     save_signals,
@@ -43,8 +43,8 @@ def save_caiman_to_doric(
     MiniAnResidualImages - residule movie computed as the difference between `Y` and `AC`
     MiniAnSignals - `C` with coordinates from `A`
     MiniAnSpikes - `S`
-    Since the CNMF algorithm contains various arbitrary scaling process, a normalizing 
-    scalar is computed with least square using a subset of frames from `Y` and `AC` 
+    Since the CNMF algorithm contains various arbitrary scaling process, a normalizing
+    scalar is computed with least square using a subset of frames from `Y` and `AC`
     such that their numerical values matches.
 
     """
@@ -57,22 +57,22 @@ def save_caiman_to_doric(
     AC = A.dot(C)
     res = Y - AC
 
-    AC = AC.reshape(shape, order='F').transpose((-1, 0, 1)) 
-    res = res.reshape(shape, order='F').transpose((-1, 0, 1)) 
+    AC = AC.reshape(shape, order='F').transpose((-1, 0, 1))
+    res = res.reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
-    A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1)) 
+    A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1))
 
     time_ = np.arange(0, shape[2]/fr, 1/fr, dtype='float64')
-    
+
     print("generating ROI names")
     names = []
     roiUsernames = []
     for i in range(len(C)):
         names.append('ROI'+str(i+1).zfill(4))
         roiUsernames.append('ROI {}'.format(i+1))
-    
+
     with h5py.File(vname, 'a') as f:
-          
+
         # Check if CaImAn results already exist
         operationCount = ''
         if vpath in f:
@@ -92,10 +92,10 @@ def save_caiman_to_doric(
 
         if vpath[-1] != '/':
             vpath += '/'
-        
+
         if vdataset[-1] != '/':
             vdataset += '/'
-        
+
         params_doric["Operations"] += operationCount
 
         print("saving ROI signals")
@@ -103,28 +103,28 @@ def save_caiman_to_doric(
         save_roi_signals(C, A, time_, f, pathROIs+vdataset, bits_count=bits_count, attrs_add={"Unit": "Intensity"})
         print_group_path_for_DANSE(pathROIs+vdataset)
         save_attributes(merge_params(params_doric, params_source), f, pathROIs)
-        
+
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathImages+vdataset)
             save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
-        
+
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathResiduals+vdataset)
             save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
-            
+
         if savespikes:
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
             print_group_path_for_DANSE(pathSpikes+vdataset)
             save_attributes(merge_params(params_doric, params_source), f, pathSpikes)
-        
+
     print("Saved to {}".format(vname))
 
 def set_advanced_parameters(

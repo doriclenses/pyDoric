@@ -62,8 +62,8 @@ params_caiman = {
     'dims': dims,
     'decay_time': 0.4,
     'pw_rigid': False,
-    'max_shifts': (neuron_diameter[0], neuron_diameter[0]), 
-    'gSig_filt': (neuron_diameter[0], neuron_diameter[0]), 
+    'max_shifts': (neuron_diameter[0], neuron_diameter[0]),
+    'gSig_filt': (neuron_diameter[0], neuron_diameter[0]),
     'strides': (neuron_diameter[-1]*4, neuron_diameter[-1]*4),
     'overlaps': (neuron_diameter[-1]*2, neuron_diameter[-1]*2),
     'max_deviation_rigid': neuron_diameter[0],
@@ -98,7 +98,7 @@ if "AdvancedSettings" in params_doric:
 
 if __name__ == "__main__":
 
-    #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+    #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
     try:
         cv2.setNumThreads(0)
@@ -110,12 +110,12 @@ if __name__ == "__main__":
         cm.stop_server()  # stop it if it was running
     except():
         pass
-        
+
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
     with h5py.File(kwargs["fname"], 'r') as f:
         images = np.array(f[kwargs['h5path']+'ImagesStack'])
-    
+
     logging.debug(images.shape)
 
     images = images.transpose(2, 0, 1)
@@ -123,14 +123,14 @@ if __name__ == "__main__":
     fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
     print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
-    
+
     params_caiman['fnames'] = [fname_tif]
 
     opts = params.CNMFParams(params_dict=params_caiman)
     opts, advanced_settings = set_advanced_parameters(opts, advanced_settings)
     #Update AdvancedSettings
     params_doric["AdvancedSettings"] = advanced_settings.copy()
-        
+
     if correct_motion:
         # MOTION CORRECTION
         print("MOTION CORRECTION",  flush=True)
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
         bord_px = 0 if params_caiman['border_nan'] == 'copy' else params_caiman['bord_px']
         fname_new = cm.save_memmap(fname_mc, base_name='memmap_', order='C', border_to_0=bord_px)
-    
+
     else:  # if no motion correction just memory map the file
         fname_new = cm.save_memmap(params_caiman['fnames'], base_name='memmap_', order='C', border_to_0=0)
 
@@ -154,22 +154,22 @@ if __name__ == "__main__":
     # load memory mappable file
     Yr, dims, T = cm.load_memmap(fname_new)
     images = Yr.T.reshape((T,) + dims, order='F')
-    
+
     try:
         print("Starting CNMF...", flush=True)
         cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
         print("Fitting...", flush=True)
         cnm.fit(images)
-    
+
         print("evaluate_components...", flush=True)
         cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     except TypeError:
         print("[intercept] One parameter is of the wrong type [end]", flush=True)
         sys.exit()
-    
+
     ### Save results to doric file ###
     print("Saving data to doric file...", flush=True)
-    if h5path[0] == '/': 
+    if h5path[0] == '/':
         h5path = h5path[1:]
     if h5path[-1] == '/':
         h5path = h5path[:-1]
@@ -200,22 +200,22 @@ if __name__ == "__main__":
         print("[intercept] No cells where found [end]", flush=True)
     else :
         save_caiman_to_doric(
-            Yr, 
-            cnm.estimates.A[:,cnm.estimates.idx_components], 
+            Yr,
+            cnm.estimates.A[:,cnm.estimates.idx_components],
             cnm.estimates.C[cnm.estimates.idx_components,:],
-            cnm.estimates.S[cnm.estimates.idx_components,:], 
+            cnm.estimates.S[cnm.estimates.idx_components,:],
             fr=fr,
             shape=(dims[0],dims[1],T),
             bits_count=attrs['BitsCount'],
             qt_format=attrs['Format'],
             imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
-            vname=fname, 
+            vname=fname,
             vpath='DataProcessed/'+driver+'/',
             vdataset=series+'/'+sensor+'/',
             params_doric = params_doric,
             params_source = params_source_data,
-            saveimages=True, 
-            saveresiduals=True, 
+            saveimages=True,
+            saveresiduals=True,
             savespikes=True)
 
     stop_server(dview=dview)
