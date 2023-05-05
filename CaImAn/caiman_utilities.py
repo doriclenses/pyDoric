@@ -8,13 +8,14 @@ import caiman
 
 sys.path.append('..')
 from utilities import (
-    save_attributes, 
+    save_attributes,
     load_attributes,
     save_roi_signals,
     save_signals,
     save_images,
     print_to_intercept,
-    print_group_path_for_DANSE
+    print_group_path_for_DANSE,
+    merge_params
 )
 
 def save_caiman_to_doric(
@@ -26,11 +27,12 @@ def save_caiman_to_doric(
     fr: int,
     bits_count: int,
     qt_format: int,
-    imagesStackUsername: str = "ImagesStack",
+    imagesStackUsername: str,
     vname: str = "caiman.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
-    attrs: Optional[dict] = None,
+    params_doric: Optional[dict] = {},
+    params_source: Optional[dict] = {},
     saveimages: bool = True,
     saveresiduals: bool = True,
     savespikes: bool = True
@@ -41,8 +43,8 @@ def save_caiman_to_doric(
     MiniAnResidualImages - residule movie computed as the difference between `Y` and `AC`
     MiniAnSignals - `C` with coordinates from `A`
     MiniAnSpikes - `S`
-    Since the CNMF algorithm contains various arbitrary scaling process, a normalizing 
-    scalar is computed with least square using a subset of frames from `Y` and `AC` 
+    Since the CNMF algorithm contains various arbitrary scaling process, a normalizing
+    scalar is computed with least square using a subset of frames from `Y` and `AC`
     such that their numerical values matches.
 
     """
@@ -55,22 +57,22 @@ def save_caiman_to_doric(
     AC = A.dot(C)
     res = Y - AC
 
-    AC = AC.reshape(shape, order='F').transpose((-1, 0, 1)) 
-    res = res.reshape(shape, order='F').transpose((-1, 0, 1)) 
+    AC = AC.reshape(shape, order='F').transpose((-1, 0, 1))
+    res = res.reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
-    A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1)) 
+    A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1))
 
     time_ = np.arange(0, shape[2]/fr, 1/fr, dtype='float64')
-    
+
     print("generating ROI names")
     names = []
     roiUsernames = []
     for i in range(len(C)):
         names.append('ROI'+str(i+1).zfill(4))
         roiUsernames.append('ROI {}'.format(i+1))
-    
+
     with h5py.File(vname, 'a') as f:
-          
+
         # Check if CaImAn results already exist
         operationCount = ''
         if vpath in f:
@@ -79,7 +81,7 @@ def save_caiman_to_doric(
                 operationCount = str(len(operations))
                 for operation in operations:
                     operationAttrs = load_attributes(f, vpath+operation)
-                    if attrs == operationAttrs:
+                    if merge_params(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(ROISIGNALS)):
                             operationCount = ''
                         else:
@@ -90,41 +92,39 @@ def save_caiman_to_doric(
 
         if vpath[-1] != '/':
             vpath += '/'
-        
+
         if vdataset[-1] != '/':
             vdataset += '/'
-        
+
+        params_doric["Operations"] += operationCount
+
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
         save_roi_signals(C, A, time_, f, pathROIs+vdataset, bits_count=bits_count, attrs_add={"Unit": "Intensity"})
         print_group_path_for_DANSE(pathROIs+vdataset)
-        if attrs is not None:
-            save_attributes(attrs, f, pathROIs)
-        
+        save_attributes(merge_params(params_doric, params_source), f, pathROIs)
+
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathImages+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathImages)
-        
+            save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
+
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathResiduals+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathResiduals)
-            
+            save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
+
         if savespikes:
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
             print_group_path_for_DANSE(pathSpikes+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathSpikes)
-        
+            save_attributes(merge_params(params_doric, params_source), f, pathSpikes)
+
     print("Saved to {}".format(vname))
 
 def set_advanced_parameters(

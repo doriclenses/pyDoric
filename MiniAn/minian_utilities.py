@@ -1,5 +1,6 @@
 import os
 import sys
+import inspect
 import h5py
 import dask as da
 import numpy as np
@@ -14,9 +15,10 @@ from utilities import (
     save_images,
     load_attributes,
     save_attributes,
-    print_group_path_for_DANSE
+    print_group_path_for_DANSE,
+    print_to_intercept,
+    merge_params,
 )
-import inspect
 
 def load_doric_to_xarray(
     fname: str,
@@ -34,10 +36,10 @@ def load_doric_to_xarray(
 
 
     Returns:
-    
+
 
     Raises:
-    
+
 
     """
 
@@ -53,7 +55,7 @@ def load_doric_to_xarray(
         ),
     )
     varr = varr.transpose('frame', 'height', 'width')
-    
+
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
@@ -61,7 +63,7 @@ def load_doric_to_xarray(
             varr = varr / 2**bitsCount * 2**8
 
         varr = varr.astype(dtype)
-    
+
     if downsample:
         if downsample_strategy == "mean":
             varr = varr.coarsen(**downsample, boundary="trim", coord_func="min").mean()
@@ -70,12 +72,12 @@ def load_doric_to_xarray(
         else:
             raise NotImplementedError("unrecognized downsampling strategy")
     varr = varr.rename("fluorescence")
-    
+
     if post_process:
         varr = post_process(varr, vpath, vlist, varr_list)
-    
+
     arr_opt = fct.partial(custom_arr_optimize, keep_patterns=["^load_avi_ffmpeg"])
-    
+
     with da.config.set(array_optimize=arr_opt):
         varr = da.optimize(varr)[0]
 
@@ -89,13 +91,14 @@ def save_minian_to_doric(
     AC: xr.DataArray,
     S: xr.DataArray,
     fr: int,
-    bits_count: int = 10,
-    qt_format: int = 28,
-    imagesStackUsername:str = "ImagesStack",
+    bits_count: int,
+    qt_format: int,
+    imagesStackUsername:str,
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
-    attrs: Optional[dict] = None,
+    params_doric: Optional[dict] = {},
+    params_source: Optional[dict] = {},
     saveimages: bool = True,
     saveresiduals: bool = True,
     savespikes: bool = True
@@ -106,10 +109,10 @@ def save_minian_to_doric(
     MiniAnResidualImages - residule movie computed as the difference between `Y` and `AC`
     MiniAnSignals - `C` with coordinates from `A`
     MiniAnSpikes - `S`
-    Since the CNMF algorithm contains various arbitrary scaling process, a normalizing 
-    scalar is computed with least square using a subset of frames from `Y` and `AC` 
+    Since the CNMF algorithm contains various arbitrary scaling process, a normalizing
+    scalar is computed with least square using a subset of frames from `Y` and `AC`
     such that their numerical values matches.
-    
+
     Parameters
     ----------
     varr : xr.DataArray
@@ -146,26 +149,26 @@ def save_minian_to_doric(
     fname : str
         Absolute path of the resulting video.
     """
- 
+
     ROISIGNALS = 'MiniAnROISignals'
     IMAGES = 'MiniAnImages'
     RESIDUALS = 'MiniAnResidualImages'
     SPIKES = 'MiniAnSpikes'
 
     res = Y - AC # residual images
-    
+
     duration = Y.shape[0]
     time_ = np.arange(0, duration/fr, 1/fr, dtype='float64')
-    
+
     print("generating ROI names")
     names = []
     usernames = []
     for i in range(len(C)):
         names.append('ROI'+str(i+1).zfill(4))
         usernames.append('ROI {}'.format(i+1))
-    
+
     with h5py.File(vname, 'a') as f:
-          
+
         # Check if MiniAn results already exist
         operationCount = ''
         if vpath in f:
@@ -174,7 +177,7 @@ def save_minian_to_doric(
                 operationCount = str(len(operations))
                 for operation in operations:
                     operationAttrs = load_attributes(f, vpath+operation)
-                    if attrs == operationAttrs:
+                    if merge_params(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(ROISIGNALS)):
                             operationCount = ''
                         else:
@@ -185,41 +188,39 @@ def save_minian_to_doric(
 
         if vpath[-1] != '/':
             vpath += '/'
-        
+
         if vdataset[-1] != '/':
             vdataset += '/'
-        
+
+        params_doric["Operations"] += operationCount
+
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
         save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         print_group_path_for_DANSE(pathROIs+vdataset)
-        if attrs is not None:
-            save_attributes(attrs, f, pathROIs)
-        
+        save_attributes(merge_params(params_doric, params_source), f, pathROIs)
+
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
             save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathImages+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathImages)
-        
+            save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
+
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             print_group_path_for_DANSE(pathResiduals+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathResiduals)
-            
+            save_attributes(merge_params(params_doric, params_source,  params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
+
         if savespikes:
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
             save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
             print_group_path_for_DANSE(pathSpikes+vdataset)
-            if attrs is not None:
-                save_attributes(attrs, f, pathSpikes)
-                
+            save_attributes(merge_params(params_doric, params_source), f, pathSpikes)
+
     print("Saved to {}".format(vname))
 
 def round_up_to_odd(f):
@@ -243,7 +244,7 @@ def remove_keys_not_in_function_argument(
     func_arguments = inspect.getfullargspec(func).args
     new_dictionary = {key: input_dic[key] for key in input_dic if key in func_arguments}
     return new_dictionary
-  
+
 
 
 def set_advanced_parameters_for_func_params(
@@ -254,12 +255,12 @@ def set_advanced_parameters_for_func_params(
     '''
     This function while change the value of the key from the dictionary param with the value of the key from the dictionary advanced_parameters.
     It while also remove the keys from the dictionary advanced_parameters that are not used in the function func
-    
+
     Returns
     -------
     it while return the dictionary param_func with the new values and also the new advanced_parameters with only the used keys
 
-    ''' 
+    '''
     advanced_parameters = remove_keys_not_in_function_argument(advanced_parameters, func)
     for key, value in advanced_parameters.items():
         param_func[key] = value
