@@ -88,15 +88,16 @@ params_LocalCluster = dict(
     local_directory=dpath
 )
 if "LocalCluster" in advanced_settings:
-    params_LocalCluster, advanced_settings["LocalCluster"] = set_advanced_parameters_for_func_params(params_LocalCluster, advanced_settings["LocalCluster"], LocalCluster)
+    advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in params_LocalCluster.keys()}
+    params_LocalCluster.update(advanced_settings["LocalCluster"])
 
 
 params_load_doric = {
     "fname": kwargs["fname"],
     "h5path": kwargs['h5path'],
     "dtype": np.uint8,
-    "downsample": dict(frame=temporal_downsample, 
-                       height=spatial_downsample, 
+    "downsample": dict(frame=temporal_downsample,
+                       height=spatial_downsample,
                        width=spatial_downsample),
     "downsample_strategy": "subset",
 }
@@ -242,7 +243,7 @@ if __name__ == "__main__":
     print("Loading dataset to MiniAn...", flush=True)
     varr, file_ = load_doric_to_xarray(**params_load_doric)
     chk, _ = get_optimal_chk(varr, **params_get_optimal_chk)
-    varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"), 
+    varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
     varr_ref = varr.sel(subset)
 
@@ -277,7 +278,7 @@ if __name__ == "__main__":
             motion = estimate_motion(varr_ref, **params_estimate_motion)
         except TypeError:
             print("[intercept] One parameter of estimate_motion function is of the wrong type  [end]", flush=True)
-            sys.exit()   
+            sys.exit()
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **params_save_minian)
         print("Correcting motion: applying shifts...", flush=True)
         Y = apply_transform(varr_ref, motion, **params_apply_transform)
@@ -336,12 +337,12 @@ if __name__ == "__main__":
             A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
         except TypeError:
             print("[intercept] One parameter of initA function is of the wrong type  [end]", flush=True)
-            sys.exit() 
+            sys.exit()
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
         # 2. Initialize temporal
         print("Initializing components: temporal...", flush=True)
         C_init = initC(Y_fm_chk, A_init)
-        C_init = save_minian(C_init.rename("C_init"), intpath, overwrite=True, 
+        C_init = save_minian(C_init.rename("C_init"), intpath, overwrite=True,
                             chunks={"unit_id": 1, "frame": -1})
         # 3. Merge components
         print("Initializing components: merging...", flush=True)
@@ -349,7 +350,7 @@ if __name__ == "__main__":
             A, C = unit_merge(A_init, C_init, **params_unit_merge)
         except TypeError:
             print("[intercept] One parameter of unit_merge function is of the wrong type  [end]", flush=True)
-            sys.exit() 
+            sys.exit()
         A = save_minian(A.rename("A"), intpath, overwrite=True)
         C = save_minian(C.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
@@ -359,7 +360,7 @@ if __name__ == "__main__":
         b, f = update_background(Y_fm_chk, A, C_chk)
         f = save_minian(f.rename("f"), intpath, overwrite=True)
         b = save_minian(b.rename("b"), intpath, overwrite=True)
-    
+
     except:
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
@@ -421,7 +422,7 @@ if __name__ == "__main__":
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
-    
+
     except:
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
@@ -470,7 +471,7 @@ if __name__ == "__main__":
     except:
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
-        
+
     ### Save final results ###
     print("Saving final results...", flush=True)
     A = save_minian(A.rename("A"), **params_save_minian)
@@ -486,7 +487,7 @@ if __name__ == "__main__":
     print("Saving data to doric file...", flush=True)
     # Get the path from the source data
     h5path = params_load_doric['h5path']
-    if h5path[0] == '/': 
+    if h5path[0] == '/':
         h5path = h5path[1:]
     if h5path[-1] == '/':
         h5path = h5path[:-1]
@@ -501,14 +502,17 @@ if __name__ == "__main__":
     # Get the attributes of the images stack
     attrs = load_attributes(file_, h5path+'/ImagesStack')
     file_.close()
-    
+
     # Parameters
     # Set only "Operations" for params_srouce_data
     if "OperationName" in params_source_data:
         if "Operations" not in params_source_data:
             params_source_data["Operations"] = params_source_data["OperationName"]
-        
+
         del params_source_data["OperationName"]
+
+    if spatial_downsample > 1:
+        params_doric["BinningFactor"] = spatial_downsample
 
     save_minian_to_doric(
         Y, A, C, AC, S,
@@ -516,16 +520,16 @@ if __name__ == "__main__":
         bits_count=attrs['BitsCount'],
         qt_format=attrs['Format'],
         imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
-        vname=params_load_doric['fname'], 
+        vname=params_load_doric['fname'],
         vpath='DataProcessed/'+driver+'/',
         vdataset=series+'/'+sensor+'/',
         params_doric = params_doric,
         params_source = params_source_data,
-        saveimages=True, 
-        saveresiduals=True, 
+        saveimages=True,
+        saveresiduals=True,
         savespikes=True
     )
-    
+
     # Close cluster
     client.close()
     cluster.close()

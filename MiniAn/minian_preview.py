@@ -91,8 +91,8 @@ params_load_doric = {
     "fname": kwargs["fname"],
     "h5path": kwargs['h5path'],
     "dtype": np.uint8,
-    "downsample": dict(frame=temporal_downsample, 
-                       height=spatial_downsample, 
+    "downsample": dict(frame=temporal_downsample,
+                       height=spatial_downsample,
                        width=spatial_downsample),
     "downsample_strategy": "subset",
 }
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     varr = varr.sel(subset)
     print(varr.coords)
     chk, _ = get_optimal_chk(varr, **params_get_optimal_chk)
-    varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"), 
+    varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
     varr_ref = varr
 
@@ -238,7 +238,7 @@ if __name__ == "__main__":
             motion = estimate_motion(varr_ref, **params_estimate_motion)
         except TypeError:
             print("[intercept] One parameter of estimate_motion function is of the wrong type  [end]", flush=True)
-            sys.exit()   
+            sys.exit()
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **params_save_minian)
         print("Correcting motion: applying shifts...", flush=True)
         Y = apply_transform(varr_ref, motion, **params_apply_transform)
@@ -291,7 +291,7 @@ if __name__ == "__main__":
     max_proj.values[np.isnan(max_proj.values)] = 0
     max_proj_image = Image.fromarray(max_proj.values)
     max_proj_image.save(max_projection_path)
-    
+
     #save seed that was keeped after merging
     seeds_final[seeds_final.mask_mrg].to_json(json_path, orient="split", indent=4)
 
