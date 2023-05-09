@@ -26,7 +26,7 @@ def load_attributes(
         KeyError: If path does not exist in the file
     """
 
-    if type(file_) != h5py.File: 
+    if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
             raise TypeError('f is not h5py.File or filepath to HDF file')
 
@@ -39,7 +39,7 @@ def load_attributes(
 
     if path not in f:
         raise KeyError(f'"{path}" path does not exist in the file')
-    
+
     params = {}
     for key, value in f[path].attrs.items():
         if type(value) == np.ndarray and value.shape == (2,) and value.size == 2:
@@ -47,13 +47,13 @@ def load_attributes(
         elif type(value) == np.ndarray:
             params[key] = value.tolist()
         elif type(value) == bytes:
-            params[key] = value.decode("utf-8") 
+            params[key] = value.decode("utf-8")
         else:
             params[key] = value
 
     if type(file_) != h5py.File and h5py.is_hdf5(file_):
         f.close()
-        
+
     return params
 
 
@@ -62,7 +62,7 @@ def get_frequency(
     vdataset: str
 ) -> float:
 
-    if type(file_) != h5py.File: 
+    if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
             raise TypeError('f is not h5py.File or filepath to HDF file')
 
@@ -98,7 +98,7 @@ def get_dims(
     path: str
 ) -> Tuple[Tuple[int, int], int]:
 
-    if type(file_) != h5py.File: 
+    if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
             raise TypeError('f is not h5py.File or filepath to HDF file')
 
@@ -123,17 +123,17 @@ def get_dims(
 def save_images(
     images: np.ndarray,
     time_: np.array,
-    f: h5py.File, 
-    path: str, 
+    f: h5py.File,
+    path: str,
     bits_count: int = 16,
     qt_format: int = 28,
     username: Optional[str] = "ImagesStack"
 ):
     """
-    Saves images and time vector in HDF file as 'ImagesStack' and 'Time' 
+    Saves images and time vector in HDF file as 'ImagesStack' and 'Time'
     datasets in `path` group. Saves images width, height, `bits_count`, and
     `qt_format` as 'ImagesStack' dataset attribute
-    
+
     Args:
         images : np.ndarray
             3D images stack, with shape (frame, height, width).
@@ -148,7 +148,7 @@ def save_images(
         qt_format : int
             QImage_Format, necessary to display images in DNS. For reference, please
             see https://doc.qt.io/qt-6/qimage.html
-        username: Optional[str] 
+        username: Optional[str]
             Give an username for Danse
     """
     duration = images.shape[0]
@@ -156,16 +156,16 @@ def save_images(
     width = images.shape[2]
 
     try:
-        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16', 
+        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
     except:
         del f[path+'ImagesStack']
-        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16', 
+        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
-        
+
     for i, image in enumerate(images):
         dataset[:,:,i] = image
-        
+
     try:
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
     except:
@@ -221,10 +221,10 @@ def save_roi_signals(
 
     if path[-1] != '/':
         path += '/'
-    
+
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
-        
+
         attrs = {
             'ID': i,
             'Index': i+1,
@@ -247,19 +247,19 @@ def save_roi_signals(
             attrs['Username'] = usernames[i]
 
         dataset_name = 'ROI'+str(i+1).zfill(4)
-        
+
         save_signal(signals[i], f, path+dataset_name, attrs)
-    
+
     save_signal(time_, f, path+'Time')
-    
+
 
 def save_signal(
     signal: np.array,
-    f: h5py.File, 
+    f: h5py.File,
     path: str,
     attrs: Optional[dict] = None
 ):
-    
+
     try:
         f.create_dataset(path, data=signal, dtype='float64', chunks=True, maxshape=None)
     except:
@@ -274,7 +274,7 @@ def save_signal(
 def save_signals(
     signals: np.array,
     time_: np.array,
-    f: h5py.File, 
+    f: h5py.File,
     path: str,
     names: List[str],
     usernames: Optional[List[str]] = None,
@@ -283,27 +283,27 @@ def save_signals(
     range_max: Optional[float] = None,
     unit: Optional[str] = "Intensity",
 ):
-    
+
     if bits_count is None and (range_min is None or range_max is None or unit is None):
         raise ValueError('Set either bits count attribute, or range min, range max, and unit attributes.')
-    
+
     if path[-1] != '/':
         path += '/'
-    
+
     try:
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
     except:
         pass
-    
+
     for i,name in enumerate(names):
         try:
             f.create_dataset(path+name, data=signals[i], dtype='float64', chunks=True, maxshape=None)
         except:
             del f[path+name]
             f.create_dataset(path+name, data=signals[i], dtype='float64', chunks=True, maxshape=None)
-        
-        attrs = {} 
-        
+
+        attrs = {}
+
         attrs['Username'] = usernames[i] if usernames is not None else name
 
         if bits_count is not None:
@@ -322,7 +322,7 @@ def save_attributes(
     f: h5py.File,
     path: str
 ):
-    
+
     for key in attributes.keys():
         try:
             f[path].attrs[key] = attributes[key]
@@ -333,7 +333,7 @@ def save_attributes(
 def footprint_to_coords(
     footprint: np.array
 ) -> np.array:
-    
+
     _, mask = cv2.threshold(footprint, 0, 255, 0)
     contours, _ = cv2.findContours(mask.astype('uint8'), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -345,11 +345,11 @@ def footprint_to_coords(
             maxI = i
 
     coords = np.squeeze(contours[maxI])
-    
+
     return coords
 
 def print_to_intercept(msg):
-    print("[intercept] " + msg + " [end]", flush=True)
+    print("[intercept] " + msg + " [end]", flush = True, end = '\n')
 
 def print_group_path_for_DANSE(path):
     if(path[-1] == "/"):
@@ -357,3 +357,64 @@ def print_group_path_for_DANSE(path):
 
     print_to_intercept("[pathgroup] " + "/" + path)
 
+def merge_params(
+    params_current,
+    params_source = {},
+    operation_name = None
+):
+    '''
+    Merge params
+    '''
+    params_final = {}
+
+    if operation_name is None:
+        operation_name = params_current["Operations"]
+
+    if "Operations" not in params_source :
+        params_final["Operations"] = operation_name
+    else:
+        params_final["Operations"] = params_source["Operations"] + " > " + operation_name
+
+    # Set the advanced Settings keys
+    for key in params_current:
+        if key == "Operations":
+            continue
+
+        if key == "AdvancedSettings":
+            for variable_name, variable_value in params_current[key].items():
+                if isinstance(variable_value, dict): # MinIan case
+                    for sub_variable_name, sub_variable_value in variable_value.items():
+                        params_final.update(create_params_item(["Advanced", variable_name, sub_variable_name], sub_variable_value))
+                else : # Caiman case
+                    params_final.update(create_params_item(["Advanced", variable_name], variable_value))
+        else:
+            params_final[key] = params_current[key]
+
+    # Add Operations operation_name- to the keys
+    for key in params_final.copy():
+        if key != "Operations":
+            params_final[operation_name + "-" + key] = params_final.pop(key)
+
+    # Merging with params source
+    for key in params_source:
+        if key != "Operations":
+            params_final[key] = params_source[key]
+
+    return params_final
+
+def create_params_item(
+    key: List[str],
+    value
+):
+    '''
+    creat_params_value
+    '''
+
+    key_final = "-".join(key)
+
+    if not isinstance(value, str):
+        value_final = str(value)
+    else:
+        value_final = '"' + value + '"'
+
+    return {key_final: value_final}
