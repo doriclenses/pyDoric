@@ -25,6 +25,9 @@ from minian.motion_correction import apply_transform, estimate_motion
 from multiprocessing import freeze_support
 freeze_support()
 
+kwargs = {}
+params_doric = {}
+
 try:
     for arg in sys.argv[1:]:
         exec(arg)
