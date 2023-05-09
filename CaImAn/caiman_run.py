@@ -36,6 +36,9 @@ from caiman.motion_correction import MotionCorrect
 logging.basicConfig(level=logging.DEBUG)
 freeze_support()
 
+kwargs = {}
+params_doric = {}
+
 try:
     for arg in sys.argv[1:]:
         exec(arg)
