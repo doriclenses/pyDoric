@@ -39,15 +39,15 @@ def local_correlations_fft(Y,
     Args:
         Y:  np.ndarray (3D or 4D)
             Input movie data in 3D or 4D format
-    
+
         eight_neighbours: Boolean
             Use 8 neighbors if true, and 4 if false for 3D data (default = True)
             Use 6 neighbors for 4D data, irrespectively
-    
+
         swap_dim: Boolean
             True indicates that time is listed in the last axis of Y (matlab format)
             and moves it in the front
-    
+
         opencv: Boolean
             If True process using OpenCV method
 
@@ -154,11 +154,11 @@ def local_correlations(Y, eight_neighbours: bool = True, swap_dim: bool = True, 
     Args:
         Y:  np.ndarray (3D or 4D)
             Input movie data in 3D or 4D format
-    
+
         eight_neighbours: Boolean
             Use 8 neighbors if true, and 4 if false for 3D data (default = True)
             Use 6 neighbors for 4D data, irrespectively
-    
+
         swap_dim: Boolean
             True indicates that time is listed in the last axis of Y (matlab format)
             and moves it in the front
