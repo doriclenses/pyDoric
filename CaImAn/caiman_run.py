@@ -1,27 +1,11 @@
-
-# Import miscellaneous and utilities librarys
+# Import system related libraries
 import os
-import cv2
 import sys
-import h5py
-import psutil
-import logging
-import tempfile
-import numpy as np
-from tifffile import imwrite
+
+# Edit system variables and path
+# /!\ The change of environment variable CAIMAN_DATA need to be done before all caiman related imports
+os.environ["CAIMAN_DATA"] = os.path.dirname(os.path.abspath(__file__))+"\\caiman_data"
 sys.path.append('..')
-from utilities import get_frequency, get_dims, load_attributes, save_attributes, print_to_intercept
-from caiman_utilities import save_caiman_to_doric, set_advanced_parameters
-
-
-# Import for PyInstaller
-from io import StringIO
-from dotenv import load_dotenv
-from multiprocessing import freeze_support
-
-# Change CaimAn_Data Path to local "pyinstaller packaged /!\ need to be before importing CaImAn librarry"
-config = StringIO("CAIMAN_DATA = "+os.path.dirname(os.path.abspath(__file__))+"\\caiman_data")
-load_dotenv(stream=config)
 
 # Import for CaimAn lib
 import caiman as cm
@@ -31,10 +15,25 @@ from caiman.source_extraction import cnmf
 from caiman.source_extraction.cnmf import params
 from caiman.motion_correction import MotionCorrect
 
+# Import CaimAn related utilities libraries
+from utilities import get_frequency, get_dims, load_attributes, save_attributes, print_to_intercept
+from caiman_utilities import save_caiman_to_doric, set_advanced_parameters
+
+# Import for PyInstaller
+from multiprocessing import freeze_support
+
+# Import miscellaneous libraries
+import cv2
+import h5py
+import logging
+import tempfile
+import numpy as np
+from tifffile import imwrite
 
 # Miscellaneous configuration for CaImAn
 logging.basicConfig(level=logging.DEBUG)
 freeze_support()
+
 
 kwargs = {}
 params_doric = {}
