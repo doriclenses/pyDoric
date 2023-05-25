@@ -25,10 +25,6 @@ import numpy as np
 import scipy
 import shutil
 import tempfile
-from builtins import map
-from builtins import range
-from past.builtins import basestring
-from past.utils import old_div
 
 
 def get_noise_fft(Y, noise_range=[0.25, 0.5], noise_method='logmexp', max_num_samples_fft=3072,
@@ -59,8 +55,8 @@ def get_noise_fft(Y, noise_range=[0.25, 0.5], noise_method='logmexp', max_num_sa
 
     if T > max_num_samples_fft:
         Y = np.concatenate((Y[..., 1:max_num_samples_fft // 3 + 1],
-                            Y[..., np.int(T // 2 - max_num_samples_fft / 3 / 2)
-                                          :np.int(T // 2 + max_num_samples_fft / 3 / 2)],
+                            Y[..., int(T // 2 - max_num_samples_fft / 3 / 2)
+                                          :int(T // 2 + max_num_samples_fft / 3 / 2)],
                             Y[..., -max_num_samples_fft // 3:]), axis=-1)
         T = np.shape(Y)[-1]
 
@@ -236,7 +232,7 @@ def fft_psd_multithreading(args):
     """
 
     (Y, i, num_pixels, kwargs) = args
-    if isinstance(Y, basestring):
+    if isinstance(Y, str):
         Y, _, _ = load_memmap(Y)
 
     idxs = list(range(i, i + num_pixels))
@@ -266,11 +262,11 @@ def mean_psd(y, method='logmexp'):
     """
 
     if method == 'mean':
-        mp = np.sqrt(np.mean(old_div(y, 2), axis=-1))
+        mp = np.sqrt(np.mean(y / 2, axis=-1))
     elif method == 'median':
-        mp = np.sqrt(np.median(old_div(y, 2), axis=-1))
+        mp = np.sqrt(np.median(y / 2, axis=-1))
     else:
-        mp = np.log(old_div((y + 1e-10), 2))
+        mp = np.log((y + 1e-10) / 2)
         mp = np.mean(mp, axis=-1)
         mp = np.exp(mp)
         mp = np.sqrt(mp)
@@ -306,7 +302,7 @@ def estimate_time_constant(Y, sn, p=None, lags=5, include_noise=False, pixels=No
     if p is None:
         raise Exception("You need to define p")
     if pixels is None:
-        pixels = np.arange(old_div(np.size(Y), np.shape(Y)[-1]))
+        pixels = np.arange(np.size(Y) // np.shape(Y)[-1])
 
     from scipy.linalg import toeplitz
     npx = len(pixels)
@@ -362,7 +358,7 @@ def axcov(data, maxlag=5):
     xcov = np.fft.ifft(np.square(np.abs(xcov)))
     xcov = np.concatenate([xcov[np.arange(xcov.size - maxlag, xcov.size)],
                            xcov[np.arange(0, maxlag + 1)]])
-    return np.real(old_div(xcov, T))
+    return np.real(xcov / T)
 
 def nextpow2(value):
     """
