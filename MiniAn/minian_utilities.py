@@ -9,6 +9,7 @@ import functools as fct
 from typing import Optional, Callable
 from minian.utilities import custom_arr_optimize
 sys.path.append('..')
+
 from utilities import (
     save_roi_signals,
     save_signals,
@@ -231,6 +232,7 @@ def round_down_to_odd(f):
     f = int(np.ceil(f))
     return f - 1 if f % 2 == 0 else f
 
+#--------------------------------------------- functions for advanced parameters -------------------------------------------------------------------------
 def remove_keys_not_in_function_argument(
     input_dic:dict, func
 ) -> dict:
@@ -244,8 +246,6 @@ def remove_keys_not_in_function_argument(
     func_arguments = inspect.getfullargspec(func).args
     new_dictionary = {key: input_dic[key] for key in input_dic if key in func_arguments}
     return new_dictionary
-
-
 
 def set_advanced_parameters_for_func_params(
     param_func,
@@ -266,3 +266,63 @@ def set_advanced_parameters_for_func_params(
         param_func[key] = value
 
     return [param_func, advanced_parameters]
+
+def denoise_method_function_parameters(
+    params: dict,
+    method: str
+    ) -> dict:
+
+    method_parameters = {}
+
+    if not (isinstance(params, dict) and isinstance(method, str)):
+        return method_parameters
+
+    # Doc for denoise function
+    # https://minian.readthedocs.io/en/stable/_modules/minian/preprocessing.html#denoise
+    # opencv functions
+    # https://docs.opencv.org/4.7.0/index.html
+    # anisotropic is function from medpy
+    # https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
+
+    if method == "gaussian":
+        keys = ["ksize", "sigmaX", "dst", "sigmaY", "borderType"]
+    elif method == "anisotropic":
+        keys = ["niter", "kappa", "gamma", "voxelspacing", "option"]
+    elif method == "median":
+        keys = ["ksize", "dst"]
+    elif method == "bilateral":
+        keys = ["d", "sigmaColor", "sigmaSpace", "dst", "borderType"]
+
+    for key in keys:
+        if key in params:
+            method_parameters[key] = params[key]
+
+    return method_parameters
+
+
+def estimate_motion_special_parameters(
+    params: dict,
+    ) -> dict:
+
+    method_parameters = {}
+
+    if not isinstance(params, dict):
+        return method_parameters
+
+    # Doc for estimate motion function
+    # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
+
+    keys = ["mesh_size"]
+    # est_motion_part()
+    keys += ["alt_error"]
+
+    # For est_motion_chunk -> est_motion_part (dask delayed)
+    keys += ["varr", "sh_org", "npart", "alt_error", "aggregation", "upsample", "max_sh", "circ_thres",
+            "mesh_size", "niter", "bin_thres"]
+
+    for key in keys:
+        if key in params:
+            method_parameters[key] = params[key]
+
+    return method_parameters
+
