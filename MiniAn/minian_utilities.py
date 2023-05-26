@@ -278,6 +278,10 @@ def denoise_method_function_parameters(
         return method_parameters
 
     # opencv functions
+    # https://docs.opencv.org/4.7.0/index.html
+    # anisotropic is function from medpy
+    # https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
+
     if method == "gaussian":
         keys = ["ksize", "sigmaX", "dst", "sigmaY", "borderType"]
     elif method == "anisotropic":
@@ -305,6 +309,8 @@ def estimate_motion_special_parameters(
 
     keys = ["mesh_size"]
 
+    # For dask function delayed (specificaly object Delayed)
+    # https://docs.dask.org/en/stable/delayed-api.html?highlight=delayed#dask.delayed.Delayed
     keys += ["key", "dsk", "length", "layer"]
 
     for key in keys:
