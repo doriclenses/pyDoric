@@ -134,7 +134,6 @@ if "denoise" in advanced_settings:
         params_denoise['method'] = advanced_settings["denoise"]['method']
 
     denoise_method_parameters = denoise_method_function_parameters(advanced_settings["denoise"], params_denoise['method'])
-    print_to_intercept(str(denoise_method_parameters))
     params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_func_params(params_denoise, advanced_settings["denoise"], denoise)
 
     for key, value in denoise_method_parameters.items():

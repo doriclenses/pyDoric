@@ -1,6 +1,5 @@
 import os
 import sys
-import cv2
 import inspect
 import h5py
 import dask as da
@@ -278,6 +277,7 @@ def denoise_method_function_parameters(
     if not (isinstance(params, dict) and isinstance(method, str)):
         return method_parameters
 
+    # opencv functions
     if method == "gaussian":
         keys = ["ksize", "sigmaX", "dst", "sigmaY", "borderType"]
     elif method == "anisotropic":
