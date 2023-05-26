@@ -231,7 +231,7 @@ if "get_noise_fft" in advanced_settings:
 params_update_spatial = {
     'dl_wnd': neuron_diameter[-1],
     'sparse_penal': spatial_penalty,
-    'size_thres': (np.ceil(0.9*np.pi*neuron_diameter[0]), np.ceil(1.1*np.pi*neuron_diameter[-1]**2))
+    'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
 }
 if "update_spatial" in advanced_settings:
     params_update_spatial, advanced_settings["update_spatial"] = set_advanced_parameters_for_func_params(params_update_spatial, advanced_settings["update_spatial"], update_spatial)
