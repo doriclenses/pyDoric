@@ -18,7 +18,8 @@ from minian_utilities import (
     round_up_to_odd,
     round_down_to_odd,
     set_advanced_parameters_for_func_params,
-    denoise_method_function_parameters
+    denoise_method_function_parameters,
+    estimate_motion_special_parameters
 )
 
 # Import for MiniAn lib
@@ -153,7 +154,12 @@ params_estimate_motion = {
     'dim': 'frame'
 }
 if "estimate_motion" in advanced_settings:
+    special_parameters = estimate_motion_special_parameters(advanced_settings["estimate_motion"])
     params_estimate_motion, advanced_settings["estimate_motion"] = set_advanced_parameters_for_func_params(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
+
+    for key, value in special_parameters.items():
+        params_estimate_motion[key] = value
+        advanced_settings["estimate_motion"][key] = value
 
 
 params_apply_transform = {

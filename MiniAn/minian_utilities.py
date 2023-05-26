@@ -292,3 +292,24 @@ def denoise_method_function_parameters(
             method_parameters[key] = params[key]
 
     return method_parameters
+
+
+def estimate_motion_special_parameters(
+    params: dict,
+    ) -> dict:
+
+    method_parameters = {}
+
+    if not isinstance(params, dict):
+        return method_parameters
+
+    keys = ["mesh_size"]
+
+    keys += ["key", "dsk", "length", "layer"]
+
+    for key in keys:
+        if key in params:
+            method_parameters[key] = params[key]
+
+    return method_parameters
+
