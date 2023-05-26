@@ -277,6 +277,8 @@ def denoise_method_function_parameters(
     if not (isinstance(params, dict) and isinstance(method, str)):
         return method_parameters
 
+    # Doc for denoise function
+    # https://minian.readthedocs.io/en/stable/_modules/minian/preprocessing.html#denoise
     # opencv functions
     # https://docs.opencv.org/4.7.0/index.html
     # anisotropic is function from medpy
@@ -307,11 +309,14 @@ def estimate_motion_special_parameters(
     if not isinstance(params, dict):
         return method_parameters
 
+    # Doc for estimate motion function
+    # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
+
     keys = ["mesh_size"]
+    # est_motion_part()
     keys += ["alt_error"]
 
-    # For dask function delayed (specificaly object Delayed)
-    # https://docs.dask.org/en/stable/delayed-api.html?highlight=delayed#dask.delayed.Delayed
+    # For est_motion_chunk -> est_motion_part (dask delayed)
     keys += ["varr", "sh_org", "npart", "alt_error", "aggregation", "upsample", "max_sh", "circ_thres",
             "mesh_size", "niter", "bin_thres"]
 
