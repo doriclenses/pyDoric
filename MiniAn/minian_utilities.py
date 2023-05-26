@@ -308,10 +308,12 @@ def estimate_motion_special_parameters(
         return method_parameters
 
     keys = ["mesh_size"]
+    keys += ["alt_error"]
 
     # For dask function delayed (specificaly object Delayed)
     # https://docs.dask.org/en/stable/delayed-api.html?highlight=delayed#dask.delayed.Delayed
-    keys += ["key", "dsk", "length", "layer"]
+    keys += ["varr", "sh_org", "npart", "alt_error", "aggregation", "upsample", "max_sh", "circ_thres",
+            "mesh_size", "niter", "bin_thres"]
 
     for key in keys:
         if key in params:
