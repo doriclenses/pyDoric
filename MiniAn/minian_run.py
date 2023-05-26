@@ -11,8 +11,15 @@ import functools as fct
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
-from utilities import get_frequency, load_attributes, save_attributes, print_to_intercept
-from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd , set_advanced_parameters_for_func_params
+from utilities import get_frequency, load_attributes, print_to_intercept
+from minian_utilities import (
+    load_doric_to_xarray,
+    save_minian_to_doric,
+    round_up_to_odd,
+    round_down_to_odd,
+    set_advanced_parameters_for_func_params,
+    denoise_method_function_parameters
+)
 
 # Import for MiniAn lib
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
@@ -123,7 +130,16 @@ params_denoise = {
     'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
 }
 if "denoise" in advanced_settings:
+    if 'method' in advanced_settings["denoise"]:
+        params_denoise['method'] = advanced_settings["denoise"]['method']
+
+    denoise_method_parameters = denoise_method_function_parameters(advanced_settings["denoise"], params_denoise['method'])
+    print_to_intercept(str(denoise_method_parameters))
     params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_func_params(params_denoise, advanced_settings["denoise"], denoise)
+
+    for key, value in denoise_method_parameters.items():
+        params_denoise[key] = value
+        advanced_settings["denoise"][key] = value
 
 
 params_remove_background = {
