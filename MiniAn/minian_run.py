@@ -134,6 +134,9 @@ if "denoise" in advanced_settings:
     if 'method' in advanced_settings["denoise"]:
         params_denoise['method'] = advanced_settings["denoise"]['method']
 
+    if params_denoise['method'] != 'median':
+        del params_denoise['ksize']
+
     denoise_method_parameters = denoise_method_function_parameters(advanced_settings["denoise"], params_denoise['method'])
     params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_func_params(params_denoise, advanced_settings["denoise"], denoise)
 
