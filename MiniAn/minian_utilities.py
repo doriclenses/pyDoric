@@ -267,15 +267,17 @@ def set_advanced_parameters_for_func_params(
 
     return [param_func, advanced_parameters]
 
-def denoise_method_function_parameters(
-    params: dict,
-    method: str
-    ) -> dict:
+def set_advanced_parameters_for_denoise(
+    param_func,
+    advanced_parameters,
+    func):
 
-    method_parameters = {}
+    if 'method' in advanced_parameters:
+        param_func['method'] = advanced_parameters['method']
 
-    if not (isinstance(params, dict) and isinstance(method, str)):
-        return method_parameters
+    if param_func['method'] != 'median':
+        del param_func['ksize']
+
 
     # Doc for denoise function
     # https://minian.readthedocs.io/en/stable/_modules/minian/preprocessing.html#denoise
@@ -283,6 +285,8 @@ def denoise_method_function_parameters(
     # https://docs.opencv.org/4.7.0/index.html
     # anisotropic is function from medpy
     # https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
+
+    method = param_func['method']
 
     if method == "gaussian":
         keys = ["ksize", "sigmaX", "dst", "sigmaY", "borderType"]
@@ -293,21 +297,23 @@ def denoise_method_function_parameters(
     elif method == "bilateral":
         keys = ["d", "sigmaColor", "sigmaSpace", "dst", "borderType"]
 
+    denoise_method_parameters = {}
     for key in keys:
-        if key in params:
-            method_parameters[key] = params[key]
+        if key in advanced_parameters:
+            denoise_method_parameters[key] = advanced_parameters[key]
 
-    return method_parameters
+    param_func, advanced_parameters = set_advanced_parameters_for_func_params(param_func, advanced_parameters, func)
 
+    for key, value in denoise_method_parameters.items():
+        param_func[key] = value
+        advanced_parameters[key] = value
 
-def estimate_motion_special_parameters(
-    params: dict,
-    ) -> dict:
+    return [param_func, advanced_parameters]
 
-    method_parameters = {}
-
-    if not isinstance(params, dict):
-        return method_parameters
+def set_advanced_parameters_for_estimate_motion(
+    param_func,
+    advanced_parameters,
+    func):
 
     # Doc for estimate motion function
     # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
@@ -320,9 +326,15 @@ def estimate_motion_special_parameters(
     keys += ["varr", "sh_org", "npart", "alt_error", "aggregation", "upsample", "max_sh", "circ_thres",
             "mesh_size", "niter", "bin_thres"]
 
+    special_parameters = {}
     for key in keys:
-        if key in params:
-            method_parameters[key] = params[key]
+        if key in advanced_parameters:
+            special_parameters[key] = advanced_parameters[key]
 
-    return method_parameters
+    param_func, advanced_parameters = set_advanced_parameters_for_func_params(param_func, advanced_parameters, func)
 
+    for key, value in special_parameters.items():
+        param_func[key] = value
+        advanced_parameters[key] = value
+
+    return [param_func, advanced_parameters]
