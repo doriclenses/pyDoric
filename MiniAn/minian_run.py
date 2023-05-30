@@ -18,8 +18,8 @@ from minian_utilities import (
     round_up_to_odd,
     round_down_to_odd,
     set_advanced_parameters_for_func_params,
-    denoise_method_function_parameters,
-    estimate_motion_special_parameters
+    set_advanced_parameters_for_denoise,
+    set_advanced_parameters_for_estimate_motion
 )
 
 # Import for MiniAn lib
@@ -131,15 +131,7 @@ params_denoise = {
     'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
 }
 if "denoise" in advanced_settings:
-    if 'method' in advanced_settings["denoise"]:
-        params_denoise['method'] = advanced_settings["denoise"]['method']
-
-    denoise_method_parameters = denoise_method_function_parameters(advanced_settings["denoise"], params_denoise['method'])
-    params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_func_params(params_denoise, advanced_settings["denoise"], denoise)
-
-    for key, value in denoise_method_parameters.items():
-        params_denoise[key] = value
-        advanced_settings["denoise"][key] = value
+    params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
 
 
 params_remove_background = {
@@ -154,12 +146,7 @@ params_estimate_motion = {
     'dim': 'frame'
 }
 if "estimate_motion" in advanced_settings:
-    special_parameters = estimate_motion_special_parameters(advanced_settings["estimate_motion"])
-    params_estimate_motion, advanced_settings["estimate_motion"] = set_advanced_parameters_for_func_params(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
-
-    for key, value in special_parameters.items():
-        params_estimate_motion[key] = value
-        advanced_settings["estimate_motion"][key] = value
+    params_estimate_motion, advanced_settings["estimate_motion"] = set_advanced_parameters_for_estimate_motion(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
 
 
 params_apply_transform = {
