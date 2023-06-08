@@ -124,7 +124,7 @@ if "get_optimal_chk" in advanced_settings:
 
 params_denoise = {
     'method': 'median',
-    'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
+    'ksize': round_down_to_odd(neuron_diameter[-1]/2.0)
 }
 if "denoise" in advanced_settings:
     params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
