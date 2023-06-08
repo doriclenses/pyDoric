@@ -199,9 +199,7 @@ if __name__ == "__main__":
     ### Load and chunk the data ###
     print("Loading dataset to MiniAn...", flush=True)
     varr, file_ = load_doric_to_xarray(**params_load_doric)
-    print(varr.coords)
     varr = varr.sel(subset)
-    print(varr.coords)
     chk, _ = get_optimal_chk(varr, **params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
