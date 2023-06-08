@@ -65,7 +65,7 @@ os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
 params = params_doric
 
-neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
+neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
 noise_freq: float           = params["NoiseFreq"]
 thres_corr: float           = params["ThresCorr"]
 spatial_penalty: float      = params["SpatialPenalty"]
