@@ -82,6 +82,11 @@ def load_doric_to_xarray(
     with da.config.set(array_optimize=arr_opt):
         varr = da.optimize(varr)[0]
 
+    varr = varr.assign_coords(dict(height=np.arange(varr.sizes["height"]),
+                        width=np.arange(varr.sizes["width"]),
+                        frame=np.arange(varr.sizes["frame"]) + 1, #Frame number start a 1 not 0
+                        ))
+
     return varr, file_
 
 

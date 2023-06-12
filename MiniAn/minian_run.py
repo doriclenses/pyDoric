@@ -65,7 +65,7 @@ os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
 params = params_doric
 
-neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
+neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
 noise_freq: float           = params["NoiseFreq"]
 thres_corr: float           = params["ThresCorr"]
 spatial_penalty: float      = params["SpatialPenalty"]
@@ -128,7 +128,7 @@ if "get_optimal_chk" in advanced_settings:
 
 params_denoise = {
     'method': 'median',
-    'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
+    'ksize': round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
 }
 if "denoise" in advanced_settings:
     params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
