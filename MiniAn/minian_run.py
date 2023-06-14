@@ -93,7 +93,7 @@ for params_, dict_ in kwargs.items():
 params_LocalCluster = dict(
     n_workers = 4,
     memory_limit = "auto",
-    resources = {"MEM": 1},
+    resources = {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
     threads_per_worker = 2,
     dashboard_address = ":8787",
     local_directory = dpath
