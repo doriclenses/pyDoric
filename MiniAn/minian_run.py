@@ -57,7 +57,6 @@ params = params_doric
 neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
 noise_freq: float           = params["NoiseFreq"]
 thres_corr: float           = params["ThresCorr"]
-spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
 
 advanced_settings = {}
@@ -95,8 +94,8 @@ params_load_doric = {
     "h5path": kwargs['h5path'],
     "dtype": np.uint8,
     "downsample": dict(frame=temporal_downsample,
-                       height=spatial_downsample,
-                       width=spatial_downsample),
+                       height=params["SpatialDownsample"],
+                       width=params["SpatialDownsample"]),
     "downsample_strategy": "subset",
 }
 
@@ -509,8 +508,8 @@ if __name__ == "__main__":
 
         del params_source_data["OperationName"]
 
-    if spatial_downsample > 1:
-        params_doric["BinningFactor"] = spatial_downsample
+    if params["SpatialDownsample"] > 1:
+        params_doric["BinningFactor"] = params["SpatialDownsample"]
 
     save_minian_to_doric(
         Y, A, C, AC, S,
