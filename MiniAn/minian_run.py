@@ -70,11 +70,6 @@ minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimi
 
 advanced_settings = {key: advanced_settings[key] for key in advanced_settings if key in minian_functions_list}
 
-for params_, dict_ in kwargs.items():
-    if type(dict_) is dict:
-        for key, value in dict_.items():
-            params[params_.replace('params_','')+'-'+key] = value
-
 params_LocalCluster = dict(
     n_workers = 4,
     memory_limit = "auto",
