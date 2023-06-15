@@ -57,7 +57,6 @@ params = params_doric
 neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
 noise_freq: float           = params["NoiseFreq"]
 thres_corr: float           = params["ThresCorr"]
-temporal_downsample: int    = params["TemporalDownsample"]
 
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
@@ -93,7 +92,7 @@ params_load_doric = {
     "fname": kwargs["fname"],
     "h5path": kwargs['h5path'],
     "dtype": np.uint8,
-    "downsample": dict(frame=temporal_downsample,
+    "downsample": dict(frame=params["TemporalDownsample"],
                        height=params["SpatialDownsample"],
                        width=params["SpatialDownsample"]),
     "downsample_strategy": "subset",
