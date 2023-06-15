@@ -57,7 +57,6 @@ params = params_doric
 neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
 noise_freq: float           = params["NoiseFreq"]
 thres_corr: float           = params["ThresCorr"]
-temporal_penalty: float     = params["TemporalPenalty"]
 spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
 
@@ -214,7 +213,7 @@ if "update_spatial" in advanced_settings:
 
 params_update_temporal = {
     'noise_freq': noise_freq,
-    'sparse_penal': temporal_penalty,
+    'sparse_penal': params["TemporalPenalty"],
     'p': 1,
     'add_lag': 20,
     'jac_thres': 0.2
