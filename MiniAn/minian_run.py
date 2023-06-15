@@ -52,23 +52,11 @@ os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
-#params = {
-#    "CorrectMotion": bool(kwargs["CorrectMotion"]),
-#    "NeuronDiameter": eval(kwargs["NeuronDiameter"]),
-#    "NoiseFreq": kwargs["NoiseFreq"],
-#    "ThresCorr": kwargs["ThresCorr"],
-#    "SpatialPenalty": kwargs["SpatialPenalty"],
-#    "TemporalPenalty": kwargs["TemporalPenalty"],
-#    "SpatialDownsample": kwargs["SpatialDownsample"],
-#    "TemporalDownsample": kwargs["TemporalDownsample"],
-#}
-
 params = params_doric
 
 neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
 noise_freq: float           = params["NoiseFreq"]
 thres_corr: float           = params["ThresCorr"]
-spatial_penalty: float      = params["SpatialPenalty"]
 temporal_penalty: float     = params["TemporalPenalty"]
 spatial_downsample: int     = params["SpatialDownsample"]
 temporal_downsample: int    = params["TemporalDownsample"]
@@ -217,7 +205,7 @@ if "get_noise_fft" in advanced_settings:
 
 params_update_spatial = {
     'dl_wnd': neuron_diameter[-1],
-    'sparse_penal': spatial_penalty,
+    'sparse_penal': params["SpatialPenalty"],
     'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
 }
 if "update_spatial" in advanced_settings:
