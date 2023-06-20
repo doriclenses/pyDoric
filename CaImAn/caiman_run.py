@@ -90,7 +90,8 @@ params_caiman = {
     'center_psf': True,                    # leave as is for 1 photon
     'ssub_B': 2,
     'ring_size_factor': 1.4,
-    'del_duplicates': True
+    'del_duplicates': True,
+    'use_cnn': False
 }
 
 # extract advanced settings as variable advanced_settings
