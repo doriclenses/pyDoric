@@ -11,8 +11,16 @@ import functools as fct
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
-from utilities import get_frequency, load_attributes, save_attributes, print_to_intercept
-from minian_utilities import load_doric_to_xarray, save_minian_to_doric, round_up_to_odd, round_down_to_odd , set_advanced_parameters_for_func_params
+from utilities import get_frequency, load_attributes, print_to_intercept
+from minian_utilities import (
+    load_doric_to_xarray,
+    save_minian_to_doric,
+    round_up_to_odd,
+    round_down_to_odd,
+    set_advanced_parameters_for_func_params,
+    set_advanced_parameters_for_denoise,
+    set_advanced_parameters_for_estimate_motion
+)
 
 # Import for MiniAn lib
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
@@ -24,6 +32,9 @@ from minian.motion_correction import apply_transform, estimate_motion
 # Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
+
+kwargs = {}
+params_doric = {}
 
 try:
     for arg in sys.argv[1:]:
@@ -54,7 +65,7 @@ os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
 params = params_doric
 
-neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
+neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
 noise_freq: float           = params["NoiseFreq"]
 thres_corr: float           = params["ThresCorr"]
 spatial_penalty: float      = params["SpatialPenalty"]
@@ -117,10 +128,10 @@ if "get_optimal_chk" in advanced_settings:
 
 params_denoise = {
     'method': 'median',
-    'ksize': round_down_to_odd((neuron_diameter[0]+neuron_diameter[-1])/4.0) # half of average size
+    'ksize': round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
 }
 if "denoise" in advanced_settings:
-    params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_func_params(params_denoise, advanced_settings["denoise"], denoise)
+    params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
 
 
 params_remove_background = {
@@ -135,7 +146,7 @@ params_estimate_motion = {
     'dim': 'frame'
 }
 if "estimate_motion" in advanced_settings:
-    params_estimate_motion, advanced_settings["estimate_motion"] = set_advanced_parameters_for_func_params(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
+    params_estimate_motion, advanced_settings["estimate_motion"] = set_advanced_parameters_for_estimate_motion(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
 
 
 params_apply_transform = {
@@ -207,7 +218,7 @@ if "get_noise_fft" in advanced_settings:
 params_update_spatial = {
     'dl_wnd': neuron_diameter[-1],
     'sparse_penal': spatial_penalty,
-    'size_thres': (np.ceil(0.9*np.pi*neuron_diameter[0]), np.ceil(1.1*np.pi*neuron_diameter[-1]**2))
+    'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
 }
 if "update_spatial" in advanced_settings:
     params_update_spatial, advanced_settings["update_spatial"] = set_advanced_parameters_for_func_params(params_update_spatial, advanced_settings["update_spatial"], update_spatial)

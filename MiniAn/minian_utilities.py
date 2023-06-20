@@ -9,6 +9,7 @@ import functools as fct
 from typing import Optional, Callable
 from minian.utilities import custom_arr_optimize
 sys.path.append('..')
+
 from utilities import (
     save_roi_signals,
     save_signals,
@@ -80,6 +81,11 @@ def load_doric_to_xarray(
 
     with da.config.set(array_optimize=arr_opt):
         varr = da.optimize(varr)[0]
+
+    varr = varr.assign_coords(dict(height=np.arange(varr.sizes["height"]),
+                        width=np.arange(varr.sizes["width"]),
+                        frame=np.arange(varr.sizes["frame"]) + 1, #Frame number start a 1 not 0
+                        ))
 
     return varr, file_
 
@@ -231,6 +237,7 @@ def round_down_to_odd(f):
     f = int(np.ceil(f))
     return f - 1 if f % 2 == 0 else f
 
+#--------------------------------------------- functions for advanced parameters -------------------------------------------------------------------------
 def remove_keys_not_in_function_argument(
     input_dic:dict, func
 ) -> dict:
@@ -244,8 +251,6 @@ def remove_keys_not_in_function_argument(
     func_arguments = inspect.getfullargspec(func).args
     new_dictionary = {key: input_dic[key] for key in input_dic if key in func_arguments}
     return new_dictionary
-
-
 
 def set_advanced_parameters_for_func_params(
     param_func,
@@ -264,5 +269,77 @@ def set_advanced_parameters_for_func_params(
     advanced_parameters = remove_keys_not_in_function_argument(advanced_parameters, func)
     for key, value in advanced_parameters.items():
         param_func[key] = value
+
+    return [param_func, advanced_parameters]
+
+def set_advanced_parameters_for_denoise(
+    param_func,
+    advanced_parameters,
+    func):
+
+    if 'method' in advanced_parameters:
+        param_func['method'] = advanced_parameters['method']
+
+    if param_func['method'] != 'median':
+        del param_func['ksize']
+
+
+    # Doc for denoise function
+    # https://minian.readthedocs.io/en/stable/_modules/minian/preprocessing.html#denoise
+    # opencv functions
+    # https://docs.opencv.org/4.7.0/index.html
+    # anisotropic is function from medpy
+    # https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
+
+    method = param_func['method']
+
+    if method == "gaussian":
+        keys = ["ksize", "sigmaX", "dst", "sigmaY", "borderType"]
+    elif method == "anisotropic":
+        keys = ["niter", "kappa", "gamma", "voxelspacing", "option"]
+    elif method == "median":
+        keys = ["ksize", "dst"]
+    elif method == "bilateral":
+        keys = ["d", "sigmaColor", "sigmaSpace", "dst", "borderType"]
+
+    denoise_method_parameters = {}
+    for key in keys:
+        if key in advanced_parameters:
+            denoise_method_parameters[key] = advanced_parameters[key]
+
+    param_func, advanced_parameters = set_advanced_parameters_for_func_params(param_func, advanced_parameters, func)
+
+    for key, value in denoise_method_parameters.items():
+        param_func[key] = value
+        advanced_parameters[key] = value
+
+    return [param_func, advanced_parameters]
+
+def set_advanced_parameters_for_estimate_motion(
+    param_func,
+    advanced_parameters,
+    func):
+
+    # Doc for estimate motion function
+    # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
+
+    keys = ["mesh_size"]
+    # est_motion_part()
+    keys += ["alt_error"]
+
+    # For est_motion_chunk -> est_motion_part (dask delayed)
+    keys += ["varr", "sh_org", "npart", "alt_error", "aggregation", "upsample", "max_sh", "circ_thres",
+            "mesh_size", "niter", "bin_thres"]
+
+    special_parameters = {}
+    for key in keys:
+        if key in advanced_parameters:
+            special_parameters[key] = advanced_parameters[key]
+
+    param_func, advanced_parameters = set_advanced_parameters_for_func_params(param_func, advanced_parameters, func)
+
+    for key, value in special_parameters.items():
+        param_func[key] = value
+        advanced_parameters[key] = value
 
     return [param_func, advanced_parameters]
