@@ -100,7 +100,7 @@ def save_caiman_to_doric(
 
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
-        save_roi_signals(C, A, time_, f, pathROIs+vdataset, bits_count=bits_count, attrs_add={"Unit": "Intensity"})
+        save_roi_signals(C, A, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
         print_group_path_for_DANSE(pathROIs+vdataset)
         save_attributes(merge_params(params_doric, params_source), f, pathROIs)
 
