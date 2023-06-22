@@ -91,12 +91,12 @@ for params_, dict_ in kwargs.items():
             params[params_.replace('params_','')+'-'+key] = value
 
 params_LocalCluster = dict(
-    n_workers=int(os.getenv("MINIAN_NWORKERS", 4)),
-    memory_limit="3GB",
-    resources={"MEM": 1},
-    threads_per_worker=2,
-    dashboard_address=":8787",
-    local_directory=dpath
+    n_workers = 4,
+    memory_limit = "auto",
+    resources = {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
+    threads_per_worker = 2,
+    dashboard_address = ":8787",
+    local_directory = dpath
 )
 if "LocalCluster" in advanced_settings:
     advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in params_LocalCluster.keys()}
