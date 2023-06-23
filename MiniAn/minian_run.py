@@ -81,7 +81,7 @@ params_LocalCluster = dict(
     local_directory = dpath
 )
 if "LocalCluster" in advanced_settings:
-    advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in params_LocalCluster.keys()}
+    advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in params_LocalCluster}
     params_LocalCluster.update(advanced_settings["LocalCluster"])
 
 
