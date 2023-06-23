@@ -43,22 +43,34 @@ except SyntaxError:
     print("[intercept] One of the advanced settings is not of a python type [end]", flush=True)
     sys.exit()
 
+
+danse_parameters = {"file_path": kwargs , "parameters": params_doric}
+
+file_path   = {}
+parameters  = {}
+
+if "file_path" in danse_parameters:
+    file_path   = danse_parameters["file_path"]
+
+if "parameters" in danse_parameters:
+    parameters  = danse_parameters["parameters"]
+
 tmpDir = tempfile.TemporaryDirectory(prefix="minian_")
 dpath = tmpDir.name
-fr = get_frequency(kwargs["fname"], kwargs['h5path']+'Time')
+fr = get_frequency(file_path["fname"], file_path['h5path']+'Time')
 
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
-neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params_doric["SpatialDownsample"]).round().astype('int'))
-noise_freq: float           = params_doric["NoiseFreq"]
-thres_corr: float           = params_doric["ThresCorr"]
+neuron_diameter             = tuple((np.array([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])/parameters["SpatialDownsample"]).round().astype('int'))
+noise_freq: float           = parameters["NoiseFreq"]
+thres_corr: float           = parameters["ThresCorr"]
 
 advanced_settings = {}
-if "AdvancedSettings" in params_doric:
-    advanced_settings = params_doric["AdvancedSettings"]
+if "AdvancedSettings" in parameters:
+    advanced_settings = parameters["AdvancedSettings"]
 
 # removing advanced_sesttings function keys that are not in the minian functions list
 minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize", "save_minian", "open_minian", "denoise",
@@ -82,12 +94,12 @@ if "LocalCluster" in advanced_settings:
 
 
 params_load_doric = {
-    "fname": kwargs["fname"],
-    "h5path": kwargs['h5path'],
+    "fname": file_path["fname"],
+    "h5path": file_path['h5path'],
     "dtype": np.uint8,
-    "downsample": dict(frame=params_doric["TemporalDownsample"],
-                       height=params_doric["SpatialDownsample"],
-                       width=params_doric["SpatialDownsample"]),
+    "downsample": dict(frame=parameters["TemporalDownsample"],
+                       height=parameters["SpatialDownsample"],
+                       width=parameters["SpatialDownsample"]),
     "downsample_strategy": "subset",
 }
 
@@ -195,7 +207,7 @@ if "get_noise_fft" in advanced_settings:
 
 params_update_spatial = {
     'dl_wnd': neuron_diameter[-1],
-    'sparse_penal': params_doric["SpatialPenalty"],
+    'sparse_penal': parameters["SpatialPenalty"],
     'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
 }
 if "update_spatial" in advanced_settings:
@@ -204,7 +216,7 @@ if "update_spatial" in advanced_settings:
 
 params_update_temporal = {
     'noise_freq': noise_freq,
-    'sparse_penal': params_doric["TemporalPenalty"],
+    'sparse_penal': parameters["TemporalPenalty"],
     'p': 1,
     'add_lag': 20,
     'jac_thres': 0.2
@@ -213,7 +225,7 @@ if "update_temporal" in advanced_settings:
     params_update_temporal, advanced_settings["update_temporal"] = set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
 
 # Update AdvancedSettings in params_doric
-params_doric["AdvancedSettings"] = advanced_settings.copy()
+parameters["AdvancedSettings"] = advanced_settings.copy()
 
 if __name__ == "__main__":
 
@@ -261,7 +273,7 @@ if __name__ == "__main__":
     varr_ref = save_minian(varr_ref.rename("varr_ref"), intpath, overwrite=True)
 
     ### Motion correction ###
-    if params_doric["CorrectMotion"]:
+    if parameters["CorrectMotion"]:
         print("Correcting motion: estimating shifts...", flush=True)
         try:
             motion = estimate_motion(varr_ref, **params_estimate_motion)
@@ -500,8 +512,8 @@ if __name__ == "__main__":
 
         del params_source_data["OperationName"]
 
-    if params_doric["SpatialDownsample"] > 1:
-        params_doric["BinningFactor"] = params_doric["SpatialDownsample"]
+    if parameters["SpatialDownsample"] > 1:
+        parameters["BinningFactor"] = parameters["SpatialDownsample"]
 
     save_minian_to_doric(
         Y, A, C, AC, S,
@@ -512,7 +524,7 @@ if __name__ == "__main__":
         vname=params_load_doric['fname'],
         vpath='DataProcessed/'+driver+'/',
         vdataset=series+'/'+sensor+'/',
-        params_doric = params_doric,
+        params_doric = parameters,
         params_source = params_source_data,
         saveimages=True,
         saveresiduals=True,
