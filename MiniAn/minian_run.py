@@ -72,14 +72,14 @@ minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimi
 
 advanced_settings = {key: advanced_settings[key] for key in advanced_settings if key in minian_functions_list}
 
-params_LocalCluster = dict(
-    n_workers = 4,
-    memory_limit = "auto",
-    resources = {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
-    threads_per_worker = 2,
-    dashboard_address = ":8787",
-    local_directory = dpath
-)
+params_LocalCluster = {
+    "n_workers": 4,
+    "memory_limit": "auto",
+    "resources": {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
+    "threads_per_worker": 2,
+    "dashboard_address": ":8787",
+    "local_directory": dpath
+}
 if "LocalCluster" in advanced_settings:
     advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in params_LocalCluster}
     params_LocalCluster.update(advanced_settings["LocalCluster"])
@@ -89,15 +89,15 @@ params_load_doric = {
     "fname": file_path["fname"],
     "h5path": file_path['h5path'],
     "dtype": np.uint8,
-    "downsample": dict(frame=parameters["TemporalDownsample"],
-                       height=parameters["SpatialDownsample"],
-                       width=parameters["SpatialDownsample"]),
+    "downsample": {"frame": parameters["TemporalDownsample"],
+                       "height": parameters["SpatialDownsample"],
+                       "width": parameters["SpatialDownsample"]},
     "downsample_strategy": "subset",
 }
 
 params_save_minian = {
     "dpath": os.path.join(dpath, "final"),
-    "meta_dict": dict(session=-1, animal=-2),
+    "meta_dict": {"session": -1, "animal": -2},
     "overwrite": True,
 }
 
@@ -230,7 +230,7 @@ if __name__ == "__main__":
 
     # MiniAn CNMF
     intpath = os.path.join(dpath, "intermediate")
-    subset = dict(frame=slice(0, None))
+    subset = {"frame": slice(0, None)}
 
     ### Load and chunk the data ###
     print("Loading dataset to MiniAn...", flush=True)
