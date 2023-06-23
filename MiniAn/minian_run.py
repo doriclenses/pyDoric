@@ -46,14 +46,8 @@ except SyntaxError:
 
 danse_parameters = {"file_path": kwargs , "parameters": params_doric}
 
-file_path   = {}
-parameters  = {}
-
-if "file_path" in danse_parameters:
-    file_path   = danse_parameters["file_path"]
-
-if "parameters" in danse_parameters:
-    parameters  = danse_parameters["parameters"]
+file_path   = danse_parameters.get("file_path", {})
+parameters  = danse_parameters.get("parameters", {})
 
 tmpDir = tempfile.TemporaryDirectory(prefix="minian_")
 dpath = tmpDir.name
@@ -68,9 +62,7 @@ neuron_diameter             = tuple((np.array([parameters["NeuronDiameterMin"], 
 noise_freq: float           = parameters["NoiseFreq"]
 thres_corr: float           = parameters["ThresCorr"]
 
-advanced_settings = {}
-if "AdvancedSettings" in parameters:
-    advanced_settings = parameters["AdvancedSettings"]
+advanced_settings = parameters.get("AdvancedSettings", {})
 
 # removing advanced_sesttings function keys that are not in the minian functions list
 minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize", "save_minian", "open_minian", "denoise",
