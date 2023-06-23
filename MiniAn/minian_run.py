@@ -52,11 +52,9 @@ os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
-params = params_doric
-
-neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params["SpatialDownsample"]).round().astype('int'))
-noise_freq: float           = params["NoiseFreq"]
-thres_corr: float           = params["ThresCorr"]
+neuron_diameter             = tuple((np.array([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])/params_doric["SpatialDownsample"]).round().astype('int'))
+noise_freq: float           = params_doric["NoiseFreq"]
+thres_corr: float           = params_doric["ThresCorr"]
 
 advanced_settings = {}
 if "AdvancedSettings" in params_doric:
@@ -87,9 +85,9 @@ params_load_doric = {
     "fname": kwargs["fname"],
     "h5path": kwargs['h5path'],
     "dtype": np.uint8,
-    "downsample": dict(frame=params["TemporalDownsample"],
-                       height=params["SpatialDownsample"],
-                       width=params["SpatialDownsample"]),
+    "downsample": dict(frame=params_doric["TemporalDownsample"],
+                       height=params_doric["SpatialDownsample"],
+                       width=params_doric["SpatialDownsample"]),
     "downsample_strategy": "subset",
 }
 
@@ -197,7 +195,7 @@ if "get_noise_fft" in advanced_settings:
 
 params_update_spatial = {
     'dl_wnd': neuron_diameter[-1],
-    'sparse_penal': params["SpatialPenalty"],
+    'sparse_penal': params_doric["SpatialPenalty"],
     'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
 }
 if "update_spatial" in advanced_settings:
@@ -206,7 +204,7 @@ if "update_spatial" in advanced_settings:
 
 params_update_temporal = {
     'noise_freq': noise_freq,
-    'sparse_penal': params["TemporalPenalty"],
+    'sparse_penal': params_doric["TemporalPenalty"],
     'p': 1,
     'add_lag': 20,
     'jac_thres': 0.2
@@ -263,7 +261,7 @@ if __name__ == "__main__":
     varr_ref = save_minian(varr_ref.rename("varr_ref"), intpath, overwrite=True)
 
     ### Motion correction ###
-    if params["CorrectMotion"]:
+    if params_doric["CorrectMotion"]:
         print("Correcting motion: estimating shifts...", flush=True)
         try:
             motion = estimate_motion(varr_ref, **params_estimate_motion)
@@ -502,8 +500,8 @@ if __name__ == "__main__":
 
         del params_source_data["OperationName"]
 
-    if params["SpatialDownsample"] > 1:
-        params_doric["BinningFactor"] = params["SpatialDownsample"]
+    if params_doric["SpatialDownsample"] > 1:
+        params_doric["BinningFactor"] = params_doric["SpatialDownsample"]
 
     save_minian_to_doric(
         Y, A, C, AC, S,
