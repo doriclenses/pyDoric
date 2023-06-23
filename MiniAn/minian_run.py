@@ -49,18 +49,18 @@ danse_parameters = {"file_path": kwargs , "parameters": params_doric}
 file_path   = danse_parameters.get("file_path", {})
 parameters  = danse_parameters.get("parameters", {})
 
-tmpDir = tempfile.TemporaryDirectory(prefix="minian_")
-dpath = tmpDir.name
-fr = get_frequency(file_path["fname"], file_path['h5path']+'Time')
+tmpDir  = tempfile.TemporaryDirectory(prefix="minian_")
+dpath   = tmpDir.name
+fr      = get_frequency(file_path["fname"], file_path['h5path']+'Time')
 
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MINIAN_INTERMEDIATE"] = os.path.join(dpath, "intermediate")
 
-neuron_diameter             = tuple((np.array([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])/parameters["SpatialDownsample"]).round().astype('int'))
-noise_freq: float           = parameters["NoiseFreq"]
-thres_corr: float           = parameters["ThresCorr"]
+neuron_diameter     = tuple((np.array([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])/parameters["SpatialDownsample"]).round().astype('int'))
+noise_freq: float   = parameters["NoiseFreq"]
+thres_corr: float   = parameters["ThresCorr"]
 
 advanced_settings = parameters.get("AdvancedSettings", {})
 
@@ -68,9 +68,9 @@ advanced_settings = parameters.get("AdvancedSettings", {})
 minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize",
                          "save_minian", "open_minian", "denoise", "remove_background",
                          "seeds_init", "pnr_refine", "ks_refine", "seeds_merge", "initA", "initC",
-                        "compute_trace", "get_noise_fft", "update_spatial", "update_temporal",
-                        "unit_merge", "update_background", "compute_AtC", "apply_transform",
-                        "estimate_motion"] + ["LocalCluster"]
+                         "compute_trace", "get_noise_fft", "update_spatial", "update_temporal",
+                         "unit_merge", "update_background", "compute_AtC", "apply_transform",
+                         "estimate_motion"] + ["LocalCluster"]
 
 advanced_settings = {key: advanced_settings[key] for key in advanced_settings if key in minian_functions_list}
 
@@ -92,8 +92,8 @@ params_load_doric = {
     "h5path": file_path['h5path'],
     "dtype": np.uint8,
     "downsample": {"frame": parameters["TemporalDownsample"],
-                       "height": parameters["SpatialDownsample"],
-                       "width": parameters["SpatialDownsample"]},
+                    "height": parameters["SpatialDownsample"],
+                    "width": parameters["SpatialDownsample"]},
     "downsample_strategy": "subset",
 }
 
@@ -142,11 +142,11 @@ if "apply_transform" in advanced_settings:
 
 wnd = 60 # time window of 60 seconds
 params_seeds_init = {
-        'wnd_size': fr*wnd,
-        'method': 'rolling',
-        'stp_size': fr*wnd / 2,
-        'max_wnd': neuron_diameter[-1],
-        'diff_thres': 3
+    'wnd_size': fr*wnd,
+    'method': 'rolling',
+    'stp_size': fr*wnd / 2,
+    'max_wnd': neuron_diameter[-1],
+    'diff_thres': 3
 }
 if "seeds_init" in advanced_settings:
     params_seeds_init, advanced_settings["seeds_init"] = set_advanced_parameters_for_func_params(params_seeds_init, advanced_settings["seeds_init"], seeds_init)
