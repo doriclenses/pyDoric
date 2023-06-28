@@ -42,7 +42,7 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    print("[intercept] One of the advanced settings is not of a python type [end]", flush=True)
+    print_to_intercept("One of the advanced settings is not of a python type")
     sys.exit()
 
 tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         try:
             mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
         except TypeError:
-            print("[intercept] One parameter is of the wrong type [end]", flush=True)
+            print_to_intercept("One parameter is of the wrong type")
             sys.exit()
 
         mc.motion_correct(save_movie=True)
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         print("evaluate_components...", flush=True)
         cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     except TypeError:
-        print("[intercept] One parameter is of the wrong type [end]", flush=True)
+        print_to_intercept("One parameter is of the wrong type")
         sys.exit()
 
     ### Save results to doric file ###
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
 
     if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
-        print("[intercept] No cells where found [end]", flush=True)
+        print_to_intercept("No cells where found")
     else :
         save_caiman_to_doric(
             Yr,
