@@ -35,6 +35,7 @@ freeze_support()
 
 kwargs = {}
 params_doric = {}
+danse_parameters = {}
 
 try:
     for arg in sys.argv[1:]:
@@ -43,8 +44,8 @@ except SyntaxError:
     print_to_intercept("One of the advanced settings is not of a python type")
     sys.exit()
 
-
-danse_parameters = {"file_path": kwargs , "parameters": params_doric}
+if not danse_parameters:
+    danse_parameters = {"file_path": kwargs , "parameters": params_doric}
 
 file_path   = danse_parameters.get("file_path", {})
 parameters  = danse_parameters.get("parameters", {})
@@ -454,8 +455,7 @@ if __name__ == "__main__":
         # Save
         print("Running CNMF 2nd itteration: saving intermediate results...", flush=True)
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
-        C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
-                            chunks={"unit_id": -1, "frame": chk["frame"]})
+        C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]})
         S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         b0 = save_minian(b0_new.rename("b0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
