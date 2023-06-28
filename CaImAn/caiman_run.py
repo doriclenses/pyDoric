@@ -52,12 +52,7 @@ h5path = kwargs['h5path']
 fr = get_frequency(kwargs['fname'], kwargs['h5path']+'Time')
 dims, T = get_dims(kwargs['fname'], kwargs['h5path']+'ImagesStack')
 
-correct_motion: bool        = bool(params_doric["CorrectMotion"])
 neuron_diameter             = tuple([params_doric["NeuronDiameterMin"], params_doric["NeuronDiameterMax"]])
-pnr_thres: float            = params_doric["PNRThreshold"]
-corr_thres: float           = params_doric["CorrelationThreshold"]
-spatial_downsample: int     = params_doric["SpatialDownsample"]
-temporal_downsample: int    = params_doric["TemporalDownsample"]
 
 params_caiman = {
     'fr': fr,
@@ -75,8 +70,8 @@ params_caiman = {
     'gSig': (neuron_diameter[0], neuron_diameter[0]),
     'merge_thr': 0.8,
     'p': 1,
-    'tsub': temporal_downsample,
-    'ssub': spatial_downsample,
+    'tsub': params_doric["TemporalDownsample"],
+    'ssub': params_doric["SpatialDownsample"],
     'rf': neuron_diameter[-1]*4,
     'only_init': True,    # set it to True to run CNMF-E
     'nb': 0,
@@ -84,8 +79,8 @@ params_caiman = {
     'method_deconvolution': 'oasis',       # could use 'cvxpy' alternatively
     'low_rank_background': None,
     'update_background_components': True,  # sometimes setting to False improve the results
-    'min_corr': corr_thres,
-    'min_pnr': pnr_thres,
+    'min_corr': params_doric["CorrelationThreshold"],
+    'min_pnr': params_doric["PNRThreshold"],
     'normalize_init': False,               # just leave as is
     'center_psf': True,                    # leave as is for 1 photon
     'ssub_B': 2,
@@ -134,7 +129,7 @@ if __name__ == "__main__":
     #Update AdvancedSettings
     params_doric["AdvancedSettings"] = advanced_settings.copy()
 
-    if correct_motion:
+    if bool(params_doric["CorrectMotion"]):
         # MOTION CORRECTION
         print("MOTION CORRECTION",  flush=True)
         # do motion correction rigid
