@@ -9,7 +9,6 @@ sys.path.append('..')
 
 # Import for CaimAn lib
 import caiman as cm
-from caiman import stop_server
 from caiman.cluster import setup_cluster
 from caiman.source_extraction import cnmf
 from caiman.source_extraction.cnmf import params
@@ -221,4 +220,4 @@ if __name__ == "__main__":
             saveresiduals=True,
             savespikes=True)
 
-    stop_server(dview=dview)
+    cm.stop_server(dview=dview)
