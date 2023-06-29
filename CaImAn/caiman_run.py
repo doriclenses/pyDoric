@@ -16,8 +16,9 @@ from caiman.source_extraction.cnmf import params
 from caiman.motion_correction import MotionCorrect
 
 # Import CaimAn related utilities libraries
-from utilities import get_frequency, get_dims, load_attributes, save_attributes, print_to_intercept
-from caiman_utilities import save_caiman_to_doric, set_advanced_parameters
+import utilities as utils
+from utilities import print_to_intercept
+import caiman_utilities as cm_utils
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
@@ -54,8 +55,8 @@ parameters  = danse_parameters.get("parameters", {})
 
 tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
 tmpDirName = tmpDir.name
-fr = get_frequency(file_path['fname'], file_path['h5path']+'Time')
-dims, T = get_dims(file_path['fname'], file_path['h5path']+'ImagesStack')
+fr = utils.get_frequency(file_path['fname'], file_path['h5path']+'Time')
+dims, T = utils.get_dims(file_path['fname'], file_path['h5path']+'ImagesStack')
 
 neuron_diameter             = tuple([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])
 
@@ -127,7 +128,7 @@ if __name__ == "__main__":
     params_caiman['fnames'] = [fname_tif]
 
     opts = params.CNMFParams(params_dict=params_caiman)
-    opts, advanced_settings = set_advanced_parameters(opts, advanced_settings)
+    opts, advanced_settings = cm_utils.set_advanced_parameters(opts, advanced_settings)
     #Update AdvancedSettings
     parameters["AdvancedSettings"] = advanced_settings.copy()
 
@@ -182,9 +183,9 @@ if __name__ == "__main__":
     series = h5path_names[-2]
     sensor = h5path_names[-1]
     # Get paramaters of the operation on source data
-    params_source_data = load_attributes(file_path['fname'], data+'/'+driver+'/'+operation)
+    params_source_data = utils.load_attributes(file_path['fname'], data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
-    attrs = load_attributes(file_path['fname'], h5path+'/ImagesStack')
+    attrs = utils.load_attributes(file_path['fname'], h5path+'/ImagesStack')
 
     # Parameters
     # Set only "Operations" for params_srouce_data
@@ -201,7 +202,7 @@ if __name__ == "__main__":
     if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
         print_to_intercept("No cells where found")
     else :
-        save_caiman_to_doric(
+        cm_utils.save_caiman_to_doric(
             Yr,
             cnm.estimates.A[:,cnm.estimates.idx_components],
             cnm.estimates.C[cnm.estimates.idx_components,:],
