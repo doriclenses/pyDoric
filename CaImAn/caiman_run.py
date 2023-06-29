@@ -113,13 +113,13 @@ if __name__ == "__main__":
 
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
-    with h5py.File(kwargs["fname"], 'r') as f:
-        images = np.array(f[kwargs['h5path']+'ImagesStack'])
+    with h5py.File(file_path["fname"], 'r') as f:
+        images = np.array(f[file_path['h5path']+'ImagesStack'])
 
     logging.debug(images.shape)
 
     images = images.transpose(2, 0, 1)
-    h5path_list = kwargs['h5path'].split('/')
+    h5path_list = file_path['h5path'].split('/')
     fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
     print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
