@@ -184,7 +184,7 @@ if __name__ == "__main__":
     # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(file_path['fname'], data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_path['fname'], h5path+'/ImagesStack')
+    attrs = utils.load_attributes(file_path['fname'], file_path['h5path']+'/ImagesStack')
 
     # Parameters
     # Set only "Operations" for params_srouce_data
