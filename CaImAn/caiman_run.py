@@ -123,6 +123,7 @@ if __name__ == "__main__":
     fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
     print("Write image in tiff...", flush=True)
     imwrite(fname_tif, images)
+    del images
 
     params_caiman['fnames'] = [fname_tif]
 
