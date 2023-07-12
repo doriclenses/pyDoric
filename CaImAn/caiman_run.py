@@ -63,7 +63,7 @@ params_caiman = {
     'fr': fr,
     'dims': dims,
     'decay_time': 0.4,
-    'pw_rigid': False,
+    'pw_rigid': True,
     'max_shifts': (neuron_diameter[0], neuron_diameter[0]),
     'gSig_filt': (neuron_diameter[0], neuron_diameter[0]),
     'strides': (neuron_diameter[-1]*4, neuron_diameter[-1]*4),
