@@ -78,6 +78,7 @@ params_caiman = {
     'tsub': parameters["TemporalDownsample"],
     'ssub': parameters["SpatialDownsample"],
     'rf': neuron_diameter[-1]*4,
+    'stride': neuron_diameter[-1]*2,
     'only_init': True,    # set it to True to run CNMF-E
     'nb': 0,
     'nb_patch': 0,
