@@ -68,7 +68,7 @@ params_caiman = {
     'gSig_filt': (neuron_diameter[0], neuron_diameter[0]),
     'strides': (neuron_diameter[-1]*4, neuron_diameter[-1]*4),
     'overlaps': (neuron_diameter[-1]*2, neuron_diameter[-1]*2),
-    'max_deviation_rigid': neuron_diameter[0],
+    'max_deviation_rigid': neuron_diameter[0]/2,
     'border_nan': 'copy',
     'method_init': 'corr_pnr',  # use this for 1 photon
     'K': None,
