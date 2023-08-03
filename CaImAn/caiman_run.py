@@ -16,7 +16,6 @@ from caiman.motion_correction import MotionCorrect
 
 # Import CaimAn related utilities libraries
 import utilities as utils
-from utilities import print_to_intercept
 import caiman_utilities as cm_utils
 
 # Import for PyInstaller
@@ -53,7 +52,7 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    print_to_intercept(ADVANCED_BAD_TYPE)
+    utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 
 if not danse_parameters:
@@ -150,7 +149,7 @@ if __name__ == "__main__":
         try:
             mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
         except TypeError:
-            print_to_intercept(PARAM_WRONG_TYPE)
+            utils.print_to_intercept(PARAM_WRONG_TYPE)
             sys.exit()
 
         mc.motion_correct(save_movie=True)
@@ -176,7 +175,7 @@ if __name__ == "__main__":
         print(EVA_COMPO, flush=True)
         cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     except TypeError:
-        print_to_intercept(PARAM_WRONG_TYPE)
+        utils.print_to_intercept(PARAM_WRONG_TYPE)
         sys.exit()
 
     ### Save results to doric file ###
@@ -211,7 +210,7 @@ if __name__ == "__main__":
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
 
     if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
-        print_to_intercept(NO_CELLS)
+        utils.print_to_intercept(NO_CELLS)
     else :
         cm_utils.save_caiman_to_doric(
             Yr,
