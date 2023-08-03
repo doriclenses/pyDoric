@@ -34,6 +34,16 @@ from tifffile import imwrite
 logging.basicConfig(level=logging.DEBUG)
 freeze_support()
 
+# Text definitions
+ADVANCED_BAD_TYPE   = "One of the advanced settings is not of a python type"
+WRITE_IMAGE_TIFF    = "Write image in tiff..."
+MOTION_CORREC       = "MOTION CORRECTION"
+PARAM_WRONG_TYPE    = "One parameter is of the wrong type"
+START_CNMF          = "Starting CNMF..."
+FITTING             = "Fitting..."
+EVA_COMPO           = "evaluate_components..."
+SAVING_DATA         = "Saving data to doric file..."
+NO_CELLS            = "No cells where found"
 
 kwargs = {}
 params_doric = {}
@@ -43,7 +53,7 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    print_to_intercept("One of the advanced settings is not of a python type")
+    print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 
 if not danse_parameters:
@@ -122,7 +132,7 @@ if __name__ == "__main__":
     images = images.transpose(2, 0, 1)
     h5path_list = file_path['h5path'].split('/')
     fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
-    print("Write image in tiff...", flush=True)
+    print(WRITE_IMAGE_TIFF, flush=True)
     imwrite(fname_tif, images)
     del images
 
@@ -135,12 +145,12 @@ if __name__ == "__main__":
 
     if bool(parameters["CorrectMotion"]):
         # MOTION CORRECTION
-        print("MOTION CORRECTION",  flush=True)
+        print(MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
             mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
         except TypeError:
-            print_to_intercept("One parameter is of the wrong type")
+            print_to_intercept(PARAM_WRONG_TYPE)
             sys.exit()
 
         mc.motion_correct(save_movie=True)
@@ -158,19 +168,19 @@ if __name__ == "__main__":
     images = Yr.T.reshape((T,) + dims, order='F')
 
     try:
-        print("Starting CNMF...", flush=True)
+        print(START_CNMF, flush=True)
         cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
-        print("Fitting...", flush=True)
+        print(FITTING, flush=True)
         cnm.fit(images)
 
-        print("evaluate_components...", flush=True)
+        print(EVA_COMPO, flush=True)
         cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     except TypeError:
-        print_to_intercept("One parameter is of the wrong type")
+        print_to_intercept(PARAM_WRONG_TYPE)
         sys.exit()
 
     ### Save results to doric file ###
-    print("Saving data to doric file...", flush=True)
+    print(SAVING_DATA, flush=True)
     # Get the path from the source data
     h5path = file_path['h5path']
     if h5path[0] == '/':
@@ -201,7 +211,7 @@ if __name__ == "__main__":
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
 
     if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
-        print_to_intercept("No cells where found")
+        print_to_intercept(NO_CELLS)
     else :
         cm_utils.save_caiman_to_doric(
             Yr,
