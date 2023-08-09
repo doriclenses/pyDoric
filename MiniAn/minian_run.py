@@ -397,7 +397,7 @@ if __name__ == "__main__":
     ### CNMF 1st itteration ###
     try:
         # 1. Estimate spatial noise
-        print(RUN_CNMF_ESTIM_NOISE.fromat("1st"), flush=True)
+        print(RUN_CNMF_ESTIM_NOISE.format("1st"), flush=True)
         try:
             sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
         except TypeError:
@@ -405,7 +405,7 @@ if __name__ == "__main__":
             sys.exit()
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
         # 2. First spatial update
-        print(RUN_CNMF_UPDAT_SPATIAL.fromat("1st"), flush=True)
+        print(RUN_CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
         try:
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
         except TypeError:
@@ -414,7 +414,7 @@ if __name__ == "__main__":
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
         # 3. Update background
-        print(RUN_CNMF_UPDAT_BACKG.fromat("1st"), flush=True)
+        print(RUN_CNMF_UPDAT_BACKG.format("1st"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -422,7 +422,7 @@ if __name__ == "__main__":
         C = save_minian(C_new.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
         # 4. First temporal update
-        print(RUN_CNMF_UPDAT_TEMP.fromat("1st"), flush=True)
+        print(RUN_CNMF_UPDAT_TEMP.format("1st"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         try:
@@ -437,14 +437,14 @@ if __name__ == "__main__":
         c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         A = A.sel(unit_id=C.coords["unit_id"].values)
         # 5. Merge components
-        print(RUN_CNMF_MERG_COMP.fromat("1st"), flush=True)
+        print(RUN_CNMF_MERG_COMP.format("1st"), flush=True)
         try:
             A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
         except TypeError:
             print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
             sys.exit()
         # Save
-        print(RUN_CNMF_SAVE_INTERMED.fromat("1st"), flush=True)
+        print(RUN_CNMF_SAVE_INTERMED.format("1st"), flush=True)
         A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
         C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
