@@ -343,3 +343,6 @@ def set_advanced_parameters_for_estimate_motion(
         advanced_parameters[key] = value
 
     return [param_func, advanced_parameters]
+
+def print_error(error):
+    print("An error occurred:", type(error).__name__, "-", error, flush=True)

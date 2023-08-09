@@ -19,7 +19,8 @@ from minian_utilities import (
     round_down_to_odd,
     set_advanced_parameters_for_func_params,
     set_advanced_parameters_for_denoise,
-    set_advanced_parameters_for_estimate_motion
+    set_advanced_parameters_for_estimate_motion,
+    print_error
 )
 
 # Import for MiniAn lib
@@ -353,7 +354,7 @@ if __name__ == "__main__":
             print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
             sys.exit()
     except Exception as error:
-        print("An error occurred:", type(error).__name__, "-", error, flush=True)
+        print_error(error)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -391,7 +392,7 @@ if __name__ == "__main__":
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
     except Exception as error:
-        print("An error occurred:", type(error).__name__, "-", error, flush=True)
+        print_error(error)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -454,7 +455,7 @@ if __name__ == "__main__":
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
     except Exception as error:
-        print("An error occurred:", type(error).__name__, "-", error, flush=True)
+        print_error(error)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -499,7 +500,7 @@ if __name__ == "__main__":
         AC = compute_AtC(A, C_chk)
 
     except Exception as error:
-        print("An error occurred:", type(error).__name__, "-", error, flush=True)
+        print_error(error)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
