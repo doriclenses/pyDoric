@@ -11,7 +11,7 @@ import functools as fct
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
-from utilities import get_frequency, load_attributes, print_to_intercept
+import utilities  as utils
 from minian_utilities import (
     load_doric_to_xarray,
     save_minian_to_doric,
@@ -74,7 +74,7 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    print_to_intercept(ADVANCED_BAD_TYPE)
+    utils.utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 
 if not danse_parameters:
@@ -85,7 +85,7 @@ parameters  = danse_parameters.get("parameters", {})
 
 tmpDir  = tempfile.TemporaryDirectory(prefix="minian_")
 dpath   = tmpDir.name
-fr      = get_frequency(file_path["fname"], file_path['h5path']+'Time')
+fr      = utils.get_frequency(file_path["fname"], file_path['h5path']+'Time')
 
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -287,14 +287,14 @@ if __name__ == "__main__":
     try:
         varr_ref = denoise(varr_ref, **params_denoise)
     except TypeError:
-        print_to_intercept(ONE_PARM_WRONG_TYPE.format("denoise"))
+        utils.utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("denoise"))
         sys.exit()
     # 3. Background removal
     print(PREPROC_REMOV_BACKG, flush=True)
     try:
         varr_ref = remove_background(varr_ref, **params_remove_background)
     except TypeError:
-        print_to_intercept(ONE_PARM_WRONG_TYPE.format("remove_background"))
+        utils.utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("remove_background"))
         sys.exit()
     # Save
     print(PREPROC_SAVE, flush=True)
@@ -306,7 +306,7 @@ if __name__ == "__main__":
         try:
             motion = estimate_motion(varr_ref, **params_estimate_motion)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("estimate_motion"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("estimate_motion"))
             sys.exit()
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **params_save_minian)
         print(CORRECT_MOTION_APPLY_SHIFT, flush=True)
@@ -329,21 +329,21 @@ if __name__ == "__main__":
         try:
             seeds = seeds_init(Y_fm_chk, **params_seeds_init)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_init"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_init"))
             sys.exit()
         # 3. Peak-Noise-Ratio refine
         print(INIT_SEEDS_PNR_REFI, flush=True)
         try:
             seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **params_pnr_refine)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("pnr_refine"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("pnr_refine"))
             sys.exit()
         # 4. Kolmogorov-Smirnov refine
         print(INIT_SEEDS_KOLSM_REF, flush=True)
         try:
             seeds = ks_refine(Y_hw_chk, seeds, **params_ks_refine)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("ks_refine"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("ks_refine"))
             sys.exit()
         # 5. Merge seeds
         print(INIT_SEEDS_MERG, flush=True)
@@ -351,11 +351,11 @@ if __name__ == "__main__":
         try:
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **params_seeds_merge)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
             sys.exit()
     except Exception as error:
         print_error(error)
-        print_to_intercept(NO_CELLS_FOUND)
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
     ### Component initialization ###
@@ -366,7 +366,7 @@ if __name__ == "__main__":
         try:
             A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("initA"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("initA"))
             sys.exit()
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
         # 2. Initialize temporal
@@ -379,7 +379,7 @@ if __name__ == "__main__":
         try:
             A, C = unit_merge(A_init, C_init, **params_unit_merge)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
             sys.exit()
         A = save_minian(A.rename("A"), intpath, overwrite=True)
         C = save_minian(C.rename("C"), intpath, overwrite=True)
@@ -393,7 +393,7 @@ if __name__ == "__main__":
 
     except Exception as error:
         print_error(error)
-        print_to_intercept(NO_CELLS_FOUND)
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
 
@@ -404,7 +404,7 @@ if __name__ == "__main__":
         try:
             sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("get_noise_fft"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("get_noise_fft"))
             sys.exit()
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
         # 2. First spatial update
@@ -412,7 +412,7 @@ if __name__ == "__main__":
         try:
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
             sys.exit()
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
@@ -431,7 +431,7 @@ if __name__ == "__main__":
         try:
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
             sys.exit()
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]},)
@@ -444,7 +444,7 @@ if __name__ == "__main__":
         try:
             A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
             sys.exit()
         # Save
         print(RUN_CNMF_SAVE_INTERMED.format("1st"), flush=True)
@@ -456,7 +456,7 @@ if __name__ == "__main__":
 
     except Exception as error:
         print_error(error)
-        print_to_intercept(NO_CELLS_FOUND)
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
 
@@ -467,7 +467,7 @@ if __name__ == "__main__":
         try:
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
             sys.exit()
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
@@ -486,7 +486,7 @@ if __name__ == "__main__":
         try:
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
             sys.exit()
         # Save
         print(RUN_CNMF_SAVE_INTERMED.format("2nd"), flush=True)
@@ -501,7 +501,7 @@ if __name__ == "__main__":
 
     except Exception as error:
         print_error(error)
-        print_to_intercept(NO_CELLS_FOUND)
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
     ### Save final results ###
@@ -530,9 +530,9 @@ if __name__ == "__main__":
     series = h5path_names[-2]
     sensor = h5path_names[-1]
     # Get paramaters of the operation on source data
-    params_source_data = load_attributes(file_, data+'/'+driver+'/'+operation)
+    params_source_data = utils.load_attributes(file_, data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
-    attrs = load_attributes(file_, h5path+'/ImagesStack')
+    attrs = utils.load_attributes(file_, h5path+'/ImagesStack')
     file_.close()
 
     # Parameters
