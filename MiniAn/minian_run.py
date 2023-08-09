@@ -10,8 +10,9 @@ import xarray as xr
 import functools as fct
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
+
 sys.path.append('..')
-import utilities  as utils
+import utilities as utils
 import minian_utilities as min_utils
 
 # Import for MiniAn lib
@@ -65,7 +66,7 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    utils.utils.print_to_intercept(ADVANCED_BAD_TYPE)
+    utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 
 if not danse_parameters:
@@ -278,14 +279,14 @@ if __name__ == "__main__":
     try:
         varr_ref = denoise(varr_ref, **params_denoise)
     except TypeError:
-        utils.utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("denoise"))
+        utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("denoise"))
         sys.exit()
     # 3. Background removal
     print(PREPROC_REMOV_BACKG, flush=True)
     try:
         varr_ref = remove_background(varr_ref, **params_remove_background)
     except TypeError:
-        utils.utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("remove_background"))
+        utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("remove_background"))
         sys.exit()
     # Save
     print(PREPROC_SAVE, flush=True)
