@@ -25,6 +25,7 @@ from multiprocessing import freeze_support
 freeze_support()
 
 # Text definitions
+START_CLUSTER       = "Starting cluster..."
 ADVANCED_BAD_TYPE   = "One of the advanced settings is not of a python type"
 LOAD_DATA           = "Loading dataset to MiniAn..."
 ONE_PARM_WRONG_TYPE = "One parameter of {0} function is of the wrong type"
@@ -248,7 +249,7 @@ parameters["AdvancedSettings"] = advanced_settings.copy()
 if __name__ == "__main__":
 
     # Start cluster
-    print("Starting cluster...", flush=True)
+    print(START_CLUSTER, flush=True)
     cluster = LocalCluster(**params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
