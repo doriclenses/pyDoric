@@ -352,7 +352,8 @@ if __name__ == "__main__":
         except TypeError:
             print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
             sys.exit()
-    except:
+    except Exception as error:
+        print("An error occurred:", type(error).__name__, "-", error, flush=True)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -389,7 +390,8 @@ if __name__ == "__main__":
         f = save_minian(f.rename("f"), intpath, overwrite=True)
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
-    except:
+    except Exception as error:
+        print("An error occurred:", type(error).__name__, "-", error, flush=True)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -451,7 +453,8 @@ if __name__ == "__main__":
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
-    except:
+    except Exception as error:
+        print("An error occurred:", type(error).__name__, "-", error, flush=True)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -495,7 +498,8 @@ if __name__ == "__main__":
 
         AC = compute_AtC(A, C_chk)
 
-    except:
+    except Exception as error:
+        print("An error occurred:", type(error).__name__, "-", error, flush=True)
         print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
