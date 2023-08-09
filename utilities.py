@@ -349,6 +349,9 @@ def footprint_to_coords(
     return coords
 
 def print_to_intercept(msg):
+    if not isinstance(msg, str):
+        msg = str(msg)
+
     print("[intercept] " + msg + " [end]", flush = True, end = '\n')
 
 def print_group_path_for_DANSE(path):
