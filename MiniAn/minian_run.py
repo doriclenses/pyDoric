@@ -1,11 +1,13 @@
-
 # Import miscellaneous and utilities librarys
 import os
 import sys
 import tempfile
 import numpy as np
-import xarray as xr
 from dask.distributed import Client, LocalCluster
+
+# needed but not directly used
+import h5py
+import xarray as xr
 
 sys.path.append('..')
 import utilities as utils
