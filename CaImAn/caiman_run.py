@@ -62,7 +62,7 @@ paths   = danse_parameters.get("paths", {})
 parameters  = danse_parameters.get("parameters", {})
 
 if "tmpDir" in paths:
-    dpath   = paths["tmpDir"]
+    tmpDirName   = paths["tmpDir"]
 else : # for backwards compatibility
     tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
     tmpDirName = tmpDir.name
