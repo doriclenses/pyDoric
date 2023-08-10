@@ -68,15 +68,19 @@ except SyntaxError:
     utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 
-if not danse_parameters:
-    danse_parameters = {"file_path": kwargs , "parameters": params_doric}
+if not danse_parameters: # for backwards compatible
+    danse_parameters = {"paths": kwargs , "parameters": params_doric}
 
-file_path   = danse_parameters.get("file_path", {})
+paths   = danse_parameters.get("paths", {})
 parameters  = danse_parameters.get("parameters", {})
 
-tmpDir  = tempfile.TemporaryDirectory(prefix="minian_")
-dpath   = tmpDir.name
-fr      = utils.get_frequency(file_path["fname"], file_path['h5path']+'Time')
+if "tmpDir" in paths:
+    dpath   = paths["tmpDir"]
+else : # for backwards compatible
+    tmpDir  = tempfile.TemporaryDirectory(prefix="minian_")
+    dpath   = tmpDir.name
+
+fr      = utils.get_frequency(paths["fname"], paths['h5path']+'Time')
 
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -113,8 +117,8 @@ if "LocalCluster" in advanced_settings:
 
 
 params_load_doric = {
-    "fname": file_path["fname"],
-    "h5path": file_path['h5path'],
+    "fname": paths["fname"],
+    "h5path": paths['h5path'],
     "dtype": np.uint8,
     "downsample": {"frame": parameters["TemporalDownsample"],
                     "height": parameters["SpatialDownsample"],
