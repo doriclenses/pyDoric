@@ -11,7 +11,7 @@ import xarray as xr
 
 sys.path.append('..')
 import utilities as utils
-import minian_utilities as min_utils
+import minian_utilities as mn_utils
 
 # Import for MiniAn lib
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
@@ -68,7 +68,7 @@ except SyntaxError:
     utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 except Exception as error:
-    min_utils.print_error(error)
+    mn_utils.print_error(error)
     sys.exit()
 
 if not danse_parameters: # for backwards compatibility
@@ -139,15 +139,15 @@ params_get_optimal_chk = {
     "dtype": float
 }
 if "get_optimal_chk" in advanced_settings:
-    params_get_optimal_chk, advanced_settings["get_optimal_chk"] = min_utils.set_advanced_parameters_for_func_params(params_get_optimal_chk, advanced_settings["get_optimal_chk"], get_optimal_chk)
+    params_get_optimal_chk, advanced_settings["get_optimal_chk"] = mn_utils.set_advanced_parameters_for_func_params(params_get_optimal_chk, advanced_settings["get_optimal_chk"], get_optimal_chk)
 
 
 params_denoise = {
     'method': 'median',
-    'ksize': min_utils.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
+    'ksize': mn_utils.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
 }
 if "denoise" in advanced_settings:
-    params_denoise, advanced_settings["denoise"] = min_utils.set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
+    params_denoise, advanced_settings["denoise"] = mn_utils.set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
 
 
 params_remove_background = {
@@ -155,21 +155,21 @@ params_remove_background = {
     'wnd': np.ceil(neuron_diameter[-1]) # largest neuron diameter
 }
 if "remove_background" in advanced_settings:
-    params_remove_background, advanced_settings["remove_background"] = min_utils.set_advanced_parameters_for_func_params(params_remove_background, advanced_settings["remove_background"], remove_background)
+    params_remove_background, advanced_settings["remove_background"] = mn_utils.set_advanced_parameters_for_func_params(params_remove_background, advanced_settings["remove_background"], remove_background)
 
 
 params_estimate_motion = {
     'dim': 'frame'
 }
 if "estimate_motion" in advanced_settings:
-    params_estimate_motion, advanced_settings["estimate_motion"] = min_utils.set_advanced_parameters_for_estimate_motion(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
+    params_estimate_motion, advanced_settings["estimate_motion"] = mn_utils.set_advanced_parameters_for_estimate_motion(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
 
 
 params_apply_transform = {
     'fill': 0
 }
 if "apply_transform" in advanced_settings:
-    params_apply_transform, advanced_settings["apply_transform"] = min_utils.set_advanced_parameters_for_func_params(params_apply_transform, advanced_settings["apply_transform"], apply_transform)
+    params_apply_transform, advanced_settings["apply_transform"] = mn_utils.set_advanced_parameters_for_func_params(params_apply_transform, advanced_settings["apply_transform"], apply_transform)
 
 
 wnd = 60 # time window of 60 seconds
@@ -181,7 +181,7 @@ params_seeds_init = {
     'diff_thres': 3
 }
 if "seeds_init" in advanced_settings:
-    params_seeds_init, advanced_settings["seeds_init"] = min_utils.set_advanced_parameters_for_func_params(params_seeds_init, advanced_settings["seeds_init"], seeds_init)
+    params_seeds_init, advanced_settings["seeds_init"] = mn_utils.set_advanced_parameters_for_func_params(params_seeds_init, advanced_settings["seeds_init"], seeds_init)
 
 
 params_pnr_refine = {
@@ -189,14 +189,14 @@ params_pnr_refine = {
     "thres": 1
 }
 if "pnr_refine" in advanced_settings:
-    params_pnr_refine, advanced_settings["pnr_refine"] = min_utils.set_advanced_parameters_for_func_params(params_pnr_refine, advanced_settings["pnr_refine"], pnr_refine)
+    params_pnr_refine, advanced_settings["pnr_refine"] = mn_utils.set_advanced_parameters_for_func_params(params_pnr_refine, advanced_settings["pnr_refine"], pnr_refine)
 
 
 params_ks_refine = {
     "sig": 0.05
 }
 if "ks_refine" in advanced_settings:
-    params_ks_refine, advanced_settings["ks_refine"] = min_utils.set_advanced_parameters_for_func_params(params_ks_refine, advanced_settings["ks_refine"], ks_refine)
+    params_ks_refine, advanced_settings["ks_refine"] = mn_utils.set_advanced_parameters_for_func_params(params_ks_refine, advanced_settings["ks_refine"], ks_refine)
 
 
 params_seeds_merge = {
@@ -205,7 +205,7 @@ params_seeds_merge = {
     'noise_freq': noise_freq
 }
 if "seeds_merge" in advanced_settings:
-    params_seeds_merge, advanced_settings["seeds_merge"] = min_utils.set_advanced_parameters_for_func_params(params_seeds_merge, advanced_settings["seeds_merge"], seeds_merge)
+    params_seeds_merge, advanced_settings["seeds_merge"] = mn_utils.set_advanced_parameters_for_func_params(params_seeds_merge, advanced_settings["seeds_merge"], seeds_merge)
 
 
 params_initA = {
@@ -214,21 +214,21 @@ params_initA = {
     'noise_freq': noise_freq
 }
 if "initA" in advanced_settings:
-    params_initA, advanced_settings["initA"] = min_utils.set_advanced_parameters_for_func_params(params_initA, advanced_settings["initA"], initA)
+    params_initA, advanced_settings["initA"] = mn_utils.set_advanced_parameters_for_func_params(params_initA, advanced_settings["initA"], initA)
 
 
 params_unit_merge = {
     'thres_corr': thres_corr
 }
 if "unit_merge" in advanced_settings:
-    params_unit_merge, advanced_settings["unit_merge"] = min_utils.set_advanced_parameters_for_func_params(params_unit_merge, advanced_settings["unit_merge"], unit_merge)
+    params_unit_merge, advanced_settings["unit_merge"] = mn_utils.set_advanced_parameters_for_func_params(params_unit_merge, advanced_settings["unit_merge"], unit_merge)
 
 
 params_get_noise_fft = {
     'noise_range': (noise_freq, 0.5)
 }
 if "get_noise_fft" in advanced_settings:
-    params_get_noise_fft, advanced_settings["get_noise_fft"] = min_utils.set_advanced_parameters_for_func_params(params_get_noise_fft, advanced_settings["get_noise_fft"], get_noise_fft)
+    params_get_noise_fft, advanced_settings["get_noise_fft"] = mn_utils.set_advanced_parameters_for_func_params(params_get_noise_fft, advanced_settings["get_noise_fft"], get_noise_fft)
 
 
 params_update_spatial = {
@@ -237,7 +237,7 @@ params_update_spatial = {
     'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
 }
 if "update_spatial" in advanced_settings:
-    params_update_spatial, advanced_settings["update_spatial"] = min_utils.set_advanced_parameters_for_func_params(params_update_spatial, advanced_settings["update_spatial"], update_spatial)
+    params_update_spatial, advanced_settings["update_spatial"] = mn_utils.set_advanced_parameters_for_func_params(params_update_spatial, advanced_settings["update_spatial"], update_spatial)
 
 
 params_update_temporal = {
@@ -248,7 +248,7 @@ params_update_temporal = {
     'jac_thres': 0.2
 }
 if "update_temporal" in advanced_settings:
-    params_update_temporal, advanced_settings["update_temporal"] = min_utils.set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
+    params_update_temporal, advanced_settings["update_temporal"] = mn_utils.set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
 
 # Update AdvancedSettings in params_doric
 parameters["AdvancedSettings"] = advanced_settings.copy()
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
     ### Load and chunk the data ###
     print(LOAD_DATA, flush=True)
-    varr, file_ = min_utils.load_doric_to_xarray(**params_load_doric)
+    varr, file_ = mn_utils.load_doric_to_xarray(**params_load_doric)
     chk, _ = get_optimal_chk(varr, **params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
@@ -352,7 +352,7 @@ if __name__ == "__main__":
             utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
             sys.exit()
     except Exception as error:
-        min_utils.print_error(error)
+        mn_utils.print_error(error)
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -390,7 +390,7 @@ if __name__ == "__main__":
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
     except Exception as error:
-        min_utils.print_error(error)
+        mn_utils.print_error(error)
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -453,7 +453,7 @@ if __name__ == "__main__":
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
     except Exception as error:
-        min_utils.print_error(error)
+        mn_utils.print_error(error)
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -498,7 +498,7 @@ if __name__ == "__main__":
         AC = compute_AtC(A, C_chk)
 
     except Exception as error:
-        min_utils.print_error(error)
+        mn_utils.print_error(error)
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -544,7 +544,7 @@ if __name__ == "__main__":
     if parameters["SpatialDownsample"] > 1:
         parameters["BinningFactor"] = parameters["SpatialDownsample"]
 
-    min_utils.save_minian_to_doric(
+    mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr=fr,
         bits_count=attrs['BitsCount'],
