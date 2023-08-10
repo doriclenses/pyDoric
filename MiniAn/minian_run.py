@@ -68,7 +68,7 @@ except SyntaxError:
     utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 
-if not danse_parameters: # for backwards compatible
+if not danse_parameters: # for backwards compatibility
     danse_parameters = {"paths": kwargs , "parameters": params_doric}
 
 paths   = danse_parameters.get("paths", {})
@@ -76,7 +76,7 @@ parameters  = danse_parameters.get("parameters", {})
 
 if "tmpDir" in paths:
     dpath   = paths["tmpDir"]
-else : # for backwards compatible
+else : # for backwards compatibility
     tmpDir  = tempfile.TemporaryDirectory(prefix="minian_")
     dpath   = tmpDir.name
 
