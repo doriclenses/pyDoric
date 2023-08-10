@@ -54,6 +54,9 @@ try:
 except SyntaxError:
     utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
+except Exception as error:
+    #utils.print_error(error)
+    sys.exit()
 
 if not danse_parameters: # for backwards compatibility
     danse_parameters = {"paths": kwargs , "parameters": params_doric}
@@ -155,6 +158,9 @@ if __name__ == "__main__":
         except TypeError:
             utils.print_to_intercept(PARAM_WRONG_TYPE)
             sys.exit()
+        except Exception as error:
+            #utils.print_error(error)
+            sys.exit()
 
         mc.motion_correct(save_movie=True)
         fname_mc = mc.fname_tot_els if params_caiman['pw_rigid'] else mc.fname_tot_rig
@@ -180,6 +186,9 @@ if __name__ == "__main__":
         cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     except TypeError:
         utils.print_to_intercept(PARAM_WRONG_TYPE)
+        sys.exit()
+    except Exception as error:
+        #utils.print_error(error)
         sys.exit()
 
     ### Save results to doric file ###
