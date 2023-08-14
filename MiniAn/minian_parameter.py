@@ -12,6 +12,10 @@ class MinianParameters:
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get("paths", {})
         self.parameters  = danse_parameters.get("parameters", {})
+        self.preview = False
+        if "preview" in danse_parameters:
+            self.preview = True
+            self.preview_parameters = danse_parameters["preview"]
 
         os.environ["OMP_NUM_THREADS"] = "1"
         os.environ["MKL_NUM_THREADS"] = "1"

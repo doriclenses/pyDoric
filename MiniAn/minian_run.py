@@ -14,6 +14,7 @@ import utilities as utils
 import minian_utilities as mn_utils
 import minian_parameter as mn_param
 import minian_main      as mn_main
+import minian_preview   as mn_preview
 
 # Import for MiniAn lib
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
@@ -47,4 +48,7 @@ if not danse_parameters: # for backwards compatibility
 
 if __name__ == "__main__":
     minian_params = mn_param.MinianParameters(danse_parameters)
+    if minian_params.preview:
+        mn_preview.minian_preview(minian_params)
+    else:
         mn_main.minian_main(minian_params)
