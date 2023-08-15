@@ -28,7 +28,7 @@ from multiprocessing import freeze_support
 freeze_support()
 
 @contextmanager
-def except_type_error(message):
+def except_type_error(function_name):
     """
     conext try except to show specific message
     """
@@ -36,13 +36,13 @@ def except_type_error(message):
     try:
         yield
     except TypeError:
-        utils.print_to_intercept(mn_txt.ONE_PARM_WRONG_TYPE.format(message))
+        utils.print_to_intercept(mn_txt.ONE_PARM_WRONG_TYPE.format(function_name))
         sys.exit()
 
 @contextmanager
 def except_print_error_no_cells():
     """
-    conext try except to show specific message
+    conext try except to show no cells found
     """
 
     try:
