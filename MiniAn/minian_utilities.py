@@ -7,10 +7,12 @@ import numpy as np
 import xarray as xr
 import functools as fct
 from typing import Optional, Callable
+from contextlib import contextmanager
 from minian.utilities import custom_arr_optimize
-sys.path.append('..')
 
+sys.path.append('..')
 import utilities as utils
+import minian_text_def as mn_txt
 
 def load_doric_to_xarray(
     fname: str,
@@ -230,3 +232,29 @@ def round_down_to_odd(f):
 
 def print_error(error):
     print("An error occurred:", type(error).__name__, "-", error, flush=True)
+
+# definition of try: expect:
+@contextmanager
+def except_type_error(function_name):
+    """
+    conext try except to show specific message
+    """
+
+    try:
+        yield
+    except TypeError:
+        utils.print_to_intercept(mn_txt.ONE_PARM_WRONG_TYPE.format(function_name))
+        sys.exit()
+
+@contextmanager
+def except_print_error_no_cells():
+    """
+    conext try except to show no cells found
+    """
+
+    try:
+        yield
+    except Exception as error:
+        print_error(error)
+        utils.print_to_intercept(mn_txt.NO_CELLS_FOUND)
+        sys.exit()

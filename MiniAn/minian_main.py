@@ -27,30 +27,6 @@ from minian.motion_correction import apply_transform, estimate_motion
 from multiprocessing import freeze_support
 freeze_support()
 
-@contextmanager
-def except_type_error(function_name):
-    """
-    conext try except to show specific message
-    """
-
-    try:
-        yield
-    except TypeError:
-        utils.print_to_intercept(mn_txt.ONE_PARM_WRONG_TYPE.format(function_name))
-        sys.exit()
-
-@contextmanager
-def except_print_error_no_cells():
-    """
-    conext try except to show no cells found
-    """
-
-    try:
-        yield
-    except Exception as error:
-        mn_utils.print_error(error)
-        utils.print_to_intercept(mn_txt.NO_CELLS_FOUND)
-        sys.exit()
 
 def minian_main(minian_parameters):
     """minian_main.py
@@ -83,12 +59,12 @@ def minian_main(minian_parameters):
     varr_ref = varr_ref - varr_min
     # 2. Denoise
     print(mn_txt.PREPROC_DENOISING, flush=True)
-    with except_type_error("denoise"):
+    with mn_utils.except_type_error("denoise"):
         varr_ref = denoise(varr_ref, **minian_parameters.params_denoise)
 
     # 3. Background removal
     print(mn_txt.PREPROC_REMOV_BACKG, flush=True)
-    with except_type_error("remove_background"):
+    with mn_utils.except_type_error("remove_background"):
         varr_ref = remove_background(varr_ref, **minian_parameters.params_remove_background)
 
     # Save
@@ -98,7 +74,7 @@ def minian_main(minian_parameters):
     ### Motion correction ###
     if minian_parameters.parameters["CorrectMotion"]:
         print(mn_txt.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
-        with except_type_error("estimate_motion"):
+        with mn_utils.except_type_error("estimate_motion"):
             motion = estimate_motion(varr_ref, **minian_parameters.params_estimate_motion)
 
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **minian_parameters.params_save_minian)
@@ -115,35 +91,35 @@ def minian_main(minian_parameters):
 
     ### Seed initialization ###
     print(mn_txt.INIT_SEEDS, flush=True)
-    with except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells():
         # 1. Compute max projection
         max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **minian_parameters.params_save_minian).compute()
         # 2. Generating over-complete set of seeds
-        with except_type_error("seeds_init"):
+        with mn_utils.except_type_error("seeds_init"):
             seeds = seeds_init(Y_fm_chk, **minian_parameters.params_seeds_init)
 
         # 3. Peak-Noise-Ratio refine
         print(mn_txt.INIT_SEEDS_PNR_REFI, flush=True)
-        with except_type_error("pnr_refine"):
+        with mn_utils.except_type_error("pnr_refine"):
             seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **minian_parameters.params_pnr_refine)
 
         # 4. Kolmogorov-Smirnov refine
         print(mn_txt.INIT_SEEDS_KOLSM_REF, flush=True)
-        with except_type_error("ks_refine"):
+        with mn_utils.except_type_error("ks_refine"):
             seeds = ks_refine(Y_hw_chk, seeds, **minian_parameters.params_ks_refine)
 
         # 5. Merge seeds
         print(mn_txt.INIT_SEEDS_MERG, flush=True)
         seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
-        with except_type_error("seeds_merge"):
+        with mn_utils.except_type_error("seeds_merge"):
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
 
     ### Component initialization ###
     print(mn_txt.INIT_COMP, flush=True)
-    with except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells():
         # 1. Initialize spatial
         print(mn_txt.INIT_COMP_SPATIAL, flush=True)
-        with except_type_error("initA"):
+        with mn_utils.except_type_error("initA"):
             A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **minian_parameters.params_initA)
 
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
@@ -154,7 +130,7 @@ def minian_main(minian_parameters):
                             chunks={"unit_id": 1, "frame": -1})
         # 3. Merge components
         print(mn_txt.INIT_COMP_MERG, flush=True)
-        with except_type_error("unit_merge"):
+        with mn_utils.except_type_error("unit_merge"):
             A, C = unit_merge(A_init, C_init, **minian_parameters.params_unit_merge)
 
         A = save_minian(A.rename("A"), intpath, overwrite=True)
@@ -169,16 +145,16 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 1st itteration ###
-    with except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells():
         # 1. Estimate spatial noise
         print(mn_txt.RUN_CNMF_ESTIM_NOISE.format("1st"), flush=True)
-        with except_type_error("get_noise_fft"):
+        with mn_utils.except_type_error("get_noise_fft"):
             sn_spatial = get_noise_fft(Y_hw_chk, **minian_parameters.params_get_noise_fft)
 
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
         # 2. First spatial update
         print(mn_txt.RUN_CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
-        with except_type_error("update_spatial"):
+        with mn_utils.except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
@@ -195,7 +171,7 @@ def minian_main(minian_parameters):
         print(mn_txt.RUN_CNMF_UPDAT_TEMP.format("1st"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
-        with except_type_error("update_temporal"):
+        with mn_utils.except_type_error("update_temporal"):
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_parameters.params_update_temporal)
 
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
@@ -206,7 +182,7 @@ def minian_main(minian_parameters):
         A = A.sel(unit_id=C.coords["unit_id"].values)
         # 5. Merge components
         print(mn_txt.RUN_CNMF_MERG_COMP.format("1st"), flush=True)
-        with except_type_error("unit_merge"):
+        with mn_utils.except_type_error("unit_merge"):
             A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **minian_parameters.params_unit_merge)
 
         # Save
@@ -219,10 +195,10 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 2nd itteration ###
-    with except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells():
         # 5. Second spatial update
         print(mn_txt.RUN_CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
-        with except_type_error("update_spatial"):
+        with mn_utils.except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
@@ -239,7 +215,7 @@ def minian_main(minian_parameters):
         print(mn_txt.RUN_CNMF_UPDAT_TEMP.format("2nd"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
-        with except_type_error("update_temporal"):
+        with mn_utils.except_type_error("update_temporal"):
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_parameters.params_update_temporal)
 
         # Save
