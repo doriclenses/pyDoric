@@ -230,9 +230,6 @@ def round_down_to_odd(f):
     f = int(np.ceil(f))
     return f - 1 if f % 2 == 0 else f
 
-def print_error(error):
-    print("An error occurred:", type(error).__name__, "-", error, flush=True)
-
 # definition of try: expect:
 @contextmanager
 def except_type_error(function_name):
@@ -247,7 +244,7 @@ def except_type_error(function_name):
         sys.exit()
 
 @contextmanager
-def except_print_error_no_cells():
+def except_print_error_no_cells(position):
     """
     conext try except to show no cells found
     """
@@ -255,6 +252,6 @@ def except_print_error_no_cells():
     try:
         yield
     except Exception as error:
-        print_error(error)
+        utils.print_error(error, position)
         utils.print_to_intercept(mn_txt.NO_CELLS_FOUND)
         sys.exit()

@@ -91,7 +91,7 @@ def minian_main(minian_parameters):
 
     ### Seed initialization ###
     print(mn_txt.INIT_SEEDS, flush=True)
-    with mn_utils.except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells(mn_txt.INIT_SEEDS):
         # 1. Compute max projection
         max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **minian_parameters.params_save_minian).compute()
         # 2. Generating over-complete set of seeds
@@ -116,7 +116,7 @@ def minian_main(minian_parameters):
 
     ### Component initialization ###
     print(mn_txt.INIT_COMP, flush=True)
-    with mn_utils.except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells(mn_txt.INIT_COMP):
         # 1. Initialize spatial
         print(mn_txt.INIT_COMP_SPATIAL, flush=True)
         with mn_utils.except_type_error("initA"):
@@ -145,7 +145,7 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 1st itteration ###
-    with mn_utils.except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells(mn_txt.RUN_CNMF_ITT.format("1st")):
         # 1. Estimate spatial noise
         print(mn_txt.RUN_CNMF_ESTIM_NOISE.format("1st"), flush=True)
         with mn_utils.except_type_error("get_noise_fft"):
@@ -195,7 +195,7 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 2nd itteration ###
-    with mn_utils.except_print_error_no_cells():
+    with mn_utils.except_print_error_no_cells(mn_txt.RUN_CNMF_ITT.format("2nd")):
         # 5. Second spatial update
         print(mn_txt.RUN_CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
         with mn_utils.except_type_error("update_spatial"):

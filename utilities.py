@@ -421,3 +421,6 @@ def create_params_item(
         value_final = '"' + value + '"'
 
     return {key_final: value_final}
+
+def print_error(error, position):
+    print(f'Error in {position}: {type(error).__name__} - {error}', flush=True)
