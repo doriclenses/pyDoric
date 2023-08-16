@@ -361,7 +361,7 @@ def print_group_path_for_DANSE(path):
     print_to_intercept("[pathgroup] " + "/" + path)
 
 def print_error(error, position):
-    print(f'Error in {position}: {type(error).__name__} - {error}', flush=True)
+    print(f"Error in {position}: {type(error).__name__} - {error}", flush=True)
 
 def merge_params(
     params_current,
