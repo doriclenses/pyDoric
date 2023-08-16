@@ -159,7 +159,7 @@ if __name__ == "__main__":
             utils.print_to_intercept(PARAM_WRONG_TYPE)
             sys.exit()
         except Exception as error:
-            #utils.print_error(error)
+            utils.print_error(error, MOTION_CORREC)
             sys.exit()
 
         mc.motion_correct(save_movie=True)
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         utils.print_to_intercept(PARAM_WRONG_TYPE)
         sys.exit()
     except Exception as error:
-        #utils.print_error(error)
+        utils.print_error(error, START_CNMF)
         sys.exit()
 
     ### Save results to doric file ###
