@@ -352,7 +352,7 @@ if __name__ == "__main__":
             utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
             sys.exit()
     except Exception as error:
-        mn_utils.print_error(error)
+        utils.print_error(error, INIT_SEEDS)
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -390,7 +390,7 @@ if __name__ == "__main__":
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
     except Exception as error:
-        mn_utils.print_error(error)
+        utils.print_error(error, INIT_COMP)
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -453,7 +453,7 @@ if __name__ == "__main__":
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
     except Exception as error:
-        mn_utils.print_error(error)
+        utils.print_error(error, RUN_CNMF_ITT.format("1st"))
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
@@ -498,7 +498,7 @@ if __name__ == "__main__":
         AC = compute_AtC(A, C_chk)
 
     except Exception as error:
-        mn_utils.print_error(error)
+        utils.print_error(error, RUN_CNMF_ITT.format("2nd"))
         utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
