@@ -36,7 +36,7 @@ freeze_support()
 # Text definitions
 ADVANCED_BAD_TYPE   = "One of the advanced settings is not of a python type"
 WRITE_IMAGE_TIFF    = "Write image in tiff..."
-MOTION_CORREC       = "MOTION CORRECTION"
+MOTION_CORREC       = "Motion correction"
 PARAM_WRONG_TYPE    = "One parameter is of the wrong type"
 START_CNMF          = "Starting CNMF..."
 FITTING             = "Fitting..."
