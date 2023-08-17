@@ -1,26 +1,17 @@
-
 # Import miscellaneous and utilities librarys
 import os
 import sys
-import h5py
 import tempfile
-import dask as da
 import numpy as np
-import xarray as xr
-import functools as fct
-from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
+
+# needed but not directly used
+import h5py
+import xarray as xr
+
 sys.path.append('..')
-from utilities import get_frequency, load_attributes, print_to_intercept
-from minian_utilities import (
-    load_doric_to_xarray,
-    save_minian_to_doric,
-    round_up_to_odd,
-    round_down_to_odd,
-    set_advanced_parameters_for_func_params,
-    set_advanced_parameters_for_denoise,
-    set_advanced_parameters_for_estimate_motion
-)
+import utilities as utils
+import minian_utilities as mn_utils
 
 # Import for MiniAn lib
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
@@ -34,6 +25,7 @@ from multiprocessing import freeze_support
 freeze_support()
 
 # Text definitions
+START_CLUSTER       = "Starting cluster..."
 ADVANCED_BAD_TYPE   = "One of the advanced settings is not of a python type"
 LOAD_DATA           = "Loading dataset to MiniAn..."
 ONE_PARM_WRONG_TYPE = "One parameter of {0} function is of the wrong type"
@@ -55,13 +47,13 @@ INIT_COMP_SPATIAL           = "Initializing components: spatial..."
 INIT_COMP_TEMP              = "Initializing components: temporal..."
 INIT_COMP_MERG              = "Initializing components: merging..."
 INIT_COMP_BACKG             = "Initializing components: background..."
-RUN_CNMF_ITT                = "Running CNMF {0} itteration: "
-RUN_CNMF_ESTIM_NOISE        = RUN_CNMF_ITT + "estimating noise..."
-RUN_CNMF_UPDAT_SPATIAL      = RUN_CNMF_ITT + "updating spatial components..."
-RUN_CNMF_UPDAT_BACKG        = RUN_CNMF_ITT + "updating background components..."
-RUN_CNMF_UPDAT_TEMP         = RUN_CNMF_ITT + "updating temporal components..."
-RUN_CNMF_MERG_COMP          = RUN_CNMF_ITT + "merging components..."
-RUN_CNMF_SAVE_INTERMED      = RUN_CNMF_ITT + "saving intermediate results..."
+CNMF_IT                     = "CNMF {0} iteration"
+CNMF_ESTIM_NOISE            = CNMF_IT + ": estimating noise..."
+CNMF_UPDAT_SPATIAL          = CNMF_IT + ": updating spatial components..."
+CNMF_UPDAT_BACKG            = CNMF_IT + ": updating background components..."
+CNMF_UPDAT_TEMP             = CNMF_IT + ": updating temporal components..."
+CNMF_MERG_COMP              = CNMF_IT + ": merging components..."
+CNMF_SAVE_INTERMED          = CNMF_IT + ": saving intermediate results..."
 SAVING_FINAL                = "Saving final results..."
 SAVING_TO_DORIC             = "Saving data to doric file..."
 
@@ -73,18 +65,25 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    print_to_intercept(ADVANCED_BAD_TYPE)
+    utils.print_to_intercept(ADVANCED_BAD_TYPE)
+    sys.exit()
+except Exception as error:
+    mn_utils.print_error(error)
     sys.exit()
 
-if not danse_parameters:
-    danse_parameters = {"file_path": kwargs , "parameters": params_doric}
+if not danse_parameters: # for backwards compatibility
+    danse_parameters = {"paths": kwargs , "parameters": params_doric}
 
-file_path   = danse_parameters.get("file_path", {})
+paths   = danse_parameters.get("paths", {})
 parameters  = danse_parameters.get("parameters", {})
 
-tmpDir  = tempfile.TemporaryDirectory(prefix="minian_")
-dpath   = tmpDir.name
-fr      = get_frequency(file_path["fname"], file_path['h5path']+'Time')
+if "tmpDir" in paths:
+    dpath   = paths["tmpDir"]
+else : # for backwards compatibility
+    tmpDir  = tempfile.TemporaryDirectory(prefix="minian_")
+    dpath   = tmpDir.name
+
+fr      = utils.get_frequency(paths["fname"], paths['h5path']+'Time')
 
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -121,8 +120,8 @@ if "LocalCluster" in advanced_settings:
 
 
 params_load_doric = {
-    "fname": file_path["fname"],
-    "h5path": file_path['h5path'],
+    "fname": paths["fname"],
+    "h5path": paths['h5path'],
     "dtype": np.uint8,
     "downsample": {"frame": parameters["TemporalDownsample"],
                     "height": parameters["SpatialDownsample"],
@@ -140,15 +139,15 @@ params_get_optimal_chk = {
     "dtype": float
 }
 if "get_optimal_chk" in advanced_settings:
-    params_get_optimal_chk, advanced_settings["get_optimal_chk"] = set_advanced_parameters_for_func_params(params_get_optimal_chk, advanced_settings["get_optimal_chk"], get_optimal_chk)
+    params_get_optimal_chk, advanced_settings["get_optimal_chk"] = mn_utils.set_advanced_parameters_for_func_params(params_get_optimal_chk, advanced_settings["get_optimal_chk"], get_optimal_chk)
 
 
 params_denoise = {
     'method': 'median',
-    'ksize': round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
+    'ksize': mn_utils.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
 }
 if "denoise" in advanced_settings:
-    params_denoise, advanced_settings["denoise"] = set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
+    params_denoise, advanced_settings["denoise"] = mn_utils.set_advanced_parameters_for_denoise(params_denoise, advanced_settings["denoise"], denoise)
 
 
 params_remove_background = {
@@ -156,21 +155,21 @@ params_remove_background = {
     'wnd': np.ceil(neuron_diameter[-1]) # largest neuron diameter
 }
 if "remove_background" in advanced_settings:
-    params_remove_background, advanced_settings["remove_background"] = set_advanced_parameters_for_func_params(params_remove_background, advanced_settings["remove_background"], remove_background)
+    params_remove_background, advanced_settings["remove_background"] = mn_utils.set_advanced_parameters_for_func_params(params_remove_background, advanced_settings["remove_background"], remove_background)
 
 
 params_estimate_motion = {
     'dim': 'frame'
 }
 if "estimate_motion" in advanced_settings:
-    params_estimate_motion, advanced_settings["estimate_motion"] = set_advanced_parameters_for_estimate_motion(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
+    params_estimate_motion, advanced_settings["estimate_motion"] = mn_utils.set_advanced_parameters_for_estimate_motion(params_estimate_motion, advanced_settings["estimate_motion"], estimate_motion)
 
 
 params_apply_transform = {
     'fill': 0
 }
 if "apply_transform" in advanced_settings:
-    params_apply_transform, advanced_settings["apply_transform"] = set_advanced_parameters_for_func_params(params_apply_transform, advanced_settings["apply_transform"], apply_transform)
+    params_apply_transform, advanced_settings["apply_transform"] = mn_utils.set_advanced_parameters_for_func_params(params_apply_transform, advanced_settings["apply_transform"], apply_transform)
 
 
 wnd = 60 # time window of 60 seconds
@@ -182,7 +181,7 @@ params_seeds_init = {
     'diff_thres': 3
 }
 if "seeds_init" in advanced_settings:
-    params_seeds_init, advanced_settings["seeds_init"] = set_advanced_parameters_for_func_params(params_seeds_init, advanced_settings["seeds_init"], seeds_init)
+    params_seeds_init, advanced_settings["seeds_init"] = mn_utils.set_advanced_parameters_for_func_params(params_seeds_init, advanced_settings["seeds_init"], seeds_init)
 
 
 params_pnr_refine = {
@@ -190,14 +189,14 @@ params_pnr_refine = {
     "thres": 1
 }
 if "pnr_refine" in advanced_settings:
-    params_pnr_refine, advanced_settings["pnr_refine"] = set_advanced_parameters_for_func_params(params_pnr_refine, advanced_settings["pnr_refine"], pnr_refine)
+    params_pnr_refine, advanced_settings["pnr_refine"] = mn_utils.set_advanced_parameters_for_func_params(params_pnr_refine, advanced_settings["pnr_refine"], pnr_refine)
 
 
 params_ks_refine = {
     "sig": 0.05
 }
 if "ks_refine" in advanced_settings:
-    params_ks_refine, advanced_settings["ks_refine"] = set_advanced_parameters_for_func_params(params_ks_refine, advanced_settings["ks_refine"], ks_refine)
+    params_ks_refine, advanced_settings["ks_refine"] = mn_utils.set_advanced_parameters_for_func_params(params_ks_refine, advanced_settings["ks_refine"], ks_refine)
 
 
 params_seeds_merge = {
@@ -206,7 +205,7 @@ params_seeds_merge = {
     'noise_freq': noise_freq
 }
 if "seeds_merge" in advanced_settings:
-    params_seeds_merge, advanced_settings["seeds_merge"] = set_advanced_parameters_for_func_params(params_seeds_merge, advanced_settings["seeds_merge"], seeds_merge)
+    params_seeds_merge, advanced_settings["seeds_merge"] = mn_utils.set_advanced_parameters_for_func_params(params_seeds_merge, advanced_settings["seeds_merge"], seeds_merge)
 
 
 params_initA = {
@@ -215,21 +214,21 @@ params_initA = {
     'noise_freq': noise_freq
 }
 if "initA" in advanced_settings:
-    params_initA, advanced_settings["initA"] = set_advanced_parameters_for_func_params(params_initA, advanced_settings["initA"], initA)
+    params_initA, advanced_settings["initA"] = mn_utils.set_advanced_parameters_for_func_params(params_initA, advanced_settings["initA"], initA)
 
 
 params_unit_merge = {
     'thres_corr': thres_corr
 }
 if "unit_merge" in advanced_settings:
-    params_unit_merge, advanced_settings["unit_merge"] = set_advanced_parameters_for_func_params(params_unit_merge, advanced_settings["unit_merge"], unit_merge)
+    params_unit_merge, advanced_settings["unit_merge"] = mn_utils.set_advanced_parameters_for_func_params(params_unit_merge, advanced_settings["unit_merge"], unit_merge)
 
 
 params_get_noise_fft = {
     'noise_range': (noise_freq, 0.5)
 }
 if "get_noise_fft" in advanced_settings:
-    params_get_noise_fft, advanced_settings["get_noise_fft"] = set_advanced_parameters_for_func_params(params_get_noise_fft, advanced_settings["get_noise_fft"], get_noise_fft)
+    params_get_noise_fft, advanced_settings["get_noise_fft"] = mn_utils.set_advanced_parameters_for_func_params(params_get_noise_fft, advanced_settings["get_noise_fft"], get_noise_fft)
 
 
 params_update_spatial = {
@@ -238,7 +237,7 @@ params_update_spatial = {
     'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
 }
 if "update_spatial" in advanced_settings:
-    params_update_spatial, advanced_settings["update_spatial"] = set_advanced_parameters_for_func_params(params_update_spatial, advanced_settings["update_spatial"], update_spatial)
+    params_update_spatial, advanced_settings["update_spatial"] = mn_utils.set_advanced_parameters_for_func_params(params_update_spatial, advanced_settings["update_spatial"], update_spatial)
 
 
 params_update_temporal = {
@@ -249,7 +248,7 @@ params_update_temporal = {
     'jac_thres': 0.2
 }
 if "update_temporal" in advanced_settings:
-    params_update_temporal, advanced_settings["update_temporal"] = set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
+    params_update_temporal, advanced_settings["update_temporal"] = mn_utils.set_advanced_parameters_for_func_params(params_update_temporal, advanced_settings["update_temporal"], update_temporal)
 
 # Update AdvancedSettings in params_doric
 parameters["AdvancedSettings"] = advanced_settings.copy()
@@ -257,7 +256,7 @@ parameters["AdvancedSettings"] = advanced_settings.copy()
 if __name__ == "__main__":
 
     # Start cluster
-    print("Starting cluster...", flush=True)
+    print(START_CLUSTER, flush=True)
     cluster = LocalCluster(**params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
@@ -269,7 +268,7 @@ if __name__ == "__main__":
 
     ### Load and chunk the data ###
     print(LOAD_DATA, flush=True)
-    varr, file_ = load_doric_to_xarray(**params_load_doric)
+    varr, file_ = mn_utils.load_doric_to_xarray(**params_load_doric)
     chk, _ = get_optimal_chk(varr, **params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
@@ -286,14 +285,14 @@ if __name__ == "__main__":
     try:
         varr_ref = denoise(varr_ref, **params_denoise)
     except TypeError:
-        print_to_intercept(ONE_PARM_WRONG_TYPE.format("denoise"))
+        utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("denoise"))
         sys.exit()
     # 3. Background removal
     print(PREPROC_REMOV_BACKG, flush=True)
     try:
         varr_ref = remove_background(varr_ref, **params_remove_background)
     except TypeError:
-        print_to_intercept(ONE_PARM_WRONG_TYPE.format("remove_background"))
+        utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("remove_background"))
         sys.exit()
     # Save
     print(PREPROC_SAVE, flush=True)
@@ -305,7 +304,7 @@ if __name__ == "__main__":
         try:
             motion = estimate_motion(varr_ref, **params_estimate_motion)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("estimate_motion"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("estimate_motion"))
             sys.exit()
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **params_save_minian)
         print(CORRECT_MOTION_APPLY_SHIFT, flush=True)
@@ -328,21 +327,21 @@ if __name__ == "__main__":
         try:
             seeds = seeds_init(Y_fm_chk, **params_seeds_init)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_init"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_init"))
             sys.exit()
         # 3. Peak-Noise-Ratio refine
         print(INIT_SEEDS_PNR_REFI, flush=True)
         try:
             seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **params_pnr_refine)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("pnr_refine"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("pnr_refine"))
             sys.exit()
         # 4. Kolmogorov-Smirnov refine
         print(INIT_SEEDS_KOLSM_REF, flush=True)
         try:
             seeds = ks_refine(Y_hw_chk, seeds, **params_ks_refine)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("ks_refine"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("ks_refine"))
             sys.exit()
         # 5. Merge seeds
         print(INIT_SEEDS_MERG, flush=True)
@@ -350,10 +349,11 @@ if __name__ == "__main__":
         try:
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **params_seeds_merge)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("seeds_merge"))
             sys.exit()
-    except:
-        print_to_intercept(NO_CELLS_FOUND)
+    except Exception as error:
+        utils.print_error(error, INIT_SEEDS)
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
     ### Component initialization ###
@@ -364,7 +364,7 @@ if __name__ == "__main__":
         try:
             A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **params_initA)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("initA"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("initA"))
             sys.exit()
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
         # 2. Initialize temporal
@@ -377,7 +377,7 @@ if __name__ == "__main__":
         try:
             A, C = unit_merge(A_init, C_init, **params_unit_merge)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
             sys.exit()
         A = save_minian(A.rename("A"), intpath, overwrite=True)
         C = save_minian(C.rename("C"), intpath, overwrite=True)
@@ -389,32 +389,33 @@ if __name__ == "__main__":
         f = save_minian(f.rename("f"), intpath, overwrite=True)
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
-    except:
-        print_to_intercept(NO_CELLS_FOUND)
+    except Exception as error:
+        utils.print_error(error, INIT_COMP)
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
 
     ### CNMF 1st itteration ###
     try:
         # 1. Estimate spatial noise
-        print(RUN_CNMF_ESTIM_NOISE.fromat("1st"), flush=True)
+        print(CNMF_ESTIM_NOISE.format("1st"), flush=True)
         try:
             sn_spatial = get_noise_fft(Y_hw_chk, **params_get_noise_fft)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("get_noise_fft"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("get_noise_fft"))
             sys.exit()
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
         # 2. First spatial update
-        print(RUN_CNMF_UPDAT_SPATIAL.fromat("1st"), flush=True)
+        print(CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
         try:
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
             sys.exit()
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
         # 3. Update background
-        print(RUN_CNMF_UPDAT_BACKG.fromat("1st"), flush=True)
+        print(CNMF_UPDAT_BACKG.format("1st"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -422,13 +423,13 @@ if __name__ == "__main__":
         C = save_minian(C_new.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
         # 4. First temporal update
-        print(RUN_CNMF_UPDAT_TEMP.fromat("1st"), flush=True)
+        print(CNMF_UPDAT_TEMP.format("1st"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         try:
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
             sys.exit()
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]},)
@@ -437,38 +438,39 @@ if __name__ == "__main__":
         c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         A = A.sel(unit_id=C.coords["unit_id"].values)
         # 5. Merge components
-        print(RUN_CNMF_MERG_COMP.fromat("1st"), flush=True)
+        print(CNMF_MERG_COMP.format("1st"), flush=True)
         try:
             A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **params_unit_merge)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("unit_merge"))
             sys.exit()
         # Save
-        print(RUN_CNMF_SAVE_INTERMED.fromat("1st"), flush=True)
+        print(CNMF_SAVE_INTERMED.format("1st"), flush=True)
         A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
         C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
-    except:
-        print_to_intercept(NO_CELLS_FOUND)
+    except Exception as error:
+        utils.print_error(error, CNMF_IT.format("1st"))
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
 
     ### CNMF 2nd itteration ###
     try:
         # 5. Second spatial update
-        print(RUN_CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
+        print(CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
         try:
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **params_update_spatial)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_spatial"))
             sys.exit()
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
         # 6. Second background update
-        print(RUN_CNMF_UPDAT_BACKG.format("2nd"), flush=True)
+        print(CNMF_UPDAT_BACKG.format("2nd"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -476,16 +478,16 @@ if __name__ == "__main__":
         C = save_minian(C_new.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
         # 7. Second temporal update
-        print(RUN_CNMF_UPDAT_TEMP.format("2nd"), flush=True)
+        print(CNMF_UPDAT_TEMP.format("2nd"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         try:
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **params_update_temporal)
         except TypeError:
-            print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
+            utils.print_to_intercept(ONE_PARM_WRONG_TYPE.format("update_temporal"))
             sys.exit()
         # Save
-        print(RUN_CNMF_SAVE_INTERMED.format("2nd"), flush=True)
+        print(CNMF_SAVE_INTERMED.format("2nd"), flush=True)
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]})
         S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
@@ -495,8 +497,9 @@ if __name__ == "__main__":
 
         AC = compute_AtC(A, C_chk)
 
-    except:
-        print_to_intercept(NO_CELLS_FOUND)
+    except Exception as error:
+        utils.print_error(error, CNMF_IT.format("2nd"))
+        utils.print_to_intercept(NO_CELLS_FOUND)
         sys.exit()
 
     ### Save final results ###
@@ -525,9 +528,9 @@ if __name__ == "__main__":
     series = h5path_names[-2]
     sensor = h5path_names[-1]
     # Get paramaters of the operation on source data
-    params_source_data = load_attributes(file_, data+'/'+driver+'/'+operation)
+    params_source_data = utils.load_attributes(file_, data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
-    attrs = load_attributes(file_, h5path+'/ImagesStack')
+    attrs = utils.load_attributes(file_, h5path+'/ImagesStack')
     file_.close()
 
     # Parameters
@@ -541,7 +544,7 @@ if __name__ == "__main__":
     if parameters["SpatialDownsample"] > 1:
         parameters["BinningFactor"] = parameters["SpatialDownsample"]
 
-    save_minian_to_doric(
+    mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr=fr,
         bits_count=attrs['BitsCount'],
