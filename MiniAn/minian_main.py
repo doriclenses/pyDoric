@@ -145,7 +145,7 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 1st itteration ###
-    with mn_utils.except_print_error_no_cells(mn_txt.CNMF_ITT.format("1st")):
+    with mn_utils.except_print_error_no_cells(mn_txt.CNMF_IT.format("1st")):
         # 1. Estimate spatial noise
         print(mn_txt.CNMF_ESTIM_NOISE.format("1st"), flush=True)
         with mn_utils.except_type_error("get_noise_fft"):
@@ -195,7 +195,7 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 2nd itteration ###
-    with mn_utils.except_print_error_no_cells(mn_txt.CNMF_ITT.format("2nd")):
+    with mn_utils.except_print_error_no_cells(mn_txt.CNMF_IT.format("2nd")):
         # 5. Second spatial update
         print(mn_txt.CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
         with mn_utils.except_type_error("update_spatial"):
