@@ -145,22 +145,22 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 1st itteration ###
-    with mn_utils.except_print_error_no_cells(mn_txt.RUN_CNMF_ITT.format("1st")):
+    with mn_utils.except_print_error_no_cells(mn_txt.CNMF_ITT.format("1st")):
         # 1. Estimate spatial noise
-        print(mn_txt.RUN_CNMF_ESTIM_NOISE.format("1st"), flush=True)
+        print(mn_txt.CNMF_ESTIM_NOISE.format("1st"), flush=True)
         with mn_utils.except_type_error("get_noise_fft"):
             sn_spatial = get_noise_fft(Y_hw_chk, **minian_parameters.params_get_noise_fft)
 
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
         # 2. First spatial update
-        print(mn_txt.RUN_CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
+        print(mn_txt.CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
         with mn_utils.except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
         # 3. Update background
-        print(mn_txt.RUN_CNMF_UPDAT_BACKG.format("1st"), flush=True)
+        print(mn_txt.CNMF_UPDAT_BACKG.format("1st"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -168,7 +168,7 @@ def minian_main(minian_parameters):
         C = save_minian(C_new.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
         # 4. First temporal update
-        print(mn_txt.RUN_CNMF_UPDAT_TEMP.format("1st"), flush=True)
+        print(mn_txt.CNMF_UPDAT_TEMP.format("1st"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with mn_utils.except_type_error("update_temporal"):
@@ -181,12 +181,12 @@ def minian_main(minian_parameters):
         c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         A = A.sel(unit_id=C.coords["unit_id"].values)
         # 5. Merge components
-        print(mn_txt.RUN_CNMF_MERG_COMP.format("1st"), flush=True)
+        print(mn_txt.CNMF_MERG_COMP.format("1st"), flush=True)
         with mn_utils.except_type_error("unit_merge"):
             A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **minian_parameters.params_unit_merge)
 
         # Save
-        print(mn_txt.RUN_CNMF_SAVE_INTERMED.format("1st"), flush=True)
+        print(mn_txt.CNMF_SAVE_INTERMED.format("1st"), flush=True)
         A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
         C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
@@ -195,16 +195,16 @@ def minian_main(minian_parameters):
 
 
     ### CNMF 2nd itteration ###
-    with mn_utils.except_print_error_no_cells(mn_txt.RUN_CNMF_ITT.format("2nd")):
+    with mn_utils.except_print_error_no_cells(mn_txt.CNMF_ITT.format("2nd")):
         # 5. Second spatial update
-        print(mn_txt.RUN_CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
+        print(mn_txt.CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
         with mn_utils.except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
         # 6. Second background update
-        print(mn_txt.RUN_CNMF_UPDAT_BACKG.format("2nd"), flush=True)
+        print(mn_txt.CNMF_UPDAT_BACKG.format("2nd"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -212,14 +212,14 @@ def minian_main(minian_parameters):
         C = save_minian(C_new.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
         # 7. Second temporal update
-        print(mn_txt.RUN_CNMF_UPDAT_TEMP.format("2nd"), flush=True)
+        print(mn_txt.CNMF_UPDAT_TEMP.format("2nd"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with mn_utils.except_type_error("update_temporal"):
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_parameters.params_update_temporal)
 
         # Save
-        print(mn_txt.RUN_CNMF_SAVE_INTERMED.format("2nd"), flush=True)
+        print(mn_txt.CNMF_SAVE_INTERMED.format("2nd"), flush=True)
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]})
         S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
