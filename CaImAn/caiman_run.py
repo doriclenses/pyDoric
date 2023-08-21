@@ -54,9 +54,6 @@ try:
 except SyntaxError:
     utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
-except Exception as error:
-    #utils.print_error(error)
-    sys.exit()
 
 if not danse_parameters: # for backwards compatibility
     danse_parameters = {"paths": kwargs , "parameters": params_doric}
