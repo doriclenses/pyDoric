@@ -103,7 +103,7 @@ class MinianParameters:
             'dim': 'frame'
         }
         if "estimate_motion" in advanced_settings:
-            self.params_estimate_motion, advanced_settings["estimate_motion"] = self.set_advanced_params_for_estimate_motion(self.params_estimate_motion, advanced_settings["estimate_motion"], mnMotcorr.estimate_motion)
+            self.params_estimate_motion, advanced_settings["estimate_motion"] = self.set_estimate_motion_advanced_params(self.params_estimate_motion, advanced_settings["estimate_motion"], mnMotcorr.estimate_motion)
 
         self.params_apply_transform = {
             'fill': 0
@@ -263,7 +263,7 @@ class MinianParameters:
 
         return [param_func, advanced_parameters]
 
-    def set_advanced_params_for_estimate_motion(self,
+    def set_estimate_motion_advanced_params(self,
         param_func,
         advanced_parameters,
         func):
