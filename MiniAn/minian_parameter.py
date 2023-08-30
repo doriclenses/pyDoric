@@ -226,7 +226,8 @@ class MinianParameters:
         func):
 
         '''
-        Function to update the value of the advanced parameter for the denoise function
+        Denoise function have some specific parameters that update_func_advanced_param() can not see therefor
+        the function is to update the value of the advanced parameter for the denoise function.
 
         '''
 
@@ -274,7 +275,8 @@ class MinianParameters:
         func):
 
         '''
-        Function to update the value of the advanced parameter for the estimate_motion function
+        Denoise function have some specific parameters that update_func_advanced_param() can not see therefor
+        the function is to update the value of the advanced parameter for the estimate_motion function
 
         '''
 
