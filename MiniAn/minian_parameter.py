@@ -90,7 +90,7 @@ class MinianParameters:
             'ksize': mn_utils.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
         }
         if "denoise" in advanced_settings:
-            self.params_denoise, advanced_settings["denoise"] = self.set_advanced_params_for_denoise(self.params_denoise, advanced_settings["denoise"], mnPreproc.denoise)
+            self.params_denoise, advanced_settings["denoise"] = self.set_denoise_advanced_params(self.params_denoise, advanced_settings["denoise"], mnPreproc.denoise)
 
         self.params_remove_background = {
             'method': 'tophat',
@@ -220,7 +220,7 @@ class MinianParameters:
 
         return [param_func, advanced_parameters]
 
-    def set_advanced_params_for_denoise(self,
+    def set_denoise_advanced_params(self,
         param_func,
         advanced_parameters,
         func):
