@@ -83,7 +83,7 @@ class MinianParameters:
             "dtype": float
         }
         if "get_optimal_chk" in advanced_settings:
-            self.params_get_optimal_chk, advanced_settings["get_optimal_chk"] = self.set_advanced_param_for_fun(self.params_get_optimal_chk, advanced_settings["get_optimal_chk"], mnUtils.get_optimal_chk)
+            self.params_get_optimal_chk, advanced_settings["get_optimal_chk"] = self.update_func_advanced_param(self.params_get_optimal_chk, advanced_settings["get_optimal_chk"], mnUtils.get_optimal_chk)
 
         self.params_denoise = {
             'method': 'median',
@@ -97,7 +97,7 @@ class MinianParameters:
             'wnd': np.ceil(neuron_diameter[-1]) # largest neuron diameter
         }
         if "remove_background" in advanced_settings:
-            self.params_remove_background, advanced_settings["remove_background"] = self.set_advanced_param_for_fun(self.params_remove_background, advanced_settings["remove_background"], mnPreproc.remove_background)
+            self.params_remove_background, advanced_settings["remove_background"] = self.update_func_advanced_param(self.params_remove_background, advanced_settings["remove_background"], mnPreproc.remove_background)
 
         self.params_estimate_motion = {
             'dim': 'frame'
@@ -109,7 +109,7 @@ class MinianParameters:
             'fill': 0
         }
         if "apply_transform" in advanced_settings:
-            self.params_apply_transform, advanced_settings["apply_transform"] = self.set_advanced_param_for_fun(self.params_apply_transform, advanced_settings["apply_transform"], mnMotcorr.apply_transform)
+            self.params_apply_transform, advanced_settings["apply_transform"] = self.update_func_advanced_param(self.params_apply_transform, advanced_settings["apply_transform"], mnMotcorr.apply_transform)
 
         wnd = 60 # time window of 60 seconds
         self.params_seeds_init = {
@@ -120,20 +120,20 @@ class MinianParameters:
             'diff_thres': 3
         }
         if "seeds_init" in advanced_settings:
-            self.params_seeds_init, advanced_settings["seeds_init"] = self.set_advanced_param_for_fun(self.params_seeds_init, advanced_settings["seeds_init"], mnInit.seeds_init)
+            self.params_seeds_init, advanced_settings["seeds_init"] = self.update_func_advanced_param(self.params_seeds_init, advanced_settings["seeds_init"], mnInit.seeds_init)
 
         self.params_pnr_refine = {
             "noise_freq": noise_freq,
             "thres": 1
         }
         if "pnr_refine" in advanced_settings:
-            self.params_pnr_refine, advanced_settings["pnr_refine"] = self.set_advanced_param_for_fun(self.params_pnr_refine, advanced_settings["pnr_refine"], mnInit.pnr_refine)
+            self.params_pnr_refine, advanced_settings["pnr_refine"] = self.update_func_advanced_param(self.params_pnr_refine, advanced_settings["pnr_refine"], mnInit.pnr_refine)
 
         self.params_ks_refine = {
             "sig": 0.05
         }
         if "ks_refine" in advanced_settings:
-            self.params_ks_refine, advanced_settings["ks_refine"] = self.set_advanced_param_for_fun(self.params_ks_refine, advanced_settings["ks_refine"], mnInit.ks_refine)
+            self.params_ks_refine, advanced_settings["ks_refine"] = self.update_func_advanced_param(self.params_ks_refine, advanced_settings["ks_refine"], mnInit.ks_refine)
 
         self.params_seeds_merge = {
             'thres_dist': neuron_diameter[0],
@@ -141,7 +141,7 @@ class MinianParameters:
             'noise_freq': noise_freq
         }
         if "seeds_merge" in advanced_settings:
-            self.params_seeds_merge, advanced_settings["seeds_merge"] = self.set_advanced_param_for_fun(self.params_seeds_merge, advanced_settings["seeds_merge"], mnInit.seeds_merge)
+            self.params_seeds_merge, advanced_settings["seeds_merge"] = self.update_func_advanced_param(self.params_seeds_merge, advanced_settings["seeds_merge"], mnInit.seeds_merge)
 
         self.params_initA = {
             'thres_corr': thres_corr,
@@ -149,19 +149,19 @@ class MinianParameters:
             'noise_freq': noise_freq
         }
         if "initA" in advanced_settings:
-            self.params_initA, advanced_settings["initA"] = self.set_advanced_param_for_fun(self.params_initA, advanced_settings["initA"], mnInit.initA)
+            self.params_initA, advanced_settings["initA"] = self.update_func_advanced_param(self.params_initA, advanced_settings["initA"], mnInit.initA)
 
         self.params_unit_merge = {
             'thres_corr': thres_corr
         }
         if "unit_merge" in advanced_settings:
-            self.params_unit_merge, advanced_settings["unit_merge"] = self.set_advanced_param_for_fun(self.params_unit_merge, advanced_settings["unit_merge"], mnCnmf.unit_merge)
+            self.params_unit_merge, advanced_settings["unit_merge"] = self.update_func_advanced_param(self.params_unit_merge, advanced_settings["unit_merge"], mnCnmf.unit_merge)
 
         self.params_get_noise_fft = {
             'noise_range': (noise_freq, 0.5)
         }
         if "get_noise_fft" in advanced_settings:
-            self.params_get_noise_fft, advanced_settings["get_noise_fft"] = self.set_advanced_param_for_fun(self.params_get_noise_fft, advanced_settings["get_noise_fft"], mnCnmf.get_noise_fft)
+            self.params_get_noise_fft, advanced_settings["get_noise_fft"] = self.update_func_advanced_param(self.params_get_noise_fft, advanced_settings["get_noise_fft"], mnCnmf.get_noise_fft)
 
         self.params_update_spatial = {
             'dl_wnd': neuron_diameter[-1],
@@ -169,7 +169,7 @@ class MinianParameters:
             'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
         }
         if "update_spatial" in advanced_settings:
-            self.params_update_spatial, advanced_settings["update_spatial"] = self.set_advanced_param_for_fun(self.params_update_spatial, advanced_settings["update_spatial"], mnCnmf.update_spatial)
+            self.params_update_spatial, advanced_settings["update_spatial"] = self.update_func_advanced_param(self.params_update_spatial, advanced_settings["update_spatial"], mnCnmf.update_spatial)
 
         self.params_update_temporal = {
             'noise_freq': noise_freq,
@@ -179,14 +179,14 @@ class MinianParameters:
             'jac_thres': 0.2
         }
         if "update_temporal" in advanced_settings:
-            self.params_update_temporal, advanced_settings["update_temporal"] = self.set_advanced_param_for_fun(self.params_update_temporal, advanced_settings["update_temporal"], mnCnmf.update_temporal)
+            self.params_update_temporal, advanced_settings["update_temporal"] = self.update_func_advanced_param(self.params_update_temporal, advanced_settings["update_temporal"], mnCnmf.update_temporal)
 
         # Update AdvancedSettings in params_doric
         self.parameters["AdvancedSettings"] = advanced_settings.copy()
 
 
     #--------------------------------------------- functions for advanced parameters -------------------------------------------------------------------------
-    def remove_keys_not_in_fun_argument(self,
+    def remove_keys_not_in_fun_arguments(self,
         input_dic:dict, func
     ) -> dict:
         '''
@@ -200,7 +200,7 @@ class MinianParameters:
         new_dictionary = {key: input_dic[key] for key in input_dic if key in func_arguments}
         return new_dictionary
 
-    def set_advanced_param_for_fun(self,
+    def update_func_advanced_param(self,
         param_func,
         advanced_parameters,
         func
@@ -214,7 +214,7 @@ class MinianParameters:
         it while return the dictionary param_func with the new values and also the new advanced_parameters with only the used keys
 
         '''
-        advanced_parameters = self.remove_keys_not_in_fun_argument(advanced_parameters, func)
+        advanced_parameters = self.remove_keys_not_in_fun_arguments(advanced_parameters, func)
         for key, value in advanced_parameters.items():
             param_func[key] = value
 
@@ -255,7 +255,7 @@ class MinianParameters:
             if key in advanced_parameters:
                 denoise_method_parameters[key] = advanced_parameters[key]
 
-        param_func, advanced_parameters = self.set_advanced_param_for_fun(param_func, advanced_parameters, func)
+        param_func, advanced_parameters = self.update_func_advanced_param(param_func, advanced_parameters, func)
 
         for key, value in denoise_method_parameters.items():
             param_func[key] = value
@@ -284,7 +284,7 @@ class MinianParameters:
             if key in advanced_parameters:
                 special_parameters[key] = advanced_parameters[key]
 
-        param_func, advanced_parameters = self.set_advanced_param_for_fun(param_func, advanced_parameters, func)
+        param_func, advanced_parameters = self.update_func_advanced_param(param_func, advanced_parameters, func)
 
         for key, value in special_parameters.items():
             param_func[key] = value
