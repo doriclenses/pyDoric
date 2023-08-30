@@ -225,6 +225,11 @@ class MinianParameters:
         advanced_parameters,
         func):
 
+        '''
+        Function to update the value of the advanced parameter for the denoise function
+
+        '''
+
         if 'method' in advanced_parameters:
             param_func['method'] = advanced_parameters['method']
 
@@ -267,6 +272,12 @@ class MinianParameters:
         param_func,
         advanced_parameters,
         func):
+
+        '''
+        Function to update the value of the advanced parameter for the estimate_motion function
+
+        '''
+
 
         # Doc for estimate motion function
         # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
