@@ -13,7 +13,7 @@ from PIL import Image
 from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
-from utilities import get_frequency, load_attributes, print_to_intercept
+import utilities as utils
 import minian_parameter as mn_param
 
 import minian_utilities as mn_utils
@@ -131,12 +131,22 @@ def minian_preview(minian_parameters):
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
 
-    max_proj.values[np.isnan(max_proj.values)] = 0
-    max_proj_image = Image.fromarray(max_proj.values)
-    max_proj_image.save(minian_parameters.preview_parameters["fnameMaxProjection"])
+    # Save data to hdf5
+    try:
+        with h5py.File(minian_parameters.preview_parameters["hdf5preview"], 'w') as hdf5_file:
 
-    #save seed that was keeped after merging
-    seeds_final[seeds_final.mask_mrg].to_json(minian_parameters.preview_parameters["fnameSeed"], orient="split", indent=4)
+            if 'MaxProjection' in hdf5_file:
+                del hdf5_file['MaxProjection']
+
+            hdf5_file.create_dataset('MaxProjection', data = max_proj.values, dtype='float', chunks = True)
+
+            groupseed = hdf5_file.create_group("seeds")
+            for key in seeds_final:
+                groupseed.create_dataset(key, data = seeds_final[key], chunks = True)
+
+    except Exception as error:
+        utils.print_error(error, "save to hdf5")
+
 
     # Close cluster
     client.close()

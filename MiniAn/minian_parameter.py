@@ -181,7 +181,7 @@ class MinianParameters:
         if "update_temporal" in advanced_settings:
             self.params_update_temporal, advanced_settings["update_temporal"] = self.update_func_advanced_param(self.params_update_temporal, advanced_settings["update_temporal"], mnCnmf.update_temporal)
 
-        # Update AdvancedSettings in params_doric
+        # Update AdvancedSettings for self.parameters
         self.parameters["AdvancedSettings"] = advanced_settings.copy()
 
 
