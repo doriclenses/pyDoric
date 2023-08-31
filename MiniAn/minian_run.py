@@ -33,7 +33,7 @@ except SyntaxError:
     utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 except Exception as error:
-    mn_utils.print_error(error)
+    utils.print_error(error, "Loading arguments")
     sys.exit()
 
 if not danse_parameters: # for backwards compatibility
@@ -41,6 +41,7 @@ if not danse_parameters: # for backwards compatibility
 
 if __name__ == "__main__":
     minian_params = mn_param.MinianParameters(danse_parameters)
+
     if minian_params.preview:
         mn_preview.minian_preview(minian_params)
     else:
