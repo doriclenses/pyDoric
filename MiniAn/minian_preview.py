@@ -138,11 +138,11 @@ def minian_preview(minian_parameters):
             if 'MaxProjection' in hdf5_file:
                 del hdf5_file['MaxProjection']
 
-            hdf5_file.create_dataset('MaxProjection', data = max_proj.values, dtype='float', chunks = True)
+            hdf5_file.create_dataset(minian_parameters.preview_parameters["maxprojdataset"], data = max_proj.values, dtype='float', chunks = True)
 
-            groupseed = hdf5_file.create_group("seeds")
+            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters["seedgroup"])
             for key in seeds_final:
-                groupseed.create_dataset(key, data = seeds_final[key], chunks = True)
+                groupseed.create_dataset(key, data = seeds_final[key], dtype = 'float',chunks = True)
 
     except Exception as error:
         utils.print_error(error, "save to hdf5")
