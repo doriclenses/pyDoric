@@ -131,12 +131,12 @@ def minian_preview(minian_parameters):
         print("[intercept] No cells where found [end]", flush=True)
         sys.exit()
 
-    # Save data to hdf5
+    # Save data for preview to hdf5 file
     try:
         with h5py.File(minian_parameters.preview_parameters["hdf5preview"], 'w') as hdf5_file:
 
-            if 'MaxProjection' in hdf5_file:
-                del hdf5_file['MaxProjection']
+            if minian_parameters.preview_parameters["maxprojdataset"] in hdf5_file:
+                del hdf5_file[minian_parameters.preview_parameters["maxprojdataset"]]
 
             hdf5_file.create_dataset(minian_parameters.preview_parameters["maxprojdataset"], data = max_proj.values, dtype='float', chunks = True)
 
