@@ -133,14 +133,14 @@ def minian_preview(minian_parameters):
 
     # Save data for preview to hdf5 file
     try:
-        with h5py.File(minian_parameters.preview_parameters["hdf5preview"], 'w') as hdf5_file:
+        with h5py.File(minian_parameters.preview_parameters["path_hdf5_preview"], 'w') as hdf5_file:
 
-            if minian_parameters.preview_parameters["maxprojdataset"] in hdf5_file:
-                del hdf5_file[minian_parameters.preview_parameters["maxprojdataset"]]
+            if minian_parameters.preview_parameters["name_max_proj_dataset"] in hdf5_file:
+                del hdf5_file[minian_parameters.preview_parameters["name_max_proj_dataset"]]
 
-            hdf5_file.create_dataset(minian_parameters.preview_parameters["maxprojdataset"], data = max_proj.values, dtype='float', chunks = True)
+            hdf5_file.create_dataset(minian_parameters.preview_parameters["name_max_proj_dataset"], data = max_proj.values, dtype='float', chunks = True)
 
-            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters["seedgroup"])
+            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters["name_seed_group"])
             for key in seeds_final:
                 groupseed.create_dataset(key, data = seeds_final[key], dtype = 'float',chunks = True)
 
