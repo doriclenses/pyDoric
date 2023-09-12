@@ -31,8 +31,6 @@ class MinianParameters:
 
         parameters = self.parameters
 
-        dpath   = self.paths["tmpDir"]
-
         self.fr = utils.get_frequency(self.paths["fname"], self.paths['h5path']+'Time')
 
         neuron_diameter     = tuple((np.array([self.parameters["NeuronDiameterMin"], self.parameters["NeuronDiameterMax"]])/self.parameters["SpatialDownsample"]).round().astype('int'))
@@ -57,7 +55,7 @@ class MinianParameters:
             "resources": {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
             "threads_per_worker": 2,
             "dashboard_address": ":8787",
-            "local_directory": dpath
+            "local_directory": paths["tmpDir"]
         }
         if "LocalCluster" in advanced_settings:
             advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in self.params_LocalCluster}
@@ -74,7 +72,7 @@ class MinianParameters:
         }
 
         self.params_save_minian = {
-            "dpath": os.path.join(dpath, "final"),
+            "dpath": os.path.join(paths["tmpDir"], "final"),
             "meta_dict": {"session": -1, "animal": -2},
             "overwrite": True,
         }
@@ -279,7 +277,6 @@ class MinianParameters:
         the function is to update the value of the advanced parameter for the estimate_motion function
 
         '''
-
 
         # Doc for estimate motion function
         # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
