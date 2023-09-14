@@ -21,8 +21,6 @@ import minian_definitions  as mn_defs
 from multiprocessing import freeze_support
 freeze_support()
 
-kwargs = {}
-params_doric = {}
 danse_parameters = {}
 
 try:
@@ -34,9 +32,6 @@ except SyntaxError:
 except Exception as error:
     utils.print_error(error, mn_defs.LOADING_ARGUMENTS)
     sys.exit()
-
-if not danse_parameters: # for backwards compatibility
-    danse_parameters = {"paths": kwargs , "parameters": params_doric}
 
 if __name__ == "__main__":
     minian_params = mn_params.MinianParameters(danse_parameters)
