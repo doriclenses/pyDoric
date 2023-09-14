@@ -110,30 +110,7 @@ def seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters):
 
         return seeds_final, seeds
 
-
-def minian_main(minian_parameters):
-    """minian_main.py
-    """
-
-    # Start cluster
-    print(mn_defs.START_CLUSTER, flush=True)
-    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
-    annt_plugin = TaskAnnotation()
-    cluster.scheduler.add_plugin(annt_plugin)
-    client = Client(cluster)
-
-    # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
-    subset = {"frame": slice(0, None)}
-
-    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
-
-    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
-
-    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
-
-    seeds_final, seeds = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
-
+def component_initialization(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters):
     ### Component initialization ###
     print(mn_defs.INIT_COMP, flush=True)
     with mn_utils.except_print_error_no_cells(mn_defs.INIT_COMP):
@@ -163,6 +140,33 @@ def minian_main(minian_parameters):
         f = save_minian(f.rename("f"), intpath, overwrite=True)
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
+    return A, C, C_chk, f, b
+
+
+def minian_main(minian_parameters):
+    """minian_main.py
+    """
+
+    # Start cluster
+    print(mn_defs.START_CLUSTER, flush=True)
+    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
+    annt_plugin = TaskAnnotation()
+    cluster.scheduler.add_plugin(annt_plugin)
+    client = Client(cluster)
+
+    # MiniAn CNMF
+    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
+    subset = {"frame": slice(0, None)}
+
+    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
+
+    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
+
+    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
+
+    seeds_final, seeds = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
+
+    A, C, C_chk, f, b = component_initialization(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
 
     ### CNMF 1st itteration ###
     with mn_utils.except_print_error_no_cells(mn_defs.CNMF_IT.format("1st")):
