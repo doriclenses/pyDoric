@@ -314,3 +314,49 @@ def minian_main(minian_parameters):
     # Close cluster
     client.close()
     cluster.close()
+
+
+
+def minian_preview(minian_parameters):
+    """minian_preview
+    """
+
+    # Start cluster
+    print(mn_defs.START_CLUSTER, flush=True)
+    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
+    annt_plugin = TaskAnnotation()
+    cluster.scheduler.add_plugin(annt_plugin)
+    client = Client(cluster)
+
+    # MiniAn CNMF
+    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
+    subset = {"frame": slice(minian_parameters.preview_parameters["VideoStartFrame"], minian_parameters.preview_parameters["VideoStopFrame"])}
+
+    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
+
+    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
+
+    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
+
+    seeds_final, max_proj = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
+
+    # Save data for preview to hdf5 file
+    try:
+        with h5py.File(minian_parameters.preview_parameters["path_hdf5_preview"], 'w') as hdf5_file:
+
+            if minian_parameters.preview_parameters["name_max_proj_dataset"] in hdf5_file:
+                del hdf5_file[minian_parameters.preview_parameters["name_max_proj_dataset"]]
+
+            hdf5_file.create_dataset(minian_parameters.preview_parameters["name_max_proj_dataset"], data = max_proj.values, dtype='float', chunks = True)
+
+            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters["name_seed_group"])
+            for key in seeds_final:
+                groupseed.create_dataset(key, data = seeds_final[key], dtype = 'float',chunks = True)
+
+    except Exception as error:
+        utils.print_error(error, "save to hdf5")
+
+
+    # Close cluster
+    client.close()
+    cluster.close()

@@ -14,7 +14,6 @@ import utilities as utils
 import minian_utilities as mn_utils
 import minian_parameters as mn_params
 import minian_main      as mn_main
-import minian_preview   as mn_preview
 import minian_definitions  as mn_defs
 
 # Import for PyInstaller
@@ -37,6 +36,6 @@ if __name__ == "__main__":
     minian_params = mn_params.MinianParameters(danse_parameters)
 
     if minian_params.preview:
-        mn_preview.minian_preview(minian_params)
+        mn_main.minian_preview(minian_params)
     else:
         mn_main.minian_main(minian_params)
