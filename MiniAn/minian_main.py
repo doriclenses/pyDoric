@@ -108,7 +108,7 @@ def seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters):
         with mn_utils.except_type_error("seeds_merge"):
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
 
-        return seeds_final, seeds
+        return seeds_final
 
 def component_initialization(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters):
     ### Component initialization ###
@@ -164,7 +164,7 @@ def minian_main(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
 
-    seeds_final, seeds = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds_final = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
 
     A, C, C_chk, f, b = component_initialization(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
 
