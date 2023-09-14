@@ -232,7 +232,7 @@ def round_down_to_odd(f):
 
 # definition of try: expect:
 @contextmanager
-def except_type_error(function_name):
+def except_type_error(function_name: str):
     """
     conext try except to show specific message
     """
@@ -244,7 +244,7 @@ def except_type_error(function_name):
         sys.exit()
 
 @contextmanager
-def except_print_error_no_cells(position):
+def except_print_error_no_cells(position: str):
     """
     conext try except to show no cells found
     """
