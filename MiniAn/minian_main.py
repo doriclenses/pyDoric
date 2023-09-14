@@ -279,7 +279,7 @@ def minian_main(minian_parameters):
     series = h5path_names[-2]
     sensor = h5path_names[-1]
     # Get paramaters of the operation on source data
-    params_source_data = utils.load_attributes(file_, data+'/'+driver+'/'+operation)
+    params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
     attrs = utils.load_attributes(file_, h5path+'/ImagesStack')
     file_.close()
@@ -297,18 +297,18 @@ def minian_main(minian_parameters):
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
-        fr=minian_parameters.fr,
-        bits_count=attrs['BitsCount'],
-        qt_format=attrs['Format'],
-        imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
-        vname=minian_parameters.params_load_doric['fname'],
-        vpath='DataProcessed/'+driver+'/',
-        vdataset=series+'/'+sensor+'/',
+        fr = minian_parameters.fr,
+        bits_count = attrs['BitsCount'],
+        qt_format = attrs['Format'],
+        imagesStackUsername = attrs['Username'] if 'Username' in attrs else sensor,
+        vname = minian_parameters.params_load_doric['fname'],
+        vpath = f"DataProcessed/{driver}/",
+        vdataset = f"{series}/{sensor}/",
         params_doric = minian_parameters.parameters,
         params_source = params_source_data,
-        saveimages=True,
-        saveresiduals=True,
-        savespikes=True
+        saveimages = True,
+        saveresiduals = True,
+        savespikes = True
     )
 
     # Close cluster
