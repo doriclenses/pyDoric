@@ -82,29 +82,7 @@ def motion_correction(varr_ref, intpath, chk, minian_parameters):
 
     return Y, Y_fm_chk, Y_hw_chk
 
-
-
-def minian_main(minian_parameters):
-    """minian_main.py
-    """
-
-    # Start cluster
-    print(mn_defs.START_CLUSTER, flush=True)
-    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
-    annt_plugin = TaskAnnotation()
-    cluster.scheduler.add_plugin(annt_plugin)
-    client = Client(cluster)
-
-    # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
-    subset = {"frame": slice(0, None)}
-
-    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
-
-    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
-
-    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
-
+def seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters):
     ### Seed initialization ###
     print(mn_defs.INIT_SEEDS, flush=True)
     with mn_utils.except_print_error_no_cells(mn_defs.INIT_SEEDS):
@@ -129,6 +107,32 @@ def minian_main(minian_parameters):
         seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
         with mn_utils.except_type_error("seeds_merge"):
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
+
+        return seeds_final, seeds
+
+
+def minian_main(minian_parameters):
+    """minian_main.py
+    """
+
+    # Start cluster
+    print(mn_defs.START_CLUSTER, flush=True)
+    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
+    annt_plugin = TaskAnnotation()
+    cluster.scheduler.add_plugin(annt_plugin)
+    client = Client(cluster)
+
+    # MiniAn CNMF
+    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
+    subset = {"frame": slice(0, None)}
+
+    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
+
+    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
+
+    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
+
+    seeds_final, seeds = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
 
     ### Component initialization ###
     print(mn_defs.INIT_COMP, flush=True)
