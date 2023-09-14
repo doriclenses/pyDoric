@@ -27,22 +27,7 @@ from minian.motion_correction import apply_transform, estimate_motion
 from multiprocessing import freeze_support
 freeze_support()
 
-
-def minian_main(minian_parameters):
-    """minian_main.py
-    """
-
-    # Start cluster
-    print(mn_defs.START_CLUSTER, flush=True)
-    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
-    annt_plugin = TaskAnnotation()
-    cluster.scheduler.add_plugin(annt_plugin)
-    client = Client(cluster)
-
-    # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
-    subset = {"frame": slice(0, None)}
-
+def load_and_chunk_the_data(intpath, subset, minian_parameters):
     ### Load and chunk the data ###
     print(mn_defs.LOAD_DATA, flush=True)
     varr, file_ = mn_utils.load_doric_to_xarray(**minian_parameters.params_load_doric)
@@ -51,6 +36,9 @@ def minian_main(minian_parameters):
                        intpath, overwrite=True)
     varr_ref = varr.sel(subset)
 
+    return file_, chk, varr_ref
+
+def pre_process_data(varr_ref, intpath, minian_parameters):
     ### Pre-process data ###
     print(mn_defs.PREPROCESS, flush=True)
     # 1. Glow removal
@@ -71,6 +59,9 @@ def minian_main(minian_parameters):
     print(mn_defs.PREPROC_SAVE, flush=True)
     varr_ref = save_minian(varr_ref.rename("varr_ref"), intpath, overwrite=True)
 
+    return varr_ref
+
+def motion_correction(varr_ref, intpath, chk, minian_parameters):
     ### Motion correction ###
     if minian_parameters.parameters["CorrectMotion"]:
         print(mn_defs.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
@@ -88,6 +79,31 @@ def minian_main(minian_parameters):
     Y_fm_chk = save_minian(Y.astype(float).rename("Y_fm_chk"), intpath, overwrite=True)
     Y_hw_chk = save_minian(Y_fm_chk.rename("Y_hw_chk"), intpath, overwrite=True,
                            chunks={"frame": -1, "height": chk["height"], "width": chk["width"]})
+
+    return Y, Y_fm_chk, Y_hw_chk
+
+
+
+def minian_main(minian_parameters):
+    """minian_main.py
+    """
+
+    # Start cluster
+    print(mn_defs.START_CLUSTER, flush=True)
+    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
+    annt_plugin = TaskAnnotation()
+    cluster.scheduler.add_plugin(annt_plugin)
+    client = Client(cluster)
+
+    # MiniAn CNMF
+    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
+    subset = {"frame": slice(0, None)}
+
+    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
+
+    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
+
+    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
 
     ### Seed initialization ###
     print(mn_defs.INIT_SEEDS, flush=True)
