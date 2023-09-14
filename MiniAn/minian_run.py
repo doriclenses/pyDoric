@@ -15,7 +15,7 @@ import minian_utilities as mn_utils
 import minian_parameters as mn_params
 import minian_main      as mn_main
 import minian_preview   as mn_preview
-import minian_text_def  as mn_txt
+import minian_definitions  as mn_defs
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
@@ -29,10 +29,10 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    utils.print_to_intercept(mn_txt.ADVANCED_BAD_TYPE)
+    utils.print_to_intercept(mn_defs.ADVANCED_BAD_TYPE)
     sys.exit()
 except Exception as error:
-    utils.print_error(error, mn_txt.LOADING_ARGUMENTS)
+    utils.print_error(error, mn_defs.LOADING_ARGUMENTS)
     sys.exit()
 
 if not danse_parameters: # for backwards compatibility

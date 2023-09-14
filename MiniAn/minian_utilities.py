@@ -12,7 +12,7 @@ from minian.utilities import custom_arr_optimize
 
 sys.path.append('..')
 import utilities as utils
-import minian_text_def as mn_txt
+import minian_definitions as mn_defs
 
 def load_doric_to_xarray(
     fname: str,
@@ -240,7 +240,7 @@ def except_type_error(function_name):
     try:
         yield
     except TypeError:
-        utils.print_to_intercept(mn_txt.ONE_PARM_WRONG_TYPE.format(function_name))
+        utils.print_to_intercept(mn_defs.ONE_PARM_WRONG_TYPE.format(function_name))
         sys.exit()
 
 @contextmanager
@@ -253,5 +253,5 @@ def except_print_error_no_cells(position):
         yield
     except Exception as error:
         utils.print_error(error, position)
-        utils.print_to_intercept(mn_txt.NO_CELLS_FOUND)
+        utils.print_to_intercept(mn_defs.NO_CELLS_FOUND)
         sys.exit()
