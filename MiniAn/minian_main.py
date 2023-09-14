@@ -358,5 +358,6 @@ def minian_preview(minian_parameters):
 
 
     # Close cluster
+    file_.close()
     client.close()
     cluster.close()
