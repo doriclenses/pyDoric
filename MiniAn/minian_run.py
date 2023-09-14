@@ -12,7 +12,7 @@ import xarray as xr
 sys.path.append('..')
 import utilities as utils
 import minian_utilities as mn_utils
-import minian_parameter as mn_param
+import minian_parameters as mn_params
 import minian_main      as mn_main
 import minian_preview   as mn_preview
 import minian_text_def  as mn_txt
@@ -39,7 +39,7 @@ if not danse_parameters: # for backwards compatibility
     danse_parameters = {"paths": kwargs , "parameters": params_doric}
 
 if __name__ == "__main__":
-    minian_params = mn_param.MinianParameters(danse_parameters)
+    minian_params = mn_params.MinianParameters(danse_parameters)
 
     if minian_params.preview:
         mn_preview.minian_preview(minian_params)

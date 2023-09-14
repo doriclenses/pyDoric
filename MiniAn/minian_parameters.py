@@ -55,7 +55,7 @@ class MinianParameters:
             "resources": {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
             "threads_per_worker": 2,
             "dashboard_address": ":8787",
-            "local_directory": paths["tmpDir"]
+            "local_directory": self.paths["tmpDir"]
         }
         if "LocalCluster" in advanced_settings:
             advanced_settings["LocalCluster"] = {key: advanced_settings["LocalCluster"][key] for key in advanced_settings["LocalCluster"] if key in self.params_LocalCluster}
@@ -72,7 +72,7 @@ class MinianParameters:
         }
 
         self.params_save_minian = {
-            "dpath": os.path.join(paths["tmpDir"], "final"),
+            "dpath": os.path.join(self.paths["tmpDir"], "final"),
             "meta_dict": {"session": -1, "animal": -2},
             "overwrite": True,
         }

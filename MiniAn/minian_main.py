@@ -13,7 +13,7 @@ import xarray as xr
 sys.path.append('..')
 import utilities as utils
 import minian_utilities as mn_utils
-import minian_parameter as mn_param
+import minian_parameters as mn_params
 import minian_text_def as mn_txt
 
 # Import for MiniAn lib

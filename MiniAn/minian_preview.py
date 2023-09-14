@@ -14,7 +14,7 @@ from typing import Tuple, Optional, Callable
 from dask.distributed import Client, LocalCluster
 sys.path.append('..')
 import utilities as utils
-import minian_parameter as mn_param
+import minian_parameters as mn_params
 
 import minian_utilities as mn_utils
 
