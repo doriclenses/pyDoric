@@ -50,6 +50,7 @@ class ParametersKeys:
 
     #For minian_parameters
     PATHS                   = "paths"
+    PARAMETERS              = "parameters"
     # For preview
     PREVIEW                 = "preview"
     PATH_HDF5_PREVIEW       = "path_hdf5_preview"
