@@ -43,3 +43,12 @@ class Messages:
     # For preview
     SAVE_TO_HDF5                = "save to hdf5"
 
+class ParametersKeys:
+    '''
+    Parameters_keys
+    '''
+    # For preview
+    PATH_HDF5_PREVIEW       = "path_hdf5_preview"
+    NAME_MAX_PROJ_DATASET   = "name_max_proj_dataset"
+    NAME_SEED_GROUP         = "name_seed_group"
+

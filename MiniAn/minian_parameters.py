@@ -15,6 +15,9 @@ import utilities as utils
 import minian_utilities as mn_utils
 
 class MinianParameters:
+    '''
+    MinianParameters
+    '''
 
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get("paths", {})
