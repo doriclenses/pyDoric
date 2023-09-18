@@ -13,6 +13,7 @@ import minian.motion_correction as mnMotcorr
 sys.path.append('..')
 import utilities as utils
 import minian_utilities as mn_utils
+import minian_definitions as mn_defs
 
 class MinianParameters:
     '''
@@ -20,8 +21,8 @@ class MinianParameters:
     '''
 
     def __init__(self, danse_parameters):
-        self.paths   = danse_parameters.get("paths", {})
         self.parameters  = danse_parameters.get("parameters", {})
+        self.paths   = danse_parameters.get(mn_defs.ParametersKeys.PATHS, {})
         self.preview = False
         if "preview" in danse_parameters:
             self.preview = True

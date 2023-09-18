@@ -47,6 +47,9 @@ class ParametersKeys:
     '''
     Parameters_keys
     '''
+
+    #For minian_parameters
+    PATHS                   = "paths"
     # For preview
     PATH_HDF5_PREVIEW       = "path_hdf5_preview"
     NAME_MAX_PROJ_DATASET   = "name_max_proj_dataset"
