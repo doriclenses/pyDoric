@@ -306,7 +306,7 @@ class MinianParameters:
 
         return [param_func, advanced_parameters]
 
-    def get_clean_df5path(self):
+    def get_clean_h5path(self):
         """
         get_clean_df5path
         """
@@ -324,7 +324,7 @@ class MinianParameters:
         """
         get_hdf5path_struct
         """
-        h5path_names = self.get_clean_df5path().split('/')
+        h5path_names = self.get_clean_h5path().split('/')
 
         data = h5path_names[0]
         driver = h5path_names[1]

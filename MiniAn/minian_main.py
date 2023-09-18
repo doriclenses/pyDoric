@@ -272,7 +272,7 @@ def minian_main(minian_parameters):
     # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_, f"{minian_parameters.get_clean_df5path()}/ImagesStack")
+    attrs = utils.load_attributes(file_, f"{minian_parameters.get_clean_h5path()}/ImagesStack")
     file_.close()
 
     # Parameters
