@@ -320,7 +320,7 @@ class MinianParameters:
 
         return h5path
 
-    def get_hdf5path_struct(self):
+    def get_h5path_struct(self):
         """
         get_hdf5path_struct
         """

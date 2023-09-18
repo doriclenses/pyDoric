@@ -267,7 +267,7 @@ def minian_main(minian_parameters):
     ### Save results to doric file ###
     print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
     # Get the path from the source data
-    data, driver, operation, series, sensor = minian_parameters.get_hdf5path_struct()
+    data, driver, operation, series, sensor = minian_parameters.get_h5path_struct()
 
     # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
