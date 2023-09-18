@@ -24,9 +24,9 @@ class MinianParameters:
         self.parameters  = danse_parameters.get("parameters", {})
         self.paths   = danse_parameters.get(mn_defs.ParametersKeys.PATHS, {})
         self.preview = False
-        if "preview" in danse_parameters:
+        if mn_defs.ParametersKeys.PREVIEW in danse_parameters:
             self.preview = True
-            self.preview_parameters = danse_parameters["preview"]
+            self.preview_parameters = danse_parameters[mn_defs.ParametersKeys.PREVIEW]
 
         os.environ["OMP_NUM_THREADS"] = "1"
         os.environ["MKL_NUM_THREADS"] = "1"
