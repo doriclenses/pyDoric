@@ -155,7 +155,7 @@ def minian_main(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[mn_defs.ParametersKeys.TMP_DIR], "intermediate")
     subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
@@ -329,7 +329,7 @@ def minian_preview(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths["tmpDir"], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[mn_defs.ParametersKeys.TMP_DIR], "intermediate")
     subset = {"frame": slice(minian_parameters.preview_parameters["VideoStartFrame"], minian_parameters.preview_parameters["VideoStopFrame"])}
 
     file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
