@@ -26,10 +26,10 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    utils.print_to_intercept(mn_defs.ADVANCED_BAD_TYPE)
+    utils.print_to_intercept(mn_defs.Messages.ADVANCED_BAD_TYPE)
     sys.exit()
 except Exception as error:
-    utils.print_error(error, mn_defs.LOADING_ARGUMENTS)
+    utils.print_error(error, mn_defs.Messages.LOADING_ARGUMENTS)
     sys.exit()
 
 if __name__ == "__main__":
