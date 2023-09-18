@@ -38,10 +38,10 @@ class MinianParameters:
         self.fr = utils.get_frequency(self.paths[mn_defs.ParametersKeys.FNAME], self.paths[mn_defs.ParametersKeys.H5PATH]+'Time')
 
         neuron_diameter     = tuple((np.array([self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MIN], self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MAX]])/self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]).round().astype('int'))
-        noise_freq: float   = parameters["NoiseFreq"]
-        thres_corr: float   = parameters["ThresCorr"]
+        noise_freq: float   = parameters[mn_defs.ParametersKeys.NOISE_FREQ]
+        thres_corr: float   = parameters[mn_defs.ParametersKeys.THRES_CORR]
 
-        advanced_settings = parameters.get("AdvancedSettings", {})
+        advanced_settings = parameters.get(mn_defs.ParametersKeys.ADVANCED_SETTINGS, {})
 
         # removing advanced_sesttings function keys that are not in the minian functions list
         minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize",
@@ -184,7 +184,7 @@ class MinianParameters:
             self.params_update_temporal, advanced_settings["update_temporal"] = self.update_func_advanced_param(self.params_update_temporal, advanced_settings["update_temporal"], mnCnmf.update_temporal)
 
         # Update AdvancedSettings for self.parameters
-        self.parameters["AdvancedSettings"] = advanced_settings.copy()
+        self.parameters[mn_defs.ParametersKeys.ADVANCED_SETTINGS] = advanced_settings.copy()
 
 
     #--------------------------------------------- functions for advanced parameters -------------------------------------------------------------------------

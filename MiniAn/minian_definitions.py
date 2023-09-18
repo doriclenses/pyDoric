@@ -57,6 +57,9 @@ class ParametersKeys:
     NEURO_DIAM_MIN          = "NeuronDiameterMin"
     NEURO_DIAM_MAX          = "NeuronDiameterMax"
     SPATIAL_DOWN_SAMP       = "SpatialDownsample"
+    NOISE_FREQ              = "NoiseFreq"
+    THRES_CORR              = "ThresCorr"
+    ADVANCED_SETTINGS       = "AdvancedSettings"
 
     # For preview
     PREVIEW                 = "preview"
