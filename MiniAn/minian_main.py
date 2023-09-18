@@ -267,21 +267,12 @@ def minian_main(minian_parameters):
     ### Save results to doric file ###
     print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
     # Get the path from the source data
-    h5path = minian_parameters.params_load_doric[mn_defs.ParametersKeys.H5PATH]
-    if h5path[0] == '/':
-        h5path = h5path[1:]
-    if h5path[-1] == '/':
-        h5path = h5path[:-1]
-    h5path_names = h5path.split('/')
-    data = h5path_names[0]
-    driver = h5path_names[1]
-    operation = h5path_names[2]
-    series = h5path_names[-2]
-    sensor = h5path_names[-1]
+    data, driver, operation, series, sensor = minian_parameters.get_hdf5path_struct()
+
     # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_, h5path+'/ImagesStack')
+    attrs = utils.load_attributes(file_, f"{minian_parameters.get_clean_df5path()}/ImagesStack")
     file_.close()
 
     # Parameters
@@ -357,7 +348,8 @@ def minian_preview(minian_parameters):
         utils.print_error(error, mn_defs.Messages.SAVE_TO_HDF5)
 
 
-    # Close cluster
     file_.close()
+
+    # Close cluster
     client.close()
     cluster.close()

@@ -190,7 +190,7 @@ class MinianParameters:
     #--------------------------------------------- functions for advanced parameters -------------------------------------------------------------------------
     def remove_keys_not_in_fun_arguments(self,
         input_dic:dict, func
-    ) -> dict:
+        ) -> dict:
         '''
         This function while keep the keys in input_dic that are not use in the function func
 
@@ -305,3 +305,31 @@ class MinianParameters:
             advanced_parameters[key] = value
 
         return [param_func, advanced_parameters]
+
+    def get_clean_df5path(self):
+        """
+        get_clean_df5path
+        """
+
+        h5path = self.paths[mn_defs.ParametersKeys.H5PATH]
+
+        if h5path[0] == '/':
+            h5path = h5path[1:]
+        if h5path[-1] == '/':
+            h5path = h5path[:-1]
+
+        return h5path
+
+    def get_hdf5path_struct(self):
+        """
+        get_hdf5path_struct
+        """
+        h5path_names = self.get_clean_df5path().split('/')
+
+        data = h5path_names[0]
+        driver = h5path_names[1]
+        operation = h5path_names[2]
+        series = h5path_names[-2]
+        sensor = h5path_names[-1]
+
+        return data, driver, operation, series, sensor
