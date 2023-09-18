@@ -35,7 +35,7 @@ class MinianParameters:
 
         parameters = self.parameters
 
-        self.fr = utils.get_frequency(self.paths["fname"], self.paths['h5path']+'Time')
+        self.fr = utils.get_frequency(self.paths[mn_defs.ParametersKeys.FNAME], self.paths[mn_defs.ParametersKeys.H5PATH]+'Time')
 
         neuron_diameter     = tuple((np.array([self.parameters["NeuronDiameterMin"], self.parameters["NeuronDiameterMax"]])/self.parameters["SpatialDownsample"]).round().astype('int'))
         noise_freq: float   = parameters["NoiseFreq"]
@@ -66,8 +66,8 @@ class MinianParameters:
             self.params_LocalCluster.update(advanced_settings["LocalCluster"])
 
         self.params_load_doric = {
-            "fname": self.paths["fname"],
-            "h5path": self.paths['h5path'],
+            "fname": self.paths[mn_defs.ParametersKeys.FNAME],
+            "h5path": self.paths[mn_defs.ParametersKeys.H5PATH],
             "dtype": np.uint8,
             "downsample": {"frame": parameters["TemporalDownsample"],
                             "height": parameters["SpatialDownsample"],

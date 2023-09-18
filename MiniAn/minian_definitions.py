@@ -52,6 +52,10 @@ class ParametersKeys:
     PATHS                   = "paths"
     PARAMETERS              = "parameters"
     TMP_DIR                 = "tmpDir"
+    FNAME                   = "fname"
+    H5PATH                  = "h5path"
+
+
     # For preview
     PREVIEW                 = "preview"
     PATH_HDF5_PREVIEW       = "path_hdf5_preview"
