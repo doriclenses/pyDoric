@@ -60,6 +60,9 @@ class ParametersKeys:
     NOISE_FREQ              = "NoiseFreq"
     THRES_CORR              = "ThresCorr"
     ADVANCED_SETTINGS       = "AdvancedSettings"
+    SPATIAL_PENALTY         = "SpatialPenalty"
+    TEMPORAL_PENALTY        = "TemporalPenalty"
+    CORRECT_MOTION          = "CorrectMotion"
 
     # For preview
     PREVIEW                 = "preview"

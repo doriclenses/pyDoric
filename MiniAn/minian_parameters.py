@@ -167,7 +167,7 @@ class MinianParameters:
 
         self.params_update_spatial = {
             'dl_wnd': neuron_diameter[-1],
-            'sparse_penal': parameters["SpatialPenalty"],
+            'sparse_penal': parameters[mn_defs.ParametersKeys.SPATIAL_PENALTY],
             'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
         }
         if "update_spatial" in advanced_settings:
@@ -175,7 +175,7 @@ class MinianParameters:
 
         self.params_update_temporal = {
             'noise_freq': noise_freq,
-            'sparse_penal': parameters["TemporalPenalty"],
+            'sparse_penal': parameters[mn_defs.ParametersKeys.TEMPORAL_PENALTY],
             'p': 1,
             'add_lag': 20,
             'jac_thres': 0.2
