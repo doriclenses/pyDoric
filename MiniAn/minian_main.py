@@ -286,11 +286,11 @@ def minian_main(minian_parameters):
 
     # Parameters
     # Set only "Operations" for params_srouce_data
-    if mn_defs.ParametersKeys.OPRETATION_NAME in params_source_data:
-        if mn_defs.ParametersKeys.OPRETATIONS not in params_source_data:
-            params_source_data[mn_defs.ParametersKeys.OPRETATIONS] = params_source_data[mn_defs.ParametersKeys.OPRETATION_NAME]
+    if mn_defs.ParametersKeys.OPERATION_NAME in params_source_data:
+        if mn_defs.ParametersKeys.OPERATIONS not in params_source_data:
+            params_source_data[mn_defs.ParametersKeys.OPERATIONS] = params_source_data[mn_defs.ParametersKeys.OPERATION_NAME]
 
-        del params_source_data[mn_defs.ParametersKeys.OPRETATION_NAME]
+        del params_source_data[mn_defs.ParametersKeys.OPERATION_NAME]
 
     if minian_parameters.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP] > 1:
         minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]

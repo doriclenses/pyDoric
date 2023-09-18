@@ -63,8 +63,8 @@ class ParametersKeys:
     SPATIAL_PENALTY         = "SpatialPenalty"
     TEMPORAL_PENALTY        = "TemporalPenalty"
     CORRECT_MOTION          = "CorrectMotion"
-    OPRETATION_NAME         = "OperationName"
-    OPRETATIONS             = "Operations"
+    OPERATION_NAME          = "OperationName"
+    OPERATIONS              = "Operations"
 
 
 
