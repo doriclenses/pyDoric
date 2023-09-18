@@ -54,7 +54,9 @@ class ParametersKeys:
     TMP_DIR                 = "tmpDir"
     FNAME                   = "fname"
     H5PATH                  = "h5path"
-
+    NEURO_DIAM_MIN          = "NeuronDiameterMin"
+    NEURO_DIAM_MAX          = "NeuronDiameterMax"
+    SPATIAL_DOWN_SAMP       = "SpatialDownsample"
 
     # For preview
     PREVIEW                 = "preview"

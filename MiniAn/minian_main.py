@@ -267,7 +267,7 @@ def minian_main(minian_parameters):
     ### Save results to doric file ###
     print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
     # Get the path from the source data
-    h5path = minian_parameters.params_load_doric['h5path']
+    h5path = minian_parameters.params_load_doric[mn_defs.ParametersKeys.H5PATH]
     if h5path[0] == '/':
         h5path = h5path[1:]
     if h5path[-1] == '/':
@@ -292,8 +292,8 @@ def minian_main(minian_parameters):
 
         del params_source_data["OperationName"]
 
-    if minian_parameters.parameters["SpatialDownsample"] > 1:
-        minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters["SpatialDownsample"]
+    if minian_parameters.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP] > 1:
+        minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,

@@ -37,7 +37,7 @@ class MinianParameters:
 
         self.fr = utils.get_frequency(self.paths[mn_defs.ParametersKeys.FNAME], self.paths[mn_defs.ParametersKeys.H5PATH]+'Time')
 
-        neuron_diameter     = tuple((np.array([self.parameters["NeuronDiameterMin"], self.parameters["NeuronDiameterMax"]])/self.parameters["SpatialDownsample"]).round().astype('int'))
+        neuron_diameter     = tuple((np.array([self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MIN], self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MAX]])/self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]).round().astype('int'))
         noise_freq: float   = parameters["NoiseFreq"]
         thres_corr: float   = parameters["ThresCorr"]
 
@@ -70,8 +70,8 @@ class MinianParameters:
             "h5path": self.paths[mn_defs.ParametersKeys.H5PATH],
             "dtype": np.uint8,
             "downsample": {"frame": parameters["TemporalDownsample"],
-                            "height": parameters["SpatialDownsample"],
-                            "width": parameters["SpatialDownsample"]},
+                            "height": parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP],
+                            "width": parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]},
             "downsample_strategy": "subset",
         }
 
