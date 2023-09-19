@@ -42,7 +42,7 @@ def main(minian_parameters):
     intpath = os.path.join(minian_parameters.paths[mn_defs.ParametersKeys.TMP_DIR], "intermediate")
     subset = {"frame": slice(0, None)}
 
-    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
+    file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
 
     varr_ref = preprocess(varr_ref, intpath, minian_parameters)
 
@@ -207,7 +207,7 @@ def preview(minian_parameters):
     intpath = os.path.join(minian_parameters.paths[mn_defs.ParametersKeys.TMP_DIR], "intermediate")
     subset = {"frame": slice(minian_parameters.preview_parameters["VideoStartFrame"], minian_parameters.preview_parameters["VideoStopFrame"])}
 
-    file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
+    file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
 
     varr_ref = preprocess(varr_ref, intpath, minian_parameters)
 
@@ -239,7 +239,7 @@ def preview(minian_parameters):
     cluster.close()
 
 ################### Functions defintion ###################
-def load_and_chunk_the_data(intpath, subset, minian_parameters):
+def load_chunk(intpath, subset, minian_parameters):
     ### Load and chunk the data ###
     print(mn_defs.Messages.LOAD_DATA, flush=True)
     varr, file_ = mn_utils.load_doric_to_xarray(**minian_parameters.params_load_doric)
