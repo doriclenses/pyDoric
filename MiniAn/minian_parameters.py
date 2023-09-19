@@ -42,14 +42,6 @@ class MinianParameters:
         noise_freq: float   = self.parameters[mn_defs.ParametersKeys.NOISE_FREQ]
         thres_corr: float   = self.parameters[mn_defs.ParametersKeys.THRES_CORR]
 
-
-        # removing advanced_sesttings function keys that are not in the minian functions list
-        self.advanced_settings = self.parameters.get(mn_defs.ParametersKeys.ADVANCED_SETTINGS, {})
-        self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings
-                            if (hasattr(mnUtils, key) or hasattr(mnPreproc, key) or hasattr(mnInit, key)
-                                or hasattr(mnCnmf, key) or hasattr(mnMotcorr, key) or key == "LocalCluster")}
-
-
         self.params_LocalCluster = {
             "n_workers": 4,
             "memory_limit": "auto",
@@ -148,6 +140,12 @@ class MinianParameters:
             'add_lag': 20,
             'jac_thres': 0.2
         }
+
+        # removing advanced_sesttings function keys that are not in the minian functions list
+        self.advanced_settings = self.parameters.get(mn_defs.ParametersKeys.ADVANCED_SETTINGS, {})
+        self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings
+                            if (hasattr(mnUtils, key) or hasattr(mnPreproc, key) or hasattr(mnInit, key)
+                                or hasattr(mnCnmf, key) or hasattr(mnMotcorr, key) or key == "LocalCluster")}
 
         self.update_all_func_params()
         self.parameters[mn_defs.ParametersKeys.ADVANCED_SETTINGS] = self.advanced_settings.copy()
