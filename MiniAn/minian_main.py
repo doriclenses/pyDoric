@@ -82,7 +82,7 @@ def correct_motion(varr_ref, intpath, chk, minian_parameters):
 
     return Y, Y_fm_chk, Y_hw_chk
 
-def seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters):
+def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters):
     ### Seed initialization ###
     print(mn_defs.Messages.INIT_SEEDS, flush=True)
     with mn_utils.except_print_error_no_cells(mn_defs.Messages.INIT_SEEDS):
@@ -164,7 +164,7 @@ def minian_main(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
-    seeds_final, _ = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds_final, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
 
     A, C, C_chk, f, b = component_initialization(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
 
@@ -329,7 +329,7 @@ def minian_preview(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
-    seeds_final, max_proj = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds_final, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
 
     # Save data for preview to hdf5 file
     try:
