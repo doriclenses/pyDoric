@@ -38,7 +38,7 @@ def load_and_chunk_the_data(intpath, subset, minian_parameters):
 
     return file_, chk, varr_ref
 
-def pre_process_data(varr_ref, intpath, minian_parameters):
+def preprocess(varr_ref, intpath, minian_parameters):
     ### Pre-process data ###
     print(mn_defs.Messages.PREPROCESS, flush=True)
     # 1. Glow removal
@@ -160,7 +160,7 @@ def minian_main(minian_parameters):
 
     file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
 
-    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
+    varr_ref = preprocess(varr_ref, intpath, minian_parameters)
 
     Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
 
@@ -325,7 +325,7 @@ def minian_preview(minian_parameters):
 
     file_, chk, varr_ref = load_and_chunk_the_data(intpath, subset, minian_parameters)
 
-    varr_ref = pre_process_data(varr_ref, intpath, minian_parameters)
+    varr_ref = preprocess(varr_ref, intpath, minian_parameters)
 
     Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
 
