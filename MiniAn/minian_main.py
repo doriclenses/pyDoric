@@ -61,7 +61,7 @@ def preprocess(varr_ref, intpath, minian_parameters):
 
     return varr_ref
 
-def motion_correction(varr_ref, intpath, chk, minian_parameters):
+def correct_motion(varr_ref, intpath, chk, minian_parameters):
     ### Motion correction ###
     if minian_parameters.parameters[mn_defs.ParametersKeys.CORRECT_MOTION]:
         print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
@@ -162,7 +162,7 @@ def minian_main(minian_parameters):
 
     varr_ref = preprocess(varr_ref, intpath, minian_parameters)
 
-    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
+    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
     seeds_final, _ = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
 
@@ -327,7 +327,7 @@ def minian_preview(minian_parameters):
 
     varr_ref = preprocess(varr_ref, intpath, minian_parameters)
 
-    Y, Y_fm_chk, Y_hw_chk = motion_correction(varr_ref, intpath, chk, minian_parameters)
+    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
     seeds_final, max_proj = seed_initialization(Y_fm_chk, Y_hw_chk, minian_parameters)
 
