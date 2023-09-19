@@ -35,7 +35,10 @@ class MinianParameters:
 
         self.fr = utils.get_frequency(self.paths[mn_defs.ParametersKeys.FNAME], self.paths[mn_defs.ParametersKeys.H5PATH]+'Time')
 
-        neuron_diameter     = tuple((np.array([self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MIN], self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MAX]])/self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]).round().astype('int'))
+        neuron_diameter     = np.array([self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MIN], self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MAX]])
+        neuron_diameter     /= self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]
+        neuron_diameter     = tuple(neuron_diameter.round().astype('int'))
+
         noise_freq: float   = self.parameters[mn_defs.ParametersKeys.NOISE_FREQ]
         thres_corr: float   = self.parameters[mn_defs.ParametersKeys.THRES_CORR]
 
