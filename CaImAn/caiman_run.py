@@ -36,7 +36,7 @@ freeze_support()
 # Text definitions
 ADVANCED_BAD_TYPE   = "One of the advanced settings is not of a python type"
 WRITE_IMAGE_TIFF    = "Write image in tiff..."
-MOTION_CORREC       = "MOTION CORRECTION"
+MOTION_CORREC       = "Motion correction"
 PARAM_WRONG_TYPE    = "One parameter is of the wrong type"
 START_CNMF          = "Starting CNMF..."
 FITTING             = "Fitting..."
@@ -55,16 +55,20 @@ except SyntaxError:
     utils.print_to_intercept(ADVANCED_BAD_TYPE)
     sys.exit()
 
-if not danse_parameters:
-    danse_parameters = {"file_path": kwargs , "parameters": params_doric}
+if not danse_parameters: # for backwards compatibility
+    danse_parameters = {"paths": kwargs , "parameters": params_doric}
 
-file_path   = danse_parameters.get("file_path", {})
+paths   = danse_parameters.get("paths", {})
 parameters  = danse_parameters.get("parameters", {})
 
-tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
-tmpDirName = tmpDir.name
-fr = utils.get_frequency(file_path['fname'], file_path['h5path']+'Time')
-dims, T = utils.get_dims(file_path['fname'], file_path['h5path']+'ImagesStack')
+if "tmpDir" in paths:
+    tmpDirName   = paths["tmpDir"]
+else : # for backwards compatibility
+    tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
+    tmpDirName = tmpDir.name
+
+fr = utils.get_frequency(paths['fname'], paths['h5path']+'Time')
+dims, T = utils.get_dims(paths['fname'], paths['h5path']+'ImagesStack')
 
 neuron_diameter             = tuple([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])
 
@@ -123,13 +127,13 @@ if __name__ == "__main__":
 
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
-    with h5py.File(file_path["fname"], 'r') as f:
-        images = np.array(f[file_path['h5path']+'ImagesStack'])
+    with h5py.File(paths["fname"], 'r') as f:
+        images = np.array(f[paths['h5path']+'ImagesStack'])
 
     logging.debug(images.shape)
 
     images = images.transpose(2, 0, 1)
-    h5path_list = file_path['h5path'].split('/')
+    h5path_list = paths['h5path'].split('/')
     fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
     print(WRITE_IMAGE_TIFF, flush=True)
     imwrite(fname_tif, images)
@@ -150,6 +154,9 @@ if __name__ == "__main__":
             mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
         except TypeError:
             utils.print_to_intercept(PARAM_WRONG_TYPE)
+            sys.exit()
+        except Exception as error:
+            utils.print_error(error, MOTION_CORREC)
             sys.exit()
 
         mc.motion_correct(save_movie=True)
@@ -177,11 +184,14 @@ if __name__ == "__main__":
     except TypeError:
         utils.print_to_intercept(PARAM_WRONG_TYPE)
         sys.exit()
+    except Exception as error:
+        utils.print_error(error, START_CNMF)
+        sys.exit()
 
     ### Save results to doric file ###
     print(SAVING_DATA, flush=True)
     # Get the path from the source data
-    h5path = file_path['h5path']
+    h5path = paths['h5path']
     if h5path[0] == '/':
         h5path = h5path[1:]
     if h5path[-1] == '/':
@@ -193,9 +203,9 @@ if __name__ == "__main__":
     series = h5path_names[-2]
     sensor = h5path_names[-1]
     # Get paramaters of the operation on source data
-    params_source_data = utils.load_attributes(file_path['fname'], data+'/'+driver+'/'+operation)
+    params_source_data = utils.load_attributes(paths['fname'], data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_path['fname'], file_path['h5path']+'/ImagesStack')
+    attrs = utils.load_attributes(paths['fname'], paths['h5path']+'/ImagesStack')
 
     # Parameters
     # Set only "Operations" for params_srouce_data
@@ -222,7 +232,7 @@ if __name__ == "__main__":
             bits_count=attrs['BitsCount'],
             qt_format=attrs['Format'],
             imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
-            vname=file_path['fname'],
+            vname=paths['fname'],
             vpath='DataProcessed/'+driver+'/',
             vdataset=series+'/'+sensor+'/',
             params_doric = parameters,

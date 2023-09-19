@@ -7,16 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 import caiman
 
 sys.path.append('..')
-from utilities import (
-    save_attributes,
-    load_attributes,
-    save_roi_signals,
-    save_signals,
-    save_images,
-    print_to_intercept,
-    print_group_path_for_DANSE,
-    merge_params
-)
+import  utilities as utils
 
 def save_caiman_to_doric(
     Y: np.ndarray,
@@ -80,8 +71,8 @@ def save_caiman_to_doric(
             if len(operations) > 0:
                 operationCount = str(len(operations))
                 for operation in operations:
-                    operationAttrs = load_attributes(f, vpath+operation)
-                    if merge_params(params_doric, params_source) == operationAttrs:
+                    operationAttrs = utils.load_attributes(f, vpath+operation)
+                    if utils.merge_params(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(ROISIGNALS)):
                             operationCount = ''
                         else:
@@ -100,30 +91,30 @@ def save_caiman_to_doric(
 
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
-        save_roi_signals(C, A, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
-        print_group_path_for_DANSE(pathROIs+vdataset)
-        save_attributes(merge_params(params_doric, params_source), f, pathROIs)
+        utils.save_roi_signals(C, A, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
+        utils.print_group_path_for_DANSE(pathROIs+vdataset)
+        utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
 
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
-            save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
-            print_group_path_for_DANSE(pathImages+vdataset)
-            save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
+            utils.save_images(AC, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            utils.print_group_path_for_DANSE(pathImages+vdataset)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
-            save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
-            print_group_path_for_DANSE(pathResiduals+vdataset)
-            save_attributes(merge_params(params_doric, params_source, params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
+            utils.save_images(res, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            utils.print_group_path_for_DANSE(pathResiduals+vdataset)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
             print("saving spikes")
             pathSpikes = vpath+SPIKES+operationCount+'/'
-            save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
-            print_group_path_for_DANSE(pathSpikes+vdataset)
-            save_attributes(merge_params(params_doric, params_source), f, pathSpikes)
+            utils.save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
+            utils.print_group_path_for_DANSE(pathSpikes+vdataset)
+            utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
 
     print("Saved to {}".format(vname))
 
