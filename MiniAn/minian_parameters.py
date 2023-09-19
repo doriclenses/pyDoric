@@ -169,6 +169,7 @@ class MinianParameters:
         if func_name == "LocalCluster":
             new_params = {key: params[key] for key in params if key in self.params_LocalCluster}
             self.params_LocalCluster.update(new_params)
+            self.advanced_settings[func_name] = new_params
             return
 
         if func_name == "denoise":
@@ -196,7 +197,7 @@ class MinianParameters:
         new_params = {key: params[key] for key in params if key in func_arguments}
 
         getattr(self, "params_" + func_name).update(new_params)
-        self.parameters[mn_defs.ParametersKeys.ADVANCED_SETTINGS][func_name] = new_params
+        self.advanced_settings[func_name] = new_params
 
     def remove_unused_keys(self,
         old_param: dict,
