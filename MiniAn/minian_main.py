@@ -110,7 +110,7 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters):
 
         return seeds_final, max_proj
 
-def component_initialization(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters):
+def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters):
     ### Component initialization ###
     print(mn_defs.Messages.INIT_COMP, flush=True)
     with mn_utils.except_print_error_no_cells(mn_defs.Messages.INIT_COMP):
@@ -166,7 +166,7 @@ def minian_main(minian_parameters):
 
     seeds_final, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
 
-    A, C, C_chk, f, b = component_initialization(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
+    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
 
     ### CNMF 1st itteration ###
     with mn_utils.except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("1st")):
