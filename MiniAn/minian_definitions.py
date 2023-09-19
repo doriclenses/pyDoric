@@ -56,6 +56,7 @@ class ParametersKeys:
     H5PATH                  = "h5path"
     NEURO_DIAM_MIN          = "NeuronDiameterMin"
     NEURO_DIAM_MAX          = "NeuronDiameterMax"
+    TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
     SPATIAL_DOWN_SAMP       = "SpatialDownsample"
     NOISE_FREQ              = "NoiseFreq"
     THRES_CORR              = "ThresCorr"

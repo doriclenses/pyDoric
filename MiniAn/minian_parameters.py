@@ -60,7 +60,7 @@ class MinianParameters:
             "fname": self.paths[mn_defs.ParametersKeys.FNAME],
             "h5path": self.paths[mn_defs.ParametersKeys.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": self.parameters["TemporalDownsample"],
+            "downsample": {"frame": self.parameters[mn_defs.ParametersKeys.TEMPORAL_DOWN_SAMP],
                             "height": self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP],
                             "width": self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]},
             "downsample_strategy": "subset",
