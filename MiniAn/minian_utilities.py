@@ -191,7 +191,7 @@ def save_minian_to_doric(
         if vdataset[-1] != '/':
             vdataset += '/'
 
-        params_doric[mn_defs.ParametersKeys.OPERATIONS] += operationCount
+        params_doric[mn_defs.DanseKeys.OPERATIONS] += operationCount
 
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
@@ -204,14 +204,14 @@ def save_minian_to_doric(
             pathImages = vpath+IMAGES+operationCount+'/'
             utils.save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[mn_defs.ParametersKeys.OPERATIONS] + "(Images)"), f, pathImages)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[mn_defs.DanseKeys.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             utils.save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[mn_defs.ParametersKeys.OPERATIONS] + "(Residuals)"), f, pathResiduals)
+            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[mn_defs.DanseKeys.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
             print("saving spikes")
