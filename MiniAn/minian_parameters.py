@@ -42,14 +42,9 @@ class MinianParameters:
         advanced_settings = self.parameters.get(mn_defs.ParametersKeys.ADVANCED_SETTINGS, {})
 
         # removing advanced_sesttings function keys that are not in the minian functions list
-        minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize",
-                                "save_minian", "open_minian", "denoise", "remove_background",
-                                "seeds_init", "pnr_refine", "ks_refine", "seeds_merge", "initA", "initC",
-                                "compute_trace", "get_noise_fft", "update_spatial", "update_temporal",
-                                "unit_merge", "update_background", "compute_AtC", "apply_transform",
-                                "estimate_motion"] + ["LocalCluster"]
-
-        advanced_settings = {key: advanced_settings[key] for key in advanced_settings if key in minian_functions_list}
+        advanced_settings = {key: advanced_settings[key] for key in advanced_settings
+                            if (hasattr(mnUtils, key) or hasattr(mnPreproc, key) or hasattr(mnInit, key)
+                                or hasattr(mnCnmf, key) or hasattr(mnMotcorr, key) or key == "LocalCluster")}
 
         self.params_LocalCluster = {
             "n_workers": 4,
