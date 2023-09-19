@@ -33,15 +33,13 @@ class MinianParameters:
         os.environ["OPENBLAS_NUM_THREADS"] = "1"
         os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[mn_defs.ParametersKeys.TMP_DIR], "intermediate")
 
-        parameters = self.parameters
-
         self.fr = utils.get_frequency(self.paths[mn_defs.ParametersKeys.FNAME], self.paths[mn_defs.ParametersKeys.H5PATH]+'Time')
 
         neuron_diameter     = tuple((np.array([self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MIN], self.parameters[mn_defs.ParametersKeys.NEURO_DIAM_MAX]])/self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]).round().astype('int'))
-        noise_freq: float   = parameters[mn_defs.ParametersKeys.NOISE_FREQ]
-        thres_corr: float   = parameters[mn_defs.ParametersKeys.THRES_CORR]
+        noise_freq: float   = self.parameters[mn_defs.ParametersKeys.NOISE_FREQ]
+        thres_corr: float   = self.parameters[mn_defs.ParametersKeys.THRES_CORR]
 
-        advanced_settings = parameters.get(mn_defs.ParametersKeys.ADVANCED_SETTINGS, {})
+        advanced_settings = self.parameters.get(mn_defs.ParametersKeys.ADVANCED_SETTINGS, {})
 
         # removing advanced_sesttings function keys that are not in the minian functions list
         minian_functions_list = ["TaskAnnotation", "get_optimal_chk", "custom_arr_optimize",
@@ -69,9 +67,9 @@ class MinianParameters:
             "fname": self.paths[mn_defs.ParametersKeys.FNAME],
             "h5path": self.paths[mn_defs.ParametersKeys.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": parameters["TemporalDownsample"],
-                            "height": parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP],
-                            "width": parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]},
+            "downsample": {"frame": self.parameters["TemporalDownsample"],
+                            "height": self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP],
+                            "width": self.parameters[mn_defs.ParametersKeys.SPATIAL_DOWN_SAMP]},
             "downsample_strategy": "subset",
         }
 
@@ -167,7 +165,7 @@ class MinianParameters:
 
         self.params_update_spatial = {
             'dl_wnd': neuron_diameter[-1],
-            'sparse_penal': parameters[mn_defs.ParametersKeys.SPATIAL_PENALTY],
+            'sparse_penal': self.parameters[mn_defs.ParametersKeys.SPATIAL_PENALTY],
             'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
         }
         if "update_spatial" in advanced_settings:
@@ -175,7 +173,7 @@ class MinianParameters:
 
         self.params_update_temporal = {
             'noise_freq': noise_freq,
-            'sparse_penal': parameters[mn_defs.ParametersKeys.TEMPORAL_PENALTY],
+            'sparse_penal': self.parameters[mn_defs.ParametersKeys.TEMPORAL_PENALTY],
             'p': 1,
             'add_lag': 20,
             'jac_thres': 0.2
