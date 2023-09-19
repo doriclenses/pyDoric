@@ -36,6 +36,6 @@ if __name__ == "__main__":
     minian_params = mn_params.MinianParameters(danse_parameters)
 
     if minian_params.preview:
-        mn_main.minian_preview(minian_params)
+        mn_main.preview(minian_params)
     else:
-        mn_main.minian_main(minian_params)
+        mn_main.main(minian_params)
