@@ -214,8 +214,7 @@ class MinianParameters:
         func_arguments = inspect.getfullargspec(func).args
         new_params = {key: new_params[key] for key in new_params if key in func_arguments}
 
-        for key, value in new_params.items():
-            old_param[key] = value
+        old_param.update(new_params)
 
         return [old_param, new_params]
 
