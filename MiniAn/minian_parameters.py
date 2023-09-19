@@ -180,6 +180,8 @@ class MinianParameters:
             self.set_estimate_motion_advanced_params()
             return
 
+        # hasattr(object, "name") give true if object.name is possible and false if not
+        # In our case check if the package have the function in it
         if hasattr(mnUtils, func_name):
             mn_package = mnUtils
         elif hasattr(mnPreproc, func_name):
@@ -193,6 +195,7 @@ class MinianParameters:
         else:
             return
 
+        # getattr(object, "name") is like doing object.name
         func_arguments = inspect.getfullargspec(getattr(mn_package, func_name)).args
         new_params = {key: params[key] for key in params if key in func_arguments}
 
