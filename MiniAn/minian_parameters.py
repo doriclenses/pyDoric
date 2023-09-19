@@ -241,21 +241,18 @@ class MinianParameters:
         # https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
 
         method = self.params_denoise['method']
-        keys = []
+        method_keys = []
 
         if method == "gaussian":
-            keys = ["ksize", "sigmaX", "dst", "sigmaY", "borderType"]
+            method_keys = ["ksize", "sigmaX", "dst", "sigmaY", "borderType"]
         elif method == "anisotropic":
-            keys = ["niter", "kappa", "gamma", "voxelspacing", "option"]
+            method_keys = ["niter", "kappa", "gamma", "voxelspacing", "option"]
         elif method == "median":
-            keys = ["ksize", "dst"]
+            method_keys = ["ksize", "dst"]
         elif method == "bilateral":
-            keys = ["d", "sigmaColor", "sigmaSpace", "dst", "borderType"]
+            method_keys = ["d", "sigmaColor", "sigmaSpace", "dst", "borderType"]
 
-        denoise_method_parameters = {}
-        for key in keys:
-            if key in self.advanced_settings["denoise"]:
-                denoise_method_parameters[key] = self.advanced_settings["denoise"][key]
+        denoise_method_parameters = {key: self.advanced_settings["denoise"][key] for key in method_keys if key in self.advanced_settings["denoise"]}
 
         self.params_denoise, self.advanced_settings["denoise"] = self.remove_unused_keys(self.params_denoise, self.advanced_settings["denoise"], mnPreproc.denoise)
 
