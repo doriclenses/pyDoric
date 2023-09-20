@@ -217,7 +217,7 @@ def preview(minian_parameters):
 
     # Save data for preview to hdf5 file
     try:
-        with h5py.File(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.PATH_HDF5_PREVIEW], 'w') as hdf5_file:
+        with h5py.File(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.PATH_HDF5], 'w') as hdf5_file:
 
             if minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.NAME_MAX_PROJ_DATASET] in hdf5_file:
                 del hdf5_file[minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.NAME_MAX_PROJ_DATASET]]
