@@ -353,3 +353,6 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
     return A, C, C_chk, f, b
+
+def cross_reguster()
+    print("haha")
