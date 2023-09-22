@@ -191,7 +191,7 @@ def save_minian_to_doric(
         if vdataset[-1] != '/':
             vdataset += '/'
 
-        params_doric[mn_defs.ParametersKeys.OPERATIONS] += operationCount
+        params_doric[mn_defs.DanseKeys.OPERATIONS] += operationCount
 
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
@@ -204,14 +204,14 @@ def save_minian_to_doric(
             pathImages = vpath+IMAGES+operationCount+'/'
             utils.save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[mn_defs.ParametersKeys.OPERATIONS] + "(Images)"), f, pathImages)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[mn_defs.DanseKeys.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             utils.save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[mn_defs.ParametersKeys.OPERATIONS] + "(Residuals)"), f, pathResiduals)
+            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[mn_defs.DanseKeys.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
             print("saving spikes")
@@ -240,7 +240,7 @@ def except_type_error(function_name: str):
     try:
         yield
     except TypeError:
-        utils.print_to_intercept(mn_defs.ONE_PARM_WRONG_TYPE.format(function_name))
+        utils.print_to_intercept(mn_defs.Messages.ONE_PARM_WRONG_TYPE.format(function_name))
         sys.exit()
 
 @contextmanager
@@ -253,5 +253,5 @@ def except_print_error_no_cells(position: str):
         yield
     except Exception as error:
         utils.print_error(error, position)
-        utils.print_to_intercept(mn_defs.NO_CELLS_FOUND)
+        utils.print_to_intercept(mn_defs.Messages.NO_CELLS_FOUND)
         sys.exit()

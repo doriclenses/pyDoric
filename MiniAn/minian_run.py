@@ -11,10 +11,10 @@ import xarray as xr
 
 sys.path.append('..')
 import utilities as utils
-import minian_utilities as mn_utils
-import minian_parameters as mn_params
-import minian_main      as mn_main
-import minian_definitions  as mn_defs
+import minian_main        as mn_main
+import minian_utilities   as mn_utils
+import minian_parameters  as mn_params
+import minian_definitions as mn_defs
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
@@ -36,6 +36,6 @@ if __name__ == "__main__":
     minian_params = mn_params.MinianParameters(danse_parameters)
 
     if minian_params.preview:
-        mn_main.minian_preview(minian_params)
+        mn_main.preview(minian_params)
     else:
-        mn_main.minian_main(minian_params)
+        mn_main.main(minian_params)

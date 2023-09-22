@@ -43,12 +43,11 @@ class Messages:
     # For preview
     SAVE_TO_HDF5                = "save to hdf5"
 
-class ParametersKeys:
+class DanseKeys:
     '''
     Parameters_keys
     '''
 
-    #For minian_parameters
     PATHS                   = "paths"
     PARAMETERS              = "parameters"
     TMP_DIR                 = "tmpDir"
@@ -56,6 +55,7 @@ class ParametersKeys:
     H5PATH                  = "h5path"
     NEURO_DIAM_MIN          = "NeuronDiameterMin"
     NEURO_DIAM_MAX          = "NeuronDiameterMax"
+    TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
     SPATIAL_DOWN_SAMP       = "SpatialDownsample"
     NOISE_FREQ              = "NoiseFreq"
     THRES_CORR              = "ThresCorr"
@@ -66,11 +66,12 @@ class ParametersKeys:
     OPERATION_NAME          = "OperationName"
     OPERATIONS              = "Operations"
 
-
-
-    # For preview
-    PREVIEW                 = "preview"
-    PATH_HDF5_PREVIEW       = "path_hdf5_preview"
-    NAME_MAX_PROJ_DATASET   = "name_max_proj_dataset"
-    NAME_SEED_GROUP         = "name_seed_group"
+    class Preview:
+        '''
+        Preview keys
+        '''
+        PREVIEW                 = "Preview"
+        PATH_HDF5               = "PathHdf5"
+        NAME_MAX_PROJ_DATASET   = "NameMaxProjDataset"
+        NAME_SEED_GROUP         = "NameSeedGroup"
 
