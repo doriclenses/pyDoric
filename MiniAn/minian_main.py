@@ -354,5 +354,27 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
 
     return A, C, C_chk, f, b
 
-def cross_reguster()
-    print("haha")
+def cross_register(minian_parameters):
+   # crossRegParams = minian_parameters.params_crossRegister
+    performCrossReg = minian_parameters["crossreg"]
+    if performCrossReg:
+            refFileName = minian_parameters["fname_crossReg"]
+            refImages = minian_parameters["h5path_images"]
+            refRois = minian_parameters["h5path_roi"]
+
+            refFile       = h5py.File(refFileName, 'r')
+            reference     = np.array(refFile.get(refImages))
+            ReferenceROIS = np.array(refFile.get(refRois))
+
+            ref = xr.DataArray(reference, 
+                              dims  =["height", "width", "frame"],
+                              coords=dict(
+                                   height=np.arange(reference.shape[0]),
+                                   width=np.arange(reference.shape[1]),
+                                   frame=np.arange(reference.shape[2]) + 1, #Frame number start a 1 not 0
+                                  ),
+                              name ='testdata')
+            
+            ref_max = ref.max("frame")
+
+    
