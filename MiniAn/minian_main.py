@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 import numpy as np
+import pandas as pd
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
 
@@ -186,6 +187,9 @@ def main(minian_parameters):
         savespikes = True
     )
 
+    # Cross registration
+    cross_register(minian_parameters, AC, A)
+
     # Close cluster
     client.close()
     cluster.close()
@@ -354,7 +358,7 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
 
     return A, C, C_chk, f, b
 
-def cross_register(minian_parameters):
+def cross_register(minian_parameters, currentFile_AC, currentFile_A):
    # crossRegParams = minian_parameters.params_crossRegister
     performCrossReg = minian_parameters["crossreg"]
     if performCrossReg:
