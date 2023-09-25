@@ -139,6 +139,9 @@ def main(minian_parameters):
 
         AC = compute_AtC(A, C_chk)
 
+    # Cross registration
+    cross_register(minian_parameters, AC, A)
+
     ### Save final results ###
     print(mn_defs.Messages.SAVING_FINAL, flush=True)
     A = save_minian(A.rename("A"), **minian_parameters.params_save_minian)
@@ -188,14 +191,9 @@ def main(minian_parameters):
         savespikes = True
     )
 
-    # Cross registration
-    cross_register(minian_parameters, AC, A)
-
     # Close cluster
     client.close()
     cluster.close()
-
-
 
 def preview(minian_parameters):
     """minian_preview
