@@ -375,6 +375,21 @@ def cross_register(minian_parameters):
                                   ),
                               name ='testdata')
             
-            ref_max = ref.max("frame")
+            # max project of the miniAn images for base file and current file
+            ref_max     = ref.max("frame")
+            current_max = currentFile_AC.max("frame")
+
+            result = xr.concat([ref_max, current_max], pd.Index(['session1', 'session2'], name="frame"))
+            temps = result.rename('temps')
+            chk, _ = get_optimal_chk(temps, **params_get_optimal_chk)
+            temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
+
+            # estimate shift 
+            shifts = estimate_motion(temps, dim='frame').compute().rename('shifts')
+
+            #Apply Shifts
+            temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
+            shiftds = xr.merge([temps, shifts, temps_sh])
+
 
     
