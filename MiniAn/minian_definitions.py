@@ -65,6 +65,10 @@ class DanseKeys:
     CORRECT_MOTION          = "CorrectMotion"
     OPERATION_NAME          = "OperationName"
     OPERATIONS              = "Operations"
+    FNAME_CROSSREG          = "fname_crossReg";
+    H5PATH_IMAGES_CROSSREG  = "h5path_crossRegImages";
+    H5PATH_ROI_CROSSREG     = "h5path_crossRegRoi";
+    CROSS_REGISTRATION      = "CrossRegister";
 
     class Preview:
         '''
