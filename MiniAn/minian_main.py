@@ -361,38 +361,40 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
    # crossRegParams = minian_parameters.params_crossRegister
     performCrossReg = minian_parameters["crossreg"]
     if performCrossReg:
-            refFileName = minian_parameters["fname_crossReg"]
-            refImages = minian_parameters["h5path_images"]
-            refRois = minian_parameters["h5path_roi"]
+        refFileName = minian_parameters["fname_crossReg"]
+        refImages = minian_parameters["h5path_images"]
+        refRois = minian_parameters["h5path_roi"]
 
-            refFile       = h5py.File(refFileName, 'r')
-            reference     = np.array(refFile.get(refImages))
-            ReferenceROIS = np.array(refFile.get(refRois))
+        refFile       = h5py.File(refFileName, 'r')
+        reference     = np.array(refFile.get(refImages))
+        ReferenceROIS = np.array(refFile.get(refRois))
 
-            ref = xr.DataArray(reference, 
-                              dims  =["height", "width", "frame"],
-                              coords=dict(
-                                   height=np.arange(reference.shape[0]),
-                                   width=np.arange(reference.shape[1]),
-                                   frame=np.arange(reference.shape[2]) + 1, #Frame number start a 1 not 0
-                                  ),
-                              name ='testdata')
+        ref = xr.DataArray(reference, 
+                            dims  =["height", "width", "frame"],
+                            coords=dict(
+                                height=np.arange(reference.shape[0]),
+                                width=np.arange(reference.shape[1]),
+                                frame=np.arange(reference.shape[2]) + 1, #Frame number start a 1 not 0
+                                ),
+                            name ='testdata')
             
-            # max project of the miniAn images for base file and current file
-            ref_max     = ref.max("frame")
-            current_max = currentFile_AC.max("frame")
+        # max project of the miniAn images for base file and current file
+        ref_max     = ref.max("frame")
+        current_max = currentFile_AC.max("frame")
 
-            result = xr.concat([ref_max, current_max], pd.Index(['session1', 'session2'], name="frame"))
-            temps = result.rename('temps')
-            chk, _ = get_optimal_chk(temps, **params_get_optimal_chk)
-            temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
+        result = xr.concat([ref_max, current_max], pd.Index(['session1', 'session2'], name="frame"))
+        temps = result.rename('temps')
+        chk, _ = get_optimal_chk(temps, **params_get_optimal_chk)
+        temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
 
-            # estimate shift 
-            shifts = estimate_motion(temps, dim='frame').compute().rename('shifts')
+        # estimate shift 
+        shifts = estimate_motion(temps, dim='frame').compute().rename('shifts')
 
-            #Apply Shifts
-            temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
-            shiftds = xr.merge([temps, shifts, temps_sh])
+        # Apply Shifts
+        temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
+        shiftds = xr.merge([temps, shifts, temps_sh])
+
+
 
 
     
