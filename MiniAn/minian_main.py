@@ -394,6 +394,22 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
         shiftds = xr.merge([temps, shifts, temps_sh])
 
+        # Calculate centroids
+        cents = calculate_centroids(A_shifted, window)
+
+        # Calculate centroid distance
+        id_dims.remove("session")
+        dist = calculate_centroid_distance(cents, index_dim=id_dims)
+        # Threshold centroid distances
+        dist_ft = dist[dist['variable', 'distance'] < param_dist].copy()
+        dist_ft = group_by_session(dist_ft)
+
+        # Generate mappings
+        mappings = calculate_mapping(dist_ft)
+        mappings_meta = resolve_mapping(mappings)
+        mappings_meta_fill = fill_mapping(mappings_meta, cents)
+        mappings_meta_fill.head()
+
 
 
 
