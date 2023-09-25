@@ -23,6 +23,7 @@ from minian.preprocessing import denoise, remove_background
 from minian.initialization import seeds_init, pnr_refine, ks_refine, seeds_merge, initA, initC
 from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC
 from minian.motion_correction import apply_transform, estimate_motion
+from minian.cross_registration import calculate_centroids, calculate_centroid_distance, calculate_mapping, resolve_mapping, fill_mapping, group_by_session
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
