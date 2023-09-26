@@ -22,7 +22,7 @@ video_stop_frame    = params_doric["VideoStopFrame"]
 if __name__ == "__main__":
 
     with h5py.File(kwargs["fname"], 'r') as f:
-        images = np.array(f[kwargs['h5path']+'ImagesStack'])
+        images = np.array(f[kwargs['h5path']+'ImageStack'])
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::params_doric['TemporalDownsample']]
