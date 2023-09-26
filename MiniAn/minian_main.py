@@ -168,8 +168,8 @@ def main(minian_parameters):
 
         del params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
 
-    if minian_parameters.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_DOWN_SAMP] > 1:
-        minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_DOWN_SAMP]
+    if minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP] > 1:
+        minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
@@ -276,7 +276,7 @@ def preprocess(varr_ref, intpath, minian_parameters):
 
 def correct_motion(varr_ref, intpath, chk, minian_parameters):
     ### Motion correction ###
-    if minian_parameters.parameters[mn_defs.DanseKeys.Parameters.CORRECT_MOTION]:
+    if minian_parameters.parameters[defs.Parameters.CORRECT_MOTION]:
         print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
         with mn_utils.except_type_error("estimate_motion"):
             motion = estimate_motion(varr_ref, **minian_parameters.params_estimate_motion)

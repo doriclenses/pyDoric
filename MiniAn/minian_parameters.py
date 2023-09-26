@@ -23,7 +23,7 @@ class MinianParameters:
 
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get(mn_defs.DanseKeys.Paths.PATHS, {})
-        self.parameters  = danse_parameters.get(mn_defs.DanseKeys.Parameters.PARAMETERS, {})
+        self.parameters  = danse_parameters.get(defs.Parameters.PARAMETERS, {})
         self.preview = False
         if mn_defs.DanseKeys.Preview.PREVIEW in danse_parameters:
             self.preview = True
@@ -36,12 +36,12 @@ class MinianParameters:
 
         self.fr = utils.get_frequency(self.paths[mn_defs.DanseKeys.Paths.FNAME], self.paths[mn_defs.DanseKeys.Paths.H5PATH]+'Time')
 
-        neuron_diameter     = np.array([self.parameters[mn_defs.DanseKeys.Parameters.NEURO_DIAM_MIN], self.parameters[mn_defs.DanseKeys.Parameters.NEURO_DIAM_MAX]])
-        neuron_diameter     = neuron_diameter / self.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_DOWN_SAMP]
+        neuron_diameter     = np.array([self.parameters[defs.Parameters.NEURO_DIAM_MIN], self.parameters[defs.Parameters.NEURO_DIAM_MAX]])
+        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
         neuron_diameter     = tuple(neuron_diameter.round().astype('int'))
 
-        noise_freq: float   = self.parameters[mn_defs.DanseKeys.Parameters.NOISE_FREQ]
-        thres_corr: float   = self.parameters[mn_defs.DanseKeys.Parameters.THRES_CORR]
+        noise_freq: float   = self.parameters[defs.Parameters.NOISE_FREQ]
+        thres_corr: float   = self.parameters[defs.Parameters.THRES_CORR]
 
         self.params_LocalCluster = {
             "n_workers": 4,
@@ -56,9 +56,9 @@ class MinianParameters:
             "fname": self.paths[mn_defs.DanseKeys.Paths.FNAME],
             "h5path": self.paths[mn_defs.DanseKeys.Paths.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": self.parameters[mn_defs.DanseKeys.Parameters.TEMPORAL_DOWN_SAMP],
-                            "height": self.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_DOWN_SAMP],
-                            "width": self.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_DOWN_SAMP]},
+            "downsample": {"frame": self.parameters[defs.Parameters.TEMPORAL_DOWN_SAMP],
+                            "height": self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP],
+                            "width": self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]},
             "downsample_strategy": "subset",
         }
 
@@ -130,26 +130,26 @@ class MinianParameters:
 
         self.params_update_spatial = {
             'dl_wnd': neuron_diameter[-1],
-            'sparse_penal': self.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_PENALTY],
+            'sparse_penal': self.parameters[defs.Parameters.SPATIAL_PENALTY],
             'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
         }
 
         self.params_update_temporal = {
             'noise_freq': noise_freq,
-            'sparse_penal': self.parameters[mn_defs.DanseKeys.Parameters.TEMPORAL_PENALTY],
+            'sparse_penal': self.parameters[defs.Parameters.TEMPORAL_PENALTY],
             'p': 1,
             'add_lag': 20,
             'jac_thres': 0.2
         }
 
         # removing advanced_sesttings function keys that are not in the minian functions list
-        self.advanced_settings = self.parameters.get(mn_defs.DanseKeys.Parameters.ADVANCED_SETTINGS, {})
+        self.advanced_settings = self.parameters.get(defs.Parameters.ADVANCED_SETTINGS, {})
         self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings
                             if (hasattr(mnUtils, key) or hasattr(mnPreproc, key) or hasattr(mnInit, key)
                                 or hasattr(mnCnmf, key) or hasattr(mnMotcorr, key) or key == "LocalCluster")}
 
         self.update_all_func_params()
-        self.parameters[mn_defs.DanseKeys.Parameters.ADVANCED_SETTINGS] = self.advanced_settings.copy()
+        self.parameters[defs.Parameters.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
 
 
