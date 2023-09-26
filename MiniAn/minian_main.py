@@ -173,7 +173,7 @@ def main(minian_parameters):
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr = minian_parameters.fr,
-        bits_count = attrs['BitsCount'],
+        bits_count = attrs['BitCount'],
         qt_format = attrs['Format'],
         imagesStackUsername = attrs['Username'] if 'Username' in attrs else sensor,
         vname = minian_parameters.params_load_doric['fname'],
