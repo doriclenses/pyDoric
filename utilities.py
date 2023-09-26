@@ -175,7 +175,7 @@ def save_images(
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
     f[path+'ImageStack'].attrs['Username'] = username
-    f[path+'ImageStack'].attrs['BitCount'] = bits_count
+    f[path+'ImageStack'].attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
     f[path+'ImageStack'].attrs['Format'] = qt_format
     f[path+'ImageStack'].attrs['Height'] = height
     f[path+'ImageStack'].attrs['Width'] = width
@@ -240,7 +240,7 @@ def save_roi_signals(
             attrs = {**attrs, **attrs_add}
 
         if bits_count > -1:
-            attrs['BitCount'] = bits_count
+            attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
 
         if names is not None:
             attrs['Name'] = names[i]
@@ -309,7 +309,7 @@ def save_signals(
         attrs['Username'] = usernames[i] if usernames is not None else name
 
         if bits_count is not None:
-            attrs['BitCount'] = bits_count
+            attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
         else:
             attrs['RangeMin'] = range_min
             attrs['RangeMax'] = range_max

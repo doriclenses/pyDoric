@@ -54,7 +54,7 @@ def load_doric_to_xarray(
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
-            bitsCount = file_[h5path+'ImageStack'].attrs["BitCount"]
+            bitsCount = file_[h5path+'ImageStack'].attrs[defs.HDF5Definitions.Attributes.BIT_COUNT]
             varr = varr / 2**bitsCount * 2**8
 
         varr = varr.astype(dtype)
