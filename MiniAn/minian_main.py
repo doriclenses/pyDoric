@@ -169,7 +169,7 @@ def main(minian_parameters):
         del params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
 
     if minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP] > 1:
-        minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
+        minian_parameters.parameters[defs.HDF5Definitions.Attributes.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
