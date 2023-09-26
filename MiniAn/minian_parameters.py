@@ -12,6 +12,7 @@ import minian.motion_correction as mnMotcorr
 
 sys.path.append('..')
 import utilities as utils
+import definitions as defs
 import minian_utilities as mn_utils
 import minian_definitions as mn_defs
 

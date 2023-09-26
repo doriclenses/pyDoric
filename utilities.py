@@ -5,6 +5,8 @@ import warnings
 import numpy as np
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
+import definitions as defs
+
 def load_attributes(
     file_: Union[h5py.File, str],
     path: str = ''

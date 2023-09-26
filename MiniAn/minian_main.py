@@ -12,6 +12,7 @@ import xarray as xr
 
 sys.path.append('..')
 import utilities as utils
+import definitions as defs
 import minian_utilities as mn_utils
 import minian_parameters as mn_params
 import minian_definitions as mn_defs
@@ -161,11 +162,11 @@ def main(minian_parameters):
 
     # Parameters
     # Set only "Operations" for params_srouce_data
-    if mn_defs.DanseKeys.Attributes.OPERATION_NAME in params_source_data:
-        if mn_defs.DanseKeys.Attributes.OPERATIONS not in params_source_data:
-            params_source_data[mn_defs.DanseKeys.Attributes.OPERATIONS] = params_source_data[mn_defs.DanseKeys.Attributes.OPERATION_NAME]
+    if defs.HDF5Definitions.Attributes.OPERATION_NAME in params_source_data:
+        if defs.HDF5Definitions.Attributes.OPERATIONS not in params_source_data:
+            params_source_data[defs.HDF5Definitions.Attributes.OPERATIONS] = params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
 
-        del params_source_data[mn_defs.DanseKeys.Attributes.OPERATION_NAME]
+        del params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
 
     if minian_parameters.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_DOWN_SAMP] > 1:
         minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters[mn_defs.DanseKeys.Parameters.SPATIAL_DOWN_SAMP]

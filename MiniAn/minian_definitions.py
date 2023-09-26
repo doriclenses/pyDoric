@@ -72,10 +72,6 @@ class DanseKeys:
         CORRECT_MOTION          = "CorrectMotion"
         ADVANCED_SETTINGS       = "AdvancedSettings"
 
-    class Attributes:
-        OPERATION_NAME          = "OperationName"
-        OPERATIONS              = "Operations"
-
     class Preview:
         '''
         Preview keys
