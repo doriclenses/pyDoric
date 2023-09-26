@@ -376,16 +376,16 @@ def merge_params(
     params_final = {}
 
     if operation_name is None:
-        operation_name = params_current["Operations"]
+        operation_name = params_current[defs.HDF5Definitions.Attributes.OPERATIONS]
 
-    if "Operations" not in params_source :
-        params_final["Operations"] = operation_name
+    if defs.HDF5Definitions.Attributes.OPERATIONS not in params_source :
+        params_final[defs.HDF5Definitions.Attributes.OPERATIONS] = operation_name
     else:
-        params_final["Operations"] = params_source["Operations"] + " > " + operation_name
+        params_final[defs.HDF5Definitions.Attributes.OPERATIONS] = params_source[defs.HDF5Definitions.Attributes.OPERATIONS] + " > " + operation_name
 
     # Set the advanced Settings keys
     for key in params_current:
-        if key == "Operations":
+        if key == defs.HDF5Definitions.Attributes.OPERATIONS:
             continue
 
         if key == "AdvancedSettings":
@@ -400,12 +400,12 @@ def merge_params(
 
     # Add Operations operation_name- to the keys
     for key in params_final.copy():
-        if key != "Operations":
+        if key != defs.HDF5Definitions.Attributes.OPERATIONS:
             params_final[operation_name + "-" + key] = params_final.pop(key)
 
     # Merging with params source
     for key in params_source:
-        if key != "Operations":
+        if key != defs.HDF5Definitions.Attributes.OPERATIONS:
             params_final[key] = params_source[key]
 
     return params_final
