@@ -205,7 +205,7 @@ def preview(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[mn_defs.DanseKeys.Paths.TMP_DIR], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[defs.PythonKeys.TMP_DIR], "intermediate")
     subset = {"frame": slice(minian_parameters.preview_parameters["VideoStartFrame"], minian_parameters.preview_parameters["VideoStopFrame"])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -218,14 +218,14 @@ def preview(minian_parameters):
 
     # Save data for preview to hdf5 file
     try:
-        with h5py.File(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.HDF5_FILE_PATH], 'w') as hdf5_file:
+        with h5py.File(minian_parameters.preview_parameters[mn_defs.PythonKeys.HDF5_FILE_PATH], 'w') as hdf5_file:
 
-            if minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.MAX_PROJ_DATASET_NAME] in hdf5_file:
-                del hdf5_file[minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.MAX_PROJ_DATASET_NAME]]
+            if minian_parameters.preview_parameters[mn_defs.PythonKeys.MAX_PROJ_DATASET_NAME] in hdf5_file:
+                del hdf5_file[minian_parameters.preview_parameters[mn_defs.PythonKeys.MAX_PROJ_DATASET_NAME]]
 
-            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype='float', chunks = True)
+            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.PythonKeys.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype='float', chunks = True)
 
-            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.SEED_GROUP_NAME])
+            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters[mn_defs.PythonKeys.SEED_GROUP_NAME])
             for key in seeds_final:
                 groupseed.create_dataset(key, data = seeds_final[key], dtype = 'float',chunks = True)
 

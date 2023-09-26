@@ -43,24 +43,12 @@ class Messages:
     # For preview
     SAVE_TO_HDF5                = "save to hdf5"
 
-class DanseKeys:
+class PythonKeys:
     '''
     Parameters_keys
     '''
 
-    class Paths:
-        PATHS                   = "paths"
-
-        TMP_DIR                 = "tmpDir"
-        FNAME                   = "fname"
-        H5PATH                  = "h5path"
-
-    class Preview:
-        '''
-        Preview keys
-        '''
-        PREVIEW                 = "Preview"
-        HDF5_FILE_PATH          = "HDF5FilePath"
-        MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
-        SEED_GROUP_NAME         = "SeedGroupName"
+    HDF5_FILE_PATH          = "HDF5FilePath"
+    MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
+    SEED_GROUP_NAME         = "SeedGroupName"
 

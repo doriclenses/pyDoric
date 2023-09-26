@@ -22,19 +22,19 @@ class MinianParameters:
     '''
 
     def __init__(self, danse_parameters):
-        self.paths   = danse_parameters.get(mn_defs.DanseKeys.Paths.PATHS, {})
+        self.paths   = danse_parameters.get(defs.PythonKeys.PATHS, {})
         self.parameters  = danse_parameters.get(defs.Parameters.PARAMETERS, {})
         self.preview = False
-        if mn_defs.DanseKeys.Preview.PREVIEW in danse_parameters:
+        if defs.PythonKeys.PREVIEW in danse_parameters:
             self.preview = True
-            self.preview_parameters = danse_parameters[mn_defs.DanseKeys.Preview.PREVIEW]
+            self.preview_parameters = danse_parameters[defs.PythonKeys.PREVIEW]
 
         os.environ["OMP_NUM_THREADS"] = "1"
         os.environ["MKL_NUM_THREADS"] = "1"
         os.environ["OPENBLAS_NUM_THREADS"] = "1"
-        os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[mn_defs.DanseKeys.Paths.TMP_DIR], "intermediate")
+        os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[defs.PythonKeys.TMP_DIR], "intermediate")
 
-        self.fr = utils.get_frequency(self.paths[mn_defs.DanseKeys.Paths.FNAME], self.paths[mn_defs.DanseKeys.Paths.H5PATH]+'Time')
+        self.fr = utils.get_frequency(self.paths[defs.PythonKeys.FNAME], self.paths[defs.PythonKeys.H5PATH]+'Time')
 
         neuron_diameter     = np.array([self.parameters[defs.Parameters.NEURO_DIAM_MIN], self.parameters[defs.Parameters.NEURO_DIAM_MAX]])
         neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
@@ -49,12 +49,12 @@ class MinianParameters:
             "resources": {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
             "threads_per_worker": 2,
             "dashboard_address": ":8787",
-            "local_directory": self.paths[mn_defs.DanseKeys.Paths.TMP_DIR]
+            "local_directory": self.paths[defs.PythonKeys.TMP_DIR]
         }
 
         self.params_load_doric = {
-            "fname": self.paths[mn_defs.DanseKeys.Paths.FNAME],
-            "h5path": self.paths[mn_defs.DanseKeys.Paths.H5PATH],
+            "fname": self.paths[defs.PythonKeys.FNAME],
+            "h5path": self.paths[defs.PythonKeys.H5PATH],
             "dtype": np.uint8,
             "downsample": {"frame": self.parameters[defs.Parameters.TEMPORAL_DOWN_SAMP],
                             "height": self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP],
@@ -63,7 +63,7 @@ class MinianParameters:
         }
 
         self.params_save_minian = {
-            "dpath": os.path.join(self.paths[mn_defs.DanseKeys.Paths.TMP_DIR], "final"),
+            "dpath": os.path.join(self.paths[defs.PythonKeys.TMP_DIR], "final"),
             "meta_dict": {"session": -1, "animal": -2},
             "overwrite": True,
         }
@@ -300,7 +300,7 @@ class MinianParameters:
         clean_h5path
         """
 
-        h5path = self.paths[mn_defs.DanseKeys.Paths.H5PATH]
+        h5path = self.paths[defs.PythonKeys.H5PATH]
 
         if h5path[0] == '/':
             h5path = h5path[1:]

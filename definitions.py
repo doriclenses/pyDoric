@@ -14,8 +14,6 @@ class Parameters:
     '''
     Parameters_keys
     '''
-    PARAMETERS              = "parameters"
-
     NEURO_DIAM_MIN          = "NeuronDiameterMin"
     NEURO_DIAM_MAX          = "NeuronDiameterMax"
     TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
@@ -26,3 +24,13 @@ class Parameters:
     TEMPORAL_PENALTY        = "TemporalPenalty"
     CORRECT_MOTION          = "CorrectMotion"
     ADVANCED_SETTINGS       = "AdvancedSettings"
+
+
+class PythonKeys:
+    PARAMETERS              = "Parameters"
+    PREVIEW                 = "Preview"
+
+    PATHS                   = "Paths"
+    TMP_DIR                 = "TmpDir"
+    FNAME                   = "FileName"
+    H5PATH                  = "HDF5Path"
