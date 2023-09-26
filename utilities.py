@@ -127,12 +127,12 @@ def save_images(
     path: str,
     bits_count: int = 16,
     qt_format: int = 28,
-    username: Optional[str] = "ImagesStack"
+    username: Optional[str] = "ImageStack"
 ):
     """
-    Saves images and time vector in HDF file as 'ImagesStack' and 'Time'
+    Saves images and time vector in HDF file as 'ImageStack' and 'Time'
     datasets in `path` group. Saves images width, height, `bits_count`, and
-    `qt_format` as 'ImagesStack' dataset attribute
+    `qt_format` as 'ImageStack' dataset attribute
 
     Args:
         images : np.ndarray
@@ -156,11 +156,11 @@ def save_images(
     width = images.shape[2]
 
     try:
-        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16',
+        dataset = f.create_dataset(path+'ImageStack', (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
     except:
-        del f[path+'ImagesStack']
-        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16',
+        del f[path+'ImageStack']
+        dataset = f.create_dataset(path+'ImageStack', (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
 
     for i, image in enumerate(images):
@@ -172,11 +172,11 @@ def save_images(
         del f[path+'Time']
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
-    f[path+'ImagesStack'].attrs['Username'] = username
-    f[path+'ImagesStack'].attrs['BitsCount'] = bits_count
-    f[path+'ImagesStack'].attrs['Format'] = qt_format
-    f[path+'ImagesStack'].attrs['Height'] = height
-    f[path+'ImagesStack'].attrs['Width'] = width
+    f[path+'ImageStack'].attrs['Username'] = username
+    f[path+'ImageStack'].attrs['BitCount'] = bits_count
+    f[path+'ImageStack'].attrs['Format'] = qt_format
+    f[path+'ImageStack'].attrs['Height'] = height
+    f[path+'ImageStack'].attrs['Width'] = width
 
 
 def save_roi_signals(
@@ -238,7 +238,7 @@ def save_roi_signals(
             attrs = {**attrs, **attrs_add}
 
         if bits_count > -1:
-            attrs['BitsCount'] = bits_count
+            attrs['BitCount'] = bits_count
 
         if names is not None:
             attrs['Name'] = names[i]
@@ -307,7 +307,7 @@ def save_signals(
         attrs['Username'] = usernames[i] if usernames is not None else name
 
         if bits_count is not None:
-            attrs['BitsCount'] = bits_count
+            attrs['BitCount'] = bits_count
         else:
             attrs['RangeMin'] = range_min
             attrs['RangeMax'] = range_max
