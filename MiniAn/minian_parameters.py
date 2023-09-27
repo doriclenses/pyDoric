@@ -152,10 +152,10 @@ class MinianParameters:
         self.parameters[defs.Parameters.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
         self.params_crossRegister = {
-            'fname_crossReg': self.paths[mn_defs.DanseKeys.FNAME_CROSSREG],
-            'h5path_images': self.paths[mn_defs.DanseKeys.H5PATH_IMAGES_CROSSREG],
-            'h5path_roi': self.paths[mn_defs.DanseKeys.H5PATH_ROI_CROSSREG],
-            'crossReg': self.parameters[mn_defs.DanseKeys.CROSS_REGISTRATION] 
+            'fname_crossReg': self.paths[defs.PythonKeys.FNAME_CROSSREG],
+            'h5path_images': self.paths[defs.PythonKeys.H5PATH_IMAGES_CROSSREG],
+            'h5path_roi': self.paths[defs.PythonKeys.H5PATH_ROI_CROSSREG],
+            'crossReg': self.parameters[defs.PythonKeys.CROSS_REGISTRATION] 
         }
         
     #--------------------------------------------- functions for advanced parameters -------------------------------------------------------------------------
