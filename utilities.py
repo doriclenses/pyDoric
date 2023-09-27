@@ -5,6 +5,8 @@ import warnings
 import numpy as np
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
+import definitions as defs
+
 def load_attributes(
     file_: Union[h5py.File, str],
     path: str = ''
@@ -127,12 +129,12 @@ def save_images(
     path: str,
     bits_count: int = 16,
     qt_format: int = 28,
-    username: Optional[str] = "ImagesStack"
+    username: Optional[str] = defs.HDF5Definitions.Dataset.IMAGESTACK
 ):
     """
-    Saves images and time vector in HDF file as 'ImagesStack' and 'Time'
+    Saves images and time vector in HDF file as 'ImageStack' and 'Time'
     datasets in `path` group. Saves images width, height, `bits_count`, and
-    `qt_format` as 'ImagesStack' dataset attribute
+    `qt_format` as 'ImageStack' dataset attribute
 
     Args:
         images : np.ndarray
@@ -156,11 +158,11 @@ def save_images(
     width = images.shape[2]
 
     try:
-        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16',
+        dataset = f.create_dataset(path+defs.HDF5Definitions.Dataset.IMAGESTACK, (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
     except:
-        del f[path+'ImagesStack']
-        dataset = f.create_dataset(path+'ImagesStack', (height,width,duration), dtype='uint16',
+        del f[path+defs.HDF5Definitions.Dataset.IMAGESTACK]
+        dataset = f.create_dataset(path+defs.HDF5Definitions.Dataset.IMAGESTACK, (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
 
     for i, image in enumerate(images):
@@ -172,11 +174,11 @@ def save_images(
         del f[path+'Time']
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
-    f[path+'ImagesStack'].attrs['Username'] = username
-    f[path+'ImagesStack'].attrs['BitsCount'] = bits_count
-    f[path+'ImagesStack'].attrs['Format'] = qt_format
-    f[path+'ImagesStack'].attrs['Height'] = height
-    f[path+'ImagesStack'].attrs['Width'] = width
+    f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Username'] = username
+    f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
+    f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Format'] = qt_format
+    f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Height'] = height
+    f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Width'] = width
 
 
 def save_roi_signals(
@@ -238,7 +240,7 @@ def save_roi_signals(
             attrs = {**attrs, **attrs_add}
 
         if bits_count > -1:
-            attrs['BitsCount'] = bits_count
+            attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
 
         if names is not None:
             attrs['Name'] = names[i]
@@ -307,7 +309,7 @@ def save_signals(
         attrs['Username'] = usernames[i] if usernames is not None else name
 
         if bits_count is not None:
-            attrs['BitsCount'] = bits_count
+            attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
         else:
             attrs['RangeMin'] = range_min
             attrs['RangeMax'] = range_max
@@ -374,16 +376,16 @@ def merge_params(
     params_final = {}
 
     if operation_name is None:
-        operation_name = params_current["Operations"]
+        operation_name = params_current[defs.HDF5Definitions.Attributes.OPERATIONS]
 
-    if "Operations" not in params_source :
-        params_final["Operations"] = operation_name
+    if defs.HDF5Definitions.Attributes.OPERATIONS not in params_source :
+        params_final[defs.HDF5Definitions.Attributes.OPERATIONS] = operation_name
     else:
-        params_final["Operations"] = params_source["Operations"] + " > " + operation_name
+        params_final[defs.HDF5Definitions.Attributes.OPERATIONS] = params_source[defs.HDF5Definitions.Attributes.OPERATIONS] + " > " + operation_name
 
     # Set the advanced Settings keys
     for key in params_current:
-        if key == "Operations":
+        if key == defs.HDF5Definitions.Attributes.OPERATIONS:
             continue
 
         if key == "AdvancedSettings":
@@ -398,12 +400,12 @@ def merge_params(
 
     # Add Operations operation_name- to the keys
     for key in params_final.copy():
-        if key != "Operations":
+        if key != defs.HDF5Definitions.Attributes.OPERATIONS:
             params_final[operation_name + "-" + key] = params_final.pop(key)
 
     # Merging with params source
     for key in params_source:
-        if key != "Operations":
+        if key != defs.HDF5Definitions.Attributes.OPERATIONS:
             params_final[key] = params_source[key]
 
     return params_final

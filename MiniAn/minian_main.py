@@ -13,6 +13,7 @@ import xarray as xr
 
 sys.path.append('..')
 import utilities as utils
+import definitions as defs
 import minian_utilities as mn_utils
 import minian_parameters as mn_params
 import minian_definitions as mn_defs
@@ -41,7 +42,7 @@ def main(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[mn_defs.DanseKeys.TMP_DIR], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[defs.PythonKeys.TMP_DIR], "intermediate")
     subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -161,24 +162,24 @@ def main(minian_parameters):
     # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/ImagesStack")
+    attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/ImageStack")
     file_.close()
 
     # Parameters
     # Set only "Operations" for params_srouce_data
-    if mn_defs.DanseKeys.OPERATION_NAME in params_source_data:
-        if mn_defs.DanseKeys.OPERATIONS not in params_source_data:
-            params_source_data[mn_defs.DanseKeys.OPERATIONS] = params_source_data[mn_defs.DanseKeys.OPERATION_NAME]
+    if defs.HDF5Definitions.Attributes.OPERATION_NAME in params_source_data:
+        if defs.HDF5Definitions.Attributes.OPERATIONS not in params_source_data:
+            params_source_data[defs.HDF5Definitions.Attributes.OPERATIONS] = params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
 
-        del params_source_data[mn_defs.DanseKeys.OPERATION_NAME]
+        del params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
 
-    if minian_parameters.parameters[mn_defs.DanseKeys.SPATIAL_DOWN_SAMP] > 1:
-        minian_parameters.parameters["BinningFactor"] = minian_parameters.parameters[mn_defs.DanseKeys.SPATIAL_DOWN_SAMP]
+    if minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP] > 1:
+        minian_parameters.parameters[defs.HDF5Definitions.Attributes.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr = minian_parameters.fr,
-        bits_count = attrs['BitsCount'],
+        bits_count = attrs[defs.HDF5Definitions.Attributes.BIT_COUNT],
         qt_format = attrs['Format'],
         imagesStackUsername = attrs['Username'] if 'Username' in attrs else sensor,
         vname = minian_parameters.params_load_doric['fname'],
@@ -207,8 +208,8 @@ def preview(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[mn_defs.DanseKeys.TMP_DIR], "intermediate")
-    subset = {"frame": slice(minian_parameters.preview_parameters["VideoStartFrame"], minian_parameters.preview_parameters["VideoStopFrame"])}
+    intpath = os.path.join(minian_parameters.paths[defs.PythonKeys.TMP_DIR], "intermediate")
+    subset = {"frame": slice(minian_parameters.preview_parameters[mn_defs.PythonKeys.VIDEO_START], minian_parameters.preview_parameters[mn_defs.PythonKeys.VIDEO_STOP])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
 
@@ -220,14 +221,14 @@ def preview(minian_parameters):
 
     # Save data for preview to hdf5 file
     try:
-        with h5py.File(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.PATH_HDF5], 'w') as hdf5_file:
+        with h5py.File(minian_parameters.preview_parameters[mn_defs.PythonKeys.HDF5_FILE_PATH], 'w') as hdf5_file:
 
-            if minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.NAME_MAX_PROJ_DATASET] in hdf5_file:
-                del hdf5_file[minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.NAME_MAX_PROJ_DATASET]]
+            if minian_parameters.preview_parameters[mn_defs.PythonKeys.MAX_PROJ_DATASET_NAME] in hdf5_file:
+                del hdf5_file[minian_parameters.preview_parameters[mn_defs.PythonKeys.MAX_PROJ_DATASET_NAME]]
 
-            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.NAME_MAX_PROJ_DATASET], data = max_proj.values, dtype='float', chunks = True)
+            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.PythonKeys.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype='float', chunks = True)
 
-            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters[mn_defs.DanseKeys.Preview.NAME_SEED_GROUP])
+            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters[mn_defs.PythonKeys.SEED_GROUP_NAME])
             for key in seeds_final:
                 groupseed.create_dataset(key, data = seeds_final[key], dtype = 'float',chunks = True)
 
@@ -278,7 +279,7 @@ def preprocess(varr_ref, intpath, minian_parameters):
 
 def correct_motion(varr_ref, intpath, chk, minian_parameters):
     ### Motion correction ###
-    if minian_parameters.parameters[mn_defs.DanseKeys.CORRECT_MOTION]:
+    if minian_parameters.parameters[defs.Parameters.CORRECT_MOTION]:
         print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
         with mn_utils.except_type_error("estimate_motion"):
             motion = estimate_motion(varr_ref, **minian_parameters.params_estimate_motion)

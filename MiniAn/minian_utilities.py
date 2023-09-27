@@ -12,6 +12,7 @@ from minian.utilities import custom_arr_optimize
 
 sys.path.append('..')
 import utilities as utils
+import definitions as defs
 import minian_definitions as mn_defs
 
 def load_doric_to_xarray(
@@ -38,7 +39,7 @@ def load_doric_to_xarray(
     """
 
     file_ = h5py.File(fname, 'r')
-    varr = da.array.from_array(file_[h5path+'ImagesStack'])
+    varr = da.array.from_array(file_[h5path+defs.HDF5Definitions.Dataset.IMAGESTACK])
     varr = xr.DataArray(
         varr,
         dims=["height", "width", "frame"],
@@ -53,7 +54,7 @@ def load_doric_to_xarray(
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
-            bitsCount = file_[h5path+'ImagesStack'].attrs["BitsCount"]
+            bitsCount = file_[h5path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs[defs.HDF5Definitions.Attributes.BIT_COUNT]
             varr = varr / 2**bitsCount * 2**8
 
         varr = varr.astype(dtype)
@@ -191,7 +192,7 @@ def save_minian_to_doric(
         if vdataset[-1] != '/':
             vdataset += '/'
 
-        params_doric[mn_defs.DanseKeys.OPERATIONS] += operationCount
+        params_doric[defs.HDF5Definitions.Attributes.OPERATIONS] += operationCount
 
         print("saving ROI signals")
         pathROIs = vpath+ROISIGNALS+operationCount+'/'
@@ -204,14 +205,14 @@ def save_minian_to_doric(
             pathImages = vpath+IMAGES+operationCount+'/'
             utils.save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[mn_defs.DanseKeys.OPERATIONS] + "(Images)"), f, pathImages)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.HDF5Definitions.Attributes.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
             utils.save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[mn_defs.DanseKeys.OPERATIONS] + "(Residuals)"), f, pathResiduals)
+            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.HDF5Definitions.Attributes.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
             print("saving spikes")

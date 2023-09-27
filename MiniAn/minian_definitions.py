@@ -43,39 +43,18 @@ class Messages:
     # For preview
     SAVE_TO_HDF5                = "save to hdf5"
 
-class DanseKeys:
+class PythonKeys:
     '''
     Parameters_keys
     '''
 
-    PATHS                   = "paths"
-    PARAMETERS              = "parameters"
-    TMP_DIR                 = "tmpDir"
-    FNAME                   = "fname"
-    H5PATH                  = "h5path"
-    NEURO_DIAM_MIN          = "NeuronDiameterMin"
-    NEURO_DIAM_MAX          = "NeuronDiameterMax"
-    TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
-    SPATIAL_DOWN_SAMP       = "SpatialDownsample"
-    NOISE_FREQ              = "NoiseFreq"
-    THRES_CORR              = "ThresCorr"
-    ADVANCED_SETTINGS       = "AdvancedSettings"
-    SPATIAL_PENALTY         = "SpatialPenalty"
-    TEMPORAL_PENALTY        = "TemporalPenalty"
-    CORRECT_MOTION          = "CorrectMotion"
-    OPERATION_NAME          = "OperationName"
-    OPERATIONS              = "Operations"
+    HDF5_FILE_PATH          = "HDF5FilePath"
+    MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
+    SEED_GROUP_NAME         = "SeedGroupName"
+    VIDEO_START             = "VideoStartFrame"
+    VIDEO_STOP              = "VideoStopFrame"
     FNAME_CROSSREG          = "fname_crossReg";
     H5PATH_IMAGES_CROSSREG  = "h5path_crossRegImages";
     H5PATH_ROI_CROSSREG     = "h5path_crossRegRoi";
     CROSS_REGISTRATION      = "CrossRegister";
-
-    class Preview:
-        '''
-        Preview keys
-        '''
-        PREVIEW                 = "Preview"
-        PATH_HDF5               = "PathHdf5"
-        NAME_MAX_PROJ_DATASET   = "NameMaxProjDataset"
-        NAME_SEED_GROUP         = "NameSeedGroup"
 
