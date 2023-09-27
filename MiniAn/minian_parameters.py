@@ -23,7 +23,7 @@ class MinianParameters:
 
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get(defs.PythonKeys.PATHS, {})
-        self.parameters  = danse_parameters.get(defs.Parameters.PARAMETERS, {})
+        self.parameters  = danse_parameters.get(defs.PythonKeys.PARAMETERS, {})
         self.preview = False
         if defs.PythonKeys.PREVIEW in danse_parameters:
             self.preview = True

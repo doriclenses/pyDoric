@@ -40,7 +40,7 @@ def main(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[mn_defs.DanseKeys.Paths.TMP_DIR], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[defs.PythonKeys.TMP_DIR], "intermediate")
     subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
