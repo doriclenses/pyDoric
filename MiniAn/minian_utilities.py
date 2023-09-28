@@ -39,7 +39,7 @@ def load_doric_to_xarray(
     """
 
     file_ = h5py.File(fname, 'r')
-    varr = da.array.from_array(file_[h5path+defs.HDF5Definitions.Dataset.IMAGE_STACK])
+    varr = da.array.from_array(file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK])
     varr = xr.DataArray(
         varr,
         dims=["height", "width", "frame"],
@@ -54,7 +54,7 @@ def load_doric_to_xarray(
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
-            bitsCount = file_[h5path+defs.HDF5Definitions.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attributes.BIT_COUNT]
+            bitsCount = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attributes.BIT_COUNT]
             varr = varr / 2**bitsCount * 2**8
 
         varr = varr.astype(dtype)

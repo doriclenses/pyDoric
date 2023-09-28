@@ -129,7 +129,7 @@ def save_images(
     path: str,
     bits_count: int = 16,
     qt_format: int = 28,
-    username: Optional[str] = defs.HDF5Definitions.Dataset.IMAGE_STACK
+    username: Optional[str] = defs.DoricFile.Dataset.IMAGE_STACK
 ):
     """
     Saves images and time vector in HDF file as 'ImageStack' and 'Time'
@@ -158,11 +158,11 @@ def save_images(
     width = images.shape[2]
 
     try:
-        dataset = f.create_dataset(path+defs.HDF5Definitions.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
+        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
     except:
-        del f[path+defs.HDF5Definitions.Dataset.IMAGE_STACK]
-        dataset = f.create_dataset(path+defs.HDF5Definitions.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
+        del f[path+defs.DoricFile.Dataset.IMAGE_STACK]
+        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
                                   chunks=(height,width,1), maxshape=(height,width,None))
 
     for i, image in enumerate(images):
@@ -174,11 +174,11 @@ def save_images(
         del f[path+'Time']
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
-    f[path+defs.HDF5Definitions.Dataset.IMAGE_STACK].attrs['Username'] = username
-    f[path+defs.HDF5Definitions.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attributes.BIT_COUNT] = bits_count
-    f[path+defs.HDF5Definitions.Dataset.IMAGE_STACK].attrs['Format'] = qt_format
-    f[path+defs.HDF5Definitions.Dataset.IMAGE_STACK].attrs['Height'] = height
-    f[path+defs.HDF5Definitions.Dataset.IMAGE_STACK].attrs['Width'] = width
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Username'] = username
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attributes.BIT_COUNT] = bits_count
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Format'] = qt_format
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Height'] = height
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Width'] = width
 
 
 def save_roi_signals(
