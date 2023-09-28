@@ -50,6 +50,4 @@ class Preview:
 
     MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
     SEED_GROUP_NAME         = "SeedGroupName"
-    VIDEO_START             = "VideoStartFrame"
-    VIDEO_STOP              = "VideoStopFrame"
 

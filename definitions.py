@@ -18,7 +18,6 @@ class Parameters:
         '''
         Main keys definitions
         '''
-
         PARAMETERS              = "Parameters"
         PATHS                   = "Paths"
         PREVIEW                 = "Preview"
@@ -28,7 +27,6 @@ class Parameters:
         '''
         Paths definitons
         '''
-
         TMP_DIR                 = "TmpDir"
         FILE_PATH               = "FilePath"
         H5PATH                  = "HDF5Path"
@@ -37,7 +35,6 @@ class Parameters:
         '''
         Danse parameters definitons
         '''
-
         NEURO_DIAM_MIN          = "NeuronDiameterMin"
         NEURO_DIAM_MAX          = "NeuronDiameterMax"
         TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
@@ -53,8 +50,8 @@ class Parameters:
         '''
         Preview parameters definitons
         '''
-
         PREVIEW_FILE_PATH          = "PreviewFilepath"
+        VIDEO_START_STOP           = "VideoStartStop"
 
     class CrossReg:
         '''
