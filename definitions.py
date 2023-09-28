@@ -13,12 +13,12 @@ class DoricFile:
 
 class Parameters:
     '''
-    Parameters of danse Find Cells operation
+    All the parameters that danse sends
     '''
 
     class Main:
         '''
-        Main keys definitions
+        Main keys to distinguish different parameters
         '''
 
         PARAMETERS              = "Parameters"
@@ -28,7 +28,7 @@ class Parameters:
 
     class Path:
         '''
-        Paths definitons
+        Paths to file and dataset to process
         '''
 
         TMP_DIR                 = "TmpDir"
@@ -37,7 +37,7 @@ class Parameters:
 
     class Danse:
         '''
-        Danse parameters definitons
+        Parameters of danse Find Cells operation
         '''
 
         NEURO_DIAM_MIN          = "NeuronDiameterMin"
@@ -53,13 +53,13 @@ class Parameters:
 
     class Preview:
         '''
-        Preview parameters definitons
+        Preview parameters
         '''
 
         PREVIEW_FILE_PATH          = "PreviewFilepath"
 
     class CrossReg:
         '''
-        Cross Registration definitons
+        Cross Registration parameters
         '''
         _ = ""
