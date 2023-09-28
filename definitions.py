@@ -4,7 +4,7 @@ class DoricFile:
 
         IMAGE_STACK = "ImageStack"
 
-    class Attributes:
+    class Attribute:
         OPERATION_NAME  = "OperationName"
         OPERATIONS      = "Operations"
         BIT_COUNT       = "BitCount"
