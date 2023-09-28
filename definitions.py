@@ -20,40 +20,40 @@ class Parameters:
         '''
         Main keys to distinguish different parameters
         '''
-        PARAMETERS              = "Parameters"
-        PATHS                   = "Paths"
-        PREVIEW                 = "Preview"
-        CROSS_REG               = "CrossReg"
+        PARAMETERS = "Parameters"
+        PATHS      = "Paths"
+        PREVIEW    = "Preview"
+        CROSS_REG  = "CrossReg"
 
     class Path:
         '''
         Paths to file and dataset to process
         '''
-        TMP_DIR                 = "TmpDir"
-        FILEPATH                = "Filepath"
-        H5PATH                  = "HDF5Path"
+        TMP_DIR  = "TmpDir"
+        FILEPATH = "Filepath"
+        H5PATH   = "HDF5Path"
 
     class danse:
         '''
         Parameters of danse Find Cells operation
         '''
-        NEURO_DIAM_MIN          = "NeuronDiameterMin"
-        NEURO_DIAM_MAX          = "NeuronDiameterMax"
-        TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
-        SPATIAL_DOWN_SAMP       = "SpatialDownsample"
-        NOISE_FREQ              = "NoiseFreq"
-        THRES_CORR              = "ThresCorr"
-        SPATIAL_PENALTY         = "SpatialPenalty"
-        TEMPORAL_PENALTY        = "TemporalPenalty"
-        CORRECT_MOTION          = "CorrectMotion"
-        ADVANCED_SETTINGS       = "AdvancedSettings"
+        NEURO_DIAM_MIN     = "NeuronDiameterMin"
+        NEURO_DIAM_MAX     = "NeuronDiameterMax"
+        TEMPORAL_DOWN_SAMP = "TemporalDownsample"
+        SPATIAL_DOWN_SAMP  = "SpatialDownsample"
+        NOISE_FREQ         = "NoiseFreq"
+        THRES_CORR         = "ThresCorr"
+        SPATIAL_PENALTY    = "SpatialPenalty"
+        TEMPORAL_PENALTY   = "TemporalPenalty"
+        CORRECT_MOTION     = "CorrectMotion"
+        ADVANCED_SETTINGS  = "AdvancedSettings"
 
     class Preview:
         '''
         Preview parameters
         '''
-        FILEPATH        = "PreviewFilepath"
-        RANGE           = "PreviewRange"
+        FILEPATH = "PreviewFilepath"
+        RANGE    = "PreviewRange"
 
     class CrossReg:
         '''
