@@ -43,9 +43,9 @@ class Messages:
     # For preview
     SAVE_TO_HDF5                = "save to hdf5"
 
-class PythonKeys:
+class Preview:
     '''
-    Parameters_keys
+    Preview keys
     '''
 
     HDF5_FILE_PATH          = "HDF5FilePath"
