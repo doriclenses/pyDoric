@@ -30,7 +30,7 @@ class Parameters:
         Paths to file and dataset to process
         '''
         TMP_DIR                 = "TmpDir"
-        FILE_PATH               = "FilePath"
+        FILEPATH                = "Filepath"
         H5PATH                  = "HDF5Path"
 
     class danse:
@@ -52,7 +52,7 @@ class Parameters:
         '''
         Preview parameters
         '''
-        PREVIEW_FILE_PATH          = "PreviewFilepath"
+        PREVIEW_FILEPATH        = "PreviewFilepath"
         PREVIEW_RANGE           = "PreviewRange"
 
     class CrossReg:
