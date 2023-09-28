@@ -1,7 +1,6 @@
-class HDF5Definitions:
-
+class DoricFile:
     class Dataset:
-        IMAGESTACK = "ImageStack"
+        IMAGE_STACK = "ImageStack"
 
     class Attributes:
         OPERATION_NAME  = "OperationName"
@@ -12,7 +11,7 @@ class HDF5Definitions:
 
 class Parameters:
     '''
-    Parameters_keys
+    Parameters of danse Find Cells operation
     '''
     NEURO_DIAM_MIN          = "NeuronDiameterMin"
     NEURO_DIAM_MAX          = "NeuronDiameterMax"
@@ -34,3 +33,4 @@ class PythonKeys:
     TMP_DIR                 = "TmpDir"
     FNAME                   = "FileName"
     H5PATH                  = "HDF5Path"
+    HDF5_FILE_PATH          = "HDF5FilePath"

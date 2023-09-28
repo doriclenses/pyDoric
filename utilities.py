@@ -175,7 +175,7 @@ def save_images(
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
     f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Username'] = username
-    f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
+    f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs[defs.DoricFile.Attributes.BIT_COUNT] = bits_count
     f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Format'] = qt_format
     f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Height'] = height
     f[path+defs.HDF5Definitions.Dataset.IMAGESTACK].attrs['Width'] = width
@@ -240,7 +240,7 @@ def save_roi_signals(
             attrs = {**attrs, **attrs_add}
 
         if bits_count > -1:
-            attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
+            attrs[defs.DoricFile.Attributes.BIT_COUNT] = bits_count
 
         if names is not None:
             attrs['Name'] = names[i]
@@ -309,7 +309,7 @@ def save_signals(
         attrs['Username'] = usernames[i] if usernames is not None else name
 
         if bits_count is not None:
-            attrs[defs.HDF5Definitions.Attributes.BIT_COUNT] = bits_count
+            attrs[defs.DoricFile.Attributes.BIT_COUNT] = bits_count
         else:
             attrs['RangeMin'] = range_min
             attrs['RangeMax'] = range_max
@@ -376,16 +376,16 @@ def merge_params(
     params_final = {}
 
     if operation_name is None:
-        operation_name = params_current[defs.HDF5Definitions.Attributes.OPERATIONS]
+        operation_name = params_current[defs.DoricFile.Attributes.OPERATIONS]
 
-    if defs.HDF5Definitions.Attributes.OPERATIONS not in params_source :
-        params_final[defs.HDF5Definitions.Attributes.OPERATIONS] = operation_name
+    if defs.DoricFile.Attributes.OPERATIONS not in params_source :
+        params_final[defs.DoricFile.Attributes.OPERATIONS] = operation_name
     else:
-        params_final[defs.HDF5Definitions.Attributes.OPERATIONS] = params_source[defs.HDF5Definitions.Attributes.OPERATIONS] + " > " + operation_name
+        params_final[defs.DoricFile.Attributes.OPERATIONS] = params_source[defs.DoricFile.Attributes.OPERATIONS] + " > " + operation_name
 
     # Set the advanced Settings keys
     for key in params_current:
-        if key == defs.HDF5Definitions.Attributes.OPERATIONS:
+        if key == defs.DoricFile.Attributes.OPERATIONS:
             continue
 
         if key == "AdvancedSettings":
@@ -400,12 +400,12 @@ def merge_params(
 
     # Add Operations operation_name- to the keys
     for key in params_final.copy():
-        if key != defs.HDF5Definitions.Attributes.OPERATIONS:
+        if key != defs.DoricFile.Attributes.OPERATIONS:
             params_final[operation_name + "-" + key] = params_final.pop(key)
 
     # Merging with params source
     for key in params_source:
-        if key != defs.HDF5Definitions.Attributes.OPERATIONS:
+        if key != defs.DoricFile.Attributes.OPERATIONS:
             params_final[key] = params_source[key]
 
     return params_final

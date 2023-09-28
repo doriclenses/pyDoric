@@ -48,7 +48,6 @@ class Preview:
     Preview keys
     '''
 
-    HDF5_FILE_PATH          = "HDF5FilePath"
     MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
     SEED_GROUP_NAME         = "SeedGroupName"
     VIDEO_START             = "VideoStartFrame"

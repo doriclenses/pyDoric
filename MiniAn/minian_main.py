@@ -162,19 +162,19 @@ def main(minian_parameters):
 
     # Parameters
     # Set only "Operations" for params_srouce_data
-    if defs.HDF5Definitions.Attributes.OPERATION_NAME in params_source_data:
-        if defs.HDF5Definitions.Attributes.OPERATIONS not in params_source_data:
-            params_source_data[defs.HDF5Definitions.Attributes.OPERATIONS] = params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
+    if defs.DoricFile.Attributes.OPERATION_NAME in params_source_data:
+        if defs.DoricFile.Attributes.OPERATIONS not in params_source_data:
+            params_source_data[defs.DoricFile.Attributes.OPERATIONS] = params_source_data[defs.DoricFile.Attributes.OPERATION_NAME]
 
-        del params_source_data[defs.HDF5Definitions.Attributes.OPERATION_NAME]
+        del params_source_data[defs.DoricFile.Attributes.OPERATION_NAME]
 
     if minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP] > 1:
-        minian_parameters.parameters[defs.HDF5Definitions.Attributes.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
+        minian_parameters.parameters[defs.DoricFile.Attributes.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr = minian_parameters.fr,
-        bits_count = attrs[defs.HDF5Definitions.Attributes.BIT_COUNT],
+        bits_count = attrs[defs.DoricFile.Attributes.BIT_COUNT],
         qt_format = attrs['Format'],
         imagesStackUsername = attrs['Username'] if 'Username' in attrs else sensor,
         vname = minian_parameters.params_load_doric['fname'],
