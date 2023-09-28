@@ -13,24 +13,51 @@ class Parameters:
     '''
     Parameters of danse Find Cells operation
     '''
-    NEURO_DIAM_MIN          = "NeuronDiameterMin"
-    NEURO_DIAM_MAX          = "NeuronDiameterMax"
-    TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
-    SPATIAL_DOWN_SAMP       = "SpatialDownsample"
-    NOISE_FREQ              = "NoiseFreq"
-    THRES_CORR              = "ThresCorr"
-    SPATIAL_PENALTY         = "SpatialPenalty"
-    TEMPORAL_PENALTY        = "TemporalPenalty"
-    CORRECT_MOTION          = "CorrectMotion"
-    ADVANCED_SETTINGS       = "AdvancedSettings"
 
+    class Main:
+        '''
+        Main keys definitions
+        '''
 
-class PythonKeys:
-    PARAMETERS              = "Parameters"
-    PREVIEW                 = "Preview"
+        PARAMETERS              = "Parameters"
+        PATHS                   = "Paths"
+        PREVIEW                 = "Preview"
+        CROSS_REG               = "CrossReg"
 
-    PATHS                   = "Paths"
-    TMP_DIR                 = "TmpDir"
-    FNAME                   = "FileName"
-    H5PATH                  = "HDF5Path"
-    HDF5_FILE_PATH          = "HDF5FilePath"
+    class Path:
+        '''
+        Paths definitons
+        '''
+
+        TMP_DIR                 = "TmpDir"
+        FILE_PATH               = "FilePath"
+        H5PATH                  = "HDF5Path"
+
+    class Danse:
+        '''
+        Danse parameters definitons
+        '''
+
+        NEURO_DIAM_MIN          = "NeuronDiameterMin"
+        NEURO_DIAM_MAX          = "NeuronDiameterMax"
+        TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
+        SPATIAL_DOWN_SAMP       = "SpatialDownsample"
+        NOISE_FREQ              = "NoiseFreq"
+        THRES_CORR              = "ThresCorr"
+        SPATIAL_PENALTY         = "SpatialPenalty"
+        TEMPORAL_PENALTY        = "TemporalPenalty"
+        CORRECT_MOTION          = "CorrectMotion"
+        ADVANCED_SETTINGS       = "AdvancedSettings"
+
+    class Preview:
+        '''
+        Preview parameters definitons
+        '''
+
+        PREVIEW_FILE_PATH          = "PreviewFilepath"
+
+    class CrossReg:
+        '''
+        Cross Registration definitons
+        '''
+        _ = ""

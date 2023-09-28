@@ -40,7 +40,7 @@ def main(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.PythonKeys.TMP_DIR], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], "intermediate")
     subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -168,8 +168,8 @@ def main(minian_parameters):
 
         del params_source_data[defs.DoricFile.Attributes.OPERATION_NAME]
 
-    if minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP] > 1:
-        minian_parameters.parameters[defs.DoricFile.Attributes.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
+    if minian_parameters.parameters[defs.Parameters.Danse.SPATIAL_DOWN_SAMP] > 1:
+        minian_parameters.parameters[defs.DoricFile.Attributes.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.Danse.SPATIAL_DOWN_SAMP]
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
@@ -205,7 +205,7 @@ def preview(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.PythonKeys.TMP_DIR], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], "intermediate")
     subset = {"frame": slice(minian_parameters.preview_parameters[mn_defs.Preview.VIDEO_START], minian_parameters.preview_parameters[mn_defs.Preview.VIDEO_STOP])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -218,7 +218,7 @@ def preview(minian_parameters):
 
     # Save data for preview to hdf5 file
     try:
-        with h5py.File(minian_parameters.preview_parameters[defs.PythonKeys.HDF5_FILE_PATH], 'w') as hdf5_file:
+        with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.PREVIEW_FILE_PATH], 'w') as hdf5_file:
 
             if minian_parameters.preview_parameters[mn_defs.Preview.MAX_PROJ_DATASET_NAME] in hdf5_file:
                 del hdf5_file[minian_parameters.preview_parameters[mn_defs.Preview.MAX_PROJ_DATASET_NAME]]
@@ -276,7 +276,7 @@ def preprocess(varr_ref, intpath, minian_parameters):
 
 def correct_motion(varr_ref, intpath, chk, minian_parameters):
     ### Motion correction ###
-    if minian_parameters.parameters[defs.Parameters.CORRECT_MOTION]:
+    if minian_parameters.parameters[defs.Parameters.Danse.CORRECT_MOTION]:
         print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
         with mn_utils.except_type_error("estimate_motion"):
             motion = estimate_motion(varr_ref, **minian_parameters.params_estimate_motion)
