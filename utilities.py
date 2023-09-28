@@ -125,9 +125,9 @@ def save_images(
     time_: np.array,
     f: h5py.File,
     path: str,
-    bits_count: int = 16,
+    bit_count: int = 16,
     qt_format: int = 28,
-    username: Optional[str] = "ImageStack"
+    username: str = "ImageStack"
 ):
     """
     Saves images and time vector in HDF file as 'ImageStack' and 'Time'
@@ -173,7 +173,7 @@ def save_images(
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
     f[path+'ImageStack'].attrs['Username'] = username
-    f[path+'ImageStack'].attrs['BitCount'] = bits_count
+    f[path+'ImageStack'].attrs['BitCount'] = bit_count
     f[path+'ImageStack'].attrs['Format'] = qt_format
     f[path+'ImageStack'].attrs['Height'] = height
     f[path+'ImageStack'].attrs['Width'] = width
