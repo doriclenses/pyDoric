@@ -20,7 +20,6 @@ class Parameters:
         '''
         Main keys to distinguish different parameters
         '''
-
         PARAMETERS              = "Parameters"
         PATHS                   = "Paths"
         PREVIEW                 = "Preview"
@@ -30,7 +29,6 @@ class Parameters:
         '''
         Paths to file and dataset to process
         '''
-
         TMP_DIR                 = "TmpDir"
         FILE_PATH               = "FilePath"
         H5PATH                  = "HDF5Path"
@@ -39,7 +37,6 @@ class Parameters:
         '''
         Parameters of danse Find Cells operation
         '''
-
         NEURO_DIAM_MIN          = "NeuronDiameterMin"
         NEURO_DIAM_MAX          = "NeuronDiameterMax"
         TEMPORAL_DOWN_SAMP      = "TemporalDownsample"
@@ -55,8 +52,8 @@ class Parameters:
         '''
         Preview parameters
         '''
-
         PREVIEW_FILE_PATH          = "PreviewFilepath"
+        VIDEO_START_STOP           = "VideoStartStop"
 
     class CrossReg:
         '''

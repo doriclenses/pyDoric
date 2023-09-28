@@ -206,7 +206,7 @@ def preview(minian_parameters):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], "intermediate")
-    subset = {"frame": slice(minian_parameters.preview_parameters[mn_defs.Preview.VIDEO_START], minian_parameters.preview_parameters[mn_defs.Preview.VIDEO_STOP])}
+    subset = {"frame": slice(*minian_parameters.preview_parameters[defs.Parameters.Preview.VIDEO_START_STOP])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
 
