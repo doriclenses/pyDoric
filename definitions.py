@@ -1,5 +1,7 @@
 class DoricFile:
+
     class Dataset:
+
         IMAGE_STACK = "ImageStack"
 
     class Attributes:
