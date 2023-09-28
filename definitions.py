@@ -53,7 +53,7 @@ class Parameters:
         Preview parameters
         '''
         PREVIEW_FILE_PATH          = "PreviewFilepath"
-        VIDEO_START_STOP           = "VideoStartStop"
+        PREVIEW_RANGE           = "PreviewRange"
 
     class CrossReg:
         '''
