@@ -35,7 +35,7 @@ class Parameters:
         FILE_PATH               = "FilePath"
         H5PATH                  = "HDF5Path"
 
-    class Danse:
+    class danse:
         '''
         Parameters of danse Find Cells operation
         '''
