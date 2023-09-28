@@ -53,8 +53,8 @@ class PythonKeys:
     SEED_GROUP_NAME         = "SeedGroupName"
     VIDEO_START             = "VideoStartFrame"
     VIDEO_STOP              = "VideoStopFrame"
-    FNAME_CROSSREG          = "fname_crossReg";
-    H5PATH_IMAGES_CROSSREG  = "h5path_crossRegImages";
-    H5PATH_ROI_CROSSREG     = "h5path_crossRegRoi";
-    CROSS_REGISTRATION      = "CrossRegister";
+    FNAME_CROSSREG          = "fname_crossReg"
+    H5PATH_IMAGES_CROSSREG  = "h5path_crossRegImages"
+    H5PATH_ROI_CROSSREG     = "h5path_crossRegRoi"
+    CROSS_REGISTRATION      = "CrossRegister"
 
