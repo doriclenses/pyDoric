@@ -52,8 +52,8 @@ class Parameters:
         '''
         Preview parameters
         '''
-        PREVIEW_FILEPATH        = "PreviewFilepath"
-        PREVIEW_RANGE           = "PreviewRange"
+        FILEPATH        = "PreviewFilepath"
+        RANGE           = "PreviewRange"
 
     class CrossReg:
         '''
