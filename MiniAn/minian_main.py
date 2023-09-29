@@ -376,7 +376,7 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         temps = result.rename('temps')
         # All Ok till here
 
-        chk, _ = get_optimal_chk(temps, **params_get_optimal_chk)
+        chk, _ = get_optimal_chk(temps, **minian_parameters.params_get_optimal_chk)
         temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
 
         # estimate shift 
