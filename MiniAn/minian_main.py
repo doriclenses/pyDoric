@@ -176,7 +176,7 @@ def main(minian_parameters):
         fr = minian_parameters.fr,
         bits_count = attrs[defs.DoricFile.Attribute.BIT_COUNT],
         qt_format = attrs['Format'],
-        imagesStackUsername = attrs['Username'] if 'Username' in attrs else sensor,
+        username = attrs['Username'] if 'Username' in attrs else sensor,
         vname = minian_parameters.params_load_doric['fname'],
         vpath = f"DataProcessed/{driver}/",
         vdataset = f"{series}/{sensor}/",
