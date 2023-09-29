@@ -374,7 +374,6 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
 
         result = xr.concat([ref_max, current_max], pd.Index(['session1', 'session2'], name="frame"))
         temps = result.rename('temps')
-        # All Ok till here
 
         chk, _ = get_optimal_chk(temps, **minian_parameters.params_get_optimal_chk)
         temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
@@ -385,7 +384,15 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         # Apply Shifts
         temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
         shiftds = xr.merge([temps, shifts, temps_sh])
+        # All Ok till here
 
+        # function to get ROI footprints ('A') for the base (reference) file
+        refFootprints = getRefFileFootprints(refFileName, refRois)
+        mergedFootprints  = xr.merge(refFootprints, currentFile_A)
+
+        # Apply shifts to spatial footprint of each session
+        A_shifted = apply_transform(mergedFootprints.chunk(dict(height=-1, width=-1)), shiftds['shifts'])
+        
         # Calculate centroids
         cents = calculate_centroids(A_shifted, window)
 
@@ -403,3 +410,7 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         mappings_meta_fill.head()
 
     return refFile
+
+def getRefFileFootprints(refFileName, refRois):
+
+    return refFootprints
