@@ -37,7 +37,7 @@ class MinianParameters:
         self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH]+'Time')
 
         neuron_diameter     = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
-        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP]
+        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
         neuron_diameter     = tuple(neuron_diameter.round().astype('int'))
 
         noise_freq: float   = self.parameters[defs.Parameters.danse.NOISE_FREQ]
@@ -56,9 +56,9 @@ class MinianParameters:
             "fname": self.paths[defs.Parameters.Path.FILEPATH],
             "h5path": self.paths[defs.Parameters.Path.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": self.parameters[defs.Parameters.danse.TEMPORAL_DOWN_SAMP],
-                            "height": self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP],
-                            "width": self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP]},
+            "downsample": {"frame": self.parameters[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE] if not self.preview else self.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE],
+                            "height": self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
+                            "width": self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]},
             "downsample_strategy": "subset",
         }
 

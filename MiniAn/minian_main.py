@@ -168,8 +168,8 @@ def main(minian_parameters):
 
         del params_source_data[defs.DoricFile.Attribute.OPERATION_NAME]
 
-    if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP] > 1:
-        minian_parameters.parameters[defs.DoricFile.Attribute.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP]
+    if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
+        minian_parameters.parameters[defs.DoricFile.Attribute.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
