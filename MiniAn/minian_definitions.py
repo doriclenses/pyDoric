@@ -43,16 +43,13 @@ class Messages:
     # For preview
     SAVE_TO_HDF5                = "save to hdf5"
 
-class PythonKeys:
+class Preview:
     '''
-    Parameters_keys
+    Preview keys
     '''
 
-    HDF5_FILE_PATH          = "HDF5FilePath"
     MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
     SEED_GROUP_NAME         = "SeedGroupName"
-    VIDEO_START             = "VideoStartFrame"
-    VIDEO_STOP              = "VideoStopFrame"
     FNAME_CROSSREG          = "fname_crossReg"
     H5PATH_IMAGES_CROSSREG  = "h5path_crossRegImages"
     H5PATH_ROI_CROSSREG     = "h5path_crossRegRoi"

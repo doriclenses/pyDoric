@@ -22,26 +22,26 @@ class MinianParameters:
     '''
 
     def __init__(self, danse_parameters):
-        self.paths   = danse_parameters.get(defs.PythonKeys.PATHS, {})
-        self.parameters  = danse_parameters.get(defs.PythonKeys.PARAMETERS, {})
+        self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
+        self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview = False
-        if defs.PythonKeys.PREVIEW in danse_parameters:
+        if defs.Parameters.Main.PREVIEW in danse_parameters:
             self.preview = True
-            self.preview_parameters = danse_parameters[defs.PythonKeys.PREVIEW]
+            self.preview_parameters = danse_parameters[defs.Parameters.Main.PREVIEW]
 
         os.environ["OMP_NUM_THREADS"] = "1"
         os.environ["MKL_NUM_THREADS"] = "1"
         os.environ["OPENBLAS_NUM_THREADS"] = "1"
-        os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[defs.PythonKeys.TMP_DIR], "intermediate")
+        os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], "intermediate")
 
-        self.fr = utils.get_frequency(self.paths[defs.PythonKeys.FNAME], self.paths[defs.PythonKeys.H5PATH]+'Time')
+        self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH]+'Time')
 
-        neuron_diameter     = np.array([self.parameters[defs.Parameters.NEURO_DIAM_MIN], self.parameters[defs.Parameters.NEURO_DIAM_MAX]])
-        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]
+        neuron_diameter     = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
+        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP]
         neuron_diameter     = tuple(neuron_diameter.round().astype('int'))
 
-        noise_freq: float   = self.parameters[defs.Parameters.NOISE_FREQ]
-        thres_corr: float   = self.parameters[defs.Parameters.THRES_CORR]
+        noise_freq: float   = self.parameters[defs.Parameters.danse.NOISE_FREQ]
+        thres_corr: float   = self.parameters[defs.Parameters.danse.THRES_CORR]
 
         self.params_LocalCluster = {
             "n_workers": 4,
@@ -49,21 +49,21 @@ class MinianParameters:
             "resources": {"MEM": 1}, # constrain the number of tasks that can be concurrently in memory for each worker
             "threads_per_worker": 2,
             "dashboard_address": ":8787",
-            "local_directory": self.paths[defs.PythonKeys.TMP_DIR]
+            "local_directory": self.paths[defs.Parameters.Path.TMP_DIR]
         }
 
         self.params_load_doric = {
-            "fname": self.paths[defs.PythonKeys.FNAME],
-            "h5path": self.paths[defs.PythonKeys.H5PATH],
+            "fname": self.paths[defs.Parameters.Path.FILEPATH],
+            "h5path": self.paths[defs.Parameters.Path.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": self.parameters[defs.Parameters.TEMPORAL_DOWN_SAMP],
-                            "height": self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP],
-                            "width": self.parameters[defs.Parameters.SPATIAL_DOWN_SAMP]},
+            "downsample": {"frame": self.parameters[defs.Parameters.danse.TEMPORAL_DOWN_SAMP],
+                            "height": self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP],
+                            "width": self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP]},
             "downsample_strategy": "subset",
         }
 
         self.params_save_minian = {
-            "dpath": os.path.join(self.paths[defs.PythonKeys.TMP_DIR], "final"),
+            "dpath": os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], "final"),
             "meta_dict": {"session": -1, "animal": -2},
             "overwrite": True,
         }
@@ -130,26 +130,26 @@ class MinianParameters:
 
         self.params_update_spatial = {
             'dl_wnd': neuron_diameter[-1],
-            'sparse_penal': self.parameters[defs.Parameters.SPATIAL_PENALTY],
+            'sparse_penal': self.parameters[defs.Parameters.danse.SPATIAL_PENALTY],
             'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
         }
 
         self.params_update_temporal = {
             'noise_freq': noise_freq,
-            'sparse_penal': self.parameters[defs.Parameters.TEMPORAL_PENALTY],
+            'sparse_penal': self.parameters[defs.Parameters.danse.TEMPORAL_PENALTY],
             'p': 1,
             'add_lag': 20,
             'jac_thres': 0.2
         }
 
         # removing advanced_sesttings function keys that are not in the minian functions list
-        self.advanced_settings = self.parameters.get(defs.Parameters.ADVANCED_SETTINGS, {})
+        self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
         self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings
                             if (hasattr(mnUtils, key) or hasattr(mnPreproc, key) or hasattr(mnInit, key)
                                 or hasattr(mnCnmf, key) or hasattr(mnMotcorr, key) or key == "LocalCluster")}
 
         self.update_all_func_params()
-        self.parameters[defs.Parameters.ADVANCED_SETTINGS] = self.advanced_settings.copy()
+        self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
         self.params_crossRegister = {
             'fname_crossReg': self.paths[mn_defs.PythonKeys.FNAME_CROSSREG],
@@ -305,7 +305,7 @@ class MinianParameters:
         clean_h5path
         """
 
-        h5path = self.paths[defs.PythonKeys.H5PATH]
+        h5path = self.paths[defs.Parameters.Path.H5PATH]
 
         if h5path[0] == '/':
             h5path = h5path[1:]
