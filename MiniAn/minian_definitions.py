@@ -50,8 +50,9 @@ class Preview:
 
     MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
     SEED_GROUP_NAME         = "SeedGroupName"
+
+class CrossReg:
     FNAME_CROSSREG          = "fname_crossReg"
     H5PATH_IMAGES_CROSSREG  = "h5path_crossRegImages"
     H5PATH_ROI_CROSSREG     = "h5path_crossRegRoi"
     CROSS_REGISTRATION      = "CrossRegister"
-
