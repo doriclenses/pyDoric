@@ -37,11 +37,11 @@ class Messages:
     SAVING_TO_DORIC             = "Saving data to doric file..."
 
     # For minian_run
-    ADVANCED_BAD_TYPE           = "One of the advanced settings is not of a python type"
-    LOADING_ARGUMENTS           = "Loading arguments"
+    ADVANCED_BAD_TYPE           = "One of the advanced parameters is not of a python type"
+    LOADING_ARGUMENTS           = "Loading parameters"
 
     # For preview
-    SAVE_TO_HDF5                = "save to hdf5"
+    SAVE_TO_HDF5                = "Saving to hdf5"
 
 class Preview:
     '''
