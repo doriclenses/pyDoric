@@ -55,7 +55,7 @@ def main(minian_parameters):
 
     A, C, C_chk, sn_spatial = first_itteration(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters)
 
-    C, S, b0, c0, A, AC = second_itteration(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
+    A, C, AC, S, c0, b0 = second_itteration(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
 
     ### Save final results ###
     print(mn_defs.Messages.Main.SAVING_FINAL, flush=True)
@@ -363,4 +363,4 @@ def second_itteration(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk,
 
         AC = compute_AtC(A, C_chk)
 
-    return C, S, b0, c0, A, AC
+    return A, C, AC, S, c0, b0
