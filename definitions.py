@@ -12,31 +12,34 @@ class DoricFile:
 
 
 class Parameters:
-    '''
+    """
     All the parameters that danse sends
-    '''
+    """
 
     class Main:
-        '''
+        """
         Main keys to distinguish different parameters
-        '''
+        """
+
         PARAMETERS = "Parameters"
         PATHS      = "Paths"
         PREVIEW    = "Preview"
         CROSS_REG  = "CrossReg"
 
     class Path:
-        '''
+        """
         Paths to file and dataset to process
-        '''
+        """
+
         TMP_DIR  = "TmpDir"
         FILEPATH = "Filepath"
         H5PATH   = "HDF5Path"
 
     class danse:
-        '''
+        """
         Parameters of danse Find Cells operation
-        '''
+        """
+
         NEURO_DIAM_MIN      = "NeuronDiameterMin"
         NEURO_DIAM_MAX      = "NeuronDiameterMax"
         TEMPORAL_DOWNSAMPLE = "TemporalDownsample"
@@ -49,15 +52,17 @@ class Parameters:
         ADVANCED_SETTINGS   = "AdvancedSettings"
 
     class Preview:
-        '''
+        """
         Preview parameters
-        '''
+        """
+
         FILEPATH                = "PreviewFilepath"
         RANGE                   = "PreviewRange"
         TEMPORAL_DOWNSAMPLE     = "TemporalDownsample"
 
     class CrossReg:
-        '''
+        """
         Cross Registration parameters
-        '''
+        """
+
         _ = ""

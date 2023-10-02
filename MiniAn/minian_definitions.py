@@ -1,8 +1,8 @@
 
 class Messages:
-    '''
+    """
     Messages
-    '''
+    """
 
     # For minian_main
     START_CLUSTER               = "Starting cluster..."
@@ -44,9 +44,9 @@ class Messages:
     SAVE_TO_HDF5                = "Saving to hdf5"
 
 class Preview:
-    '''
+    """
     Preview keys
-    '''
+    """
 
     MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
     SEED_GROUP_NAME         = "SeedGroupName"

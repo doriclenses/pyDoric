@@ -34,8 +34,6 @@ def load_doric_to_xarray(
 
 
     Raises:
-
-
     """
 
     file_ = h5py.File(fname, 'r')
