@@ -68,6 +68,12 @@ class Messages:
         ONE_PARM_WRONG_TYPE         = "One parameter of {0} function is of the wrong type"
         NO_CELLS_FOUND              = "No cells where found"
 
+    class CrossReg:
+        """
+        Cross Registration
+        """
+
+        _ = ""
 
 class Text:
     """
@@ -91,6 +97,12 @@ class Text:
         RESIDUALS   = 'MiniAnResidualImages'
         SPIKES      = 'MiniAnSpikes'
 
+    class CrossReg:
+        """
+        Cross Registration
+        """
+
+        _ = ""
 
 class DictionaryKeys:
     """
@@ -105,4 +117,9 @@ class DictionaryKeys:
         MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
         SEED_GROUP_NAME         = "SeedGroupName"
 
+    class CrossReg:
+            """
+            Cross Registration keys
+            """
 
+            _ = ""
