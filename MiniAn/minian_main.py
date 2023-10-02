@@ -53,9 +53,9 @@ def main(minian_parameters):
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
 
-    A, C, C_chk, sn_spatial = first_itteration(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters)
+    A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters)
 
-    A, C, AC, S, c0, b0 = second_itteration(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
+    A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
 
     ### Save final results ###
     print(mn_defs.Messages.Main.SAVING_FINAL, flush=True)
@@ -274,7 +274,7 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
 
     return A, C, C_chk, f, b
 
-def first_itteration(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
+def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
     ### CNMF 1st itteration ###
     with mn_utils.except_print_error_no_cells(mn_defs.Messages.Main.CNMF_IT.format("1st")):
         # 1. Estimate spatial noise
@@ -327,7 +327,7 @@ def first_itteration(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_param
     return A, C, C_chk, sn_spatial
 
 
-def second_itteration(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters):
+def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters):
     ### CNMF 2nd itteration ###
     with mn_utils.except_print_error_no_cells(mn_defs.Messages.Main.CNMF_IT.format("2nd")):
         # 5. Second spatial update
