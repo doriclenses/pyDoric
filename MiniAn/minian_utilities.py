@@ -39,14 +39,13 @@ def load_doric_to_xarray(
     file_ = h5py.File(fname, 'r')
     varr = da.array.from_array(file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK])
     varr = xr.DataArray(
-        varr,
-        dims=["height", "width", "frame"],
-        coords=dict(
-            height=np.arange(varr.shape[0]),
-            width=np.arange(varr.shape[1]),
-            frame=np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
-        ),
-    )
+            varr,
+            dims = ["height", "width", "frame"],
+            coords = {"height" : np.arange(varr.shape[0]),
+                    "width" : np.arange(varr.shape[1]),
+                    "frame" : np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
+                    },
+            )
     varr = varr.transpose('frame', 'height', 'width')
 
     if dtype != varr.dtype:
@@ -74,10 +73,10 @@ def load_doric_to_xarray(
     with da.config.set(array_optimize=arr_opt):
         varr = da.optimize(varr)[0]
 
-    varr = varr.assign_coords(dict(height=np.arange(varr.sizes["height"]),
-                        width=np.arange(varr.sizes["width"]),
-                        frame=np.arange(varr.sizes["frame"]) + 1, #Frame number start a 1 not 0
-                        ))
+    varr = varr.assign_coords({"height" : np.arange(varr.sizes["height"]),
+                                "width" : np.arange(varr.sizes["width"]),
+                                "frame" : np.arange(varr.sizes["frame"]) + 1, #Frame number start a 1 not 0
+                                })
 
     return varr, file_
 
