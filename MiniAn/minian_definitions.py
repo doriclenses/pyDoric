@@ -58,11 +58,27 @@ class Messages:
         # For minian_utilities
         """
 
+        UNREC_DOWNSAMPLING_STRAT    = "Unrecognized downsampling strategy"
+        GEN_ROI_NAMES               = "Generating ROI names"
+        SAVE_ROI_SIG                = "Saving ROI signals"
+        SAVE_IMAGES                 = "Saving images"
+        SAVE_RES_IMAGES             = "Saving residual images"
+        SAVE_SPIKES                 = "Saving spikes"
+        SAVE_TO                     = "Saved to {0}"
         ONE_PARM_WRONG_TYPE         = "One parameter of {0} function is of the wrong type"
         NO_CELLS_FOUND              = "No cells where found"
 
 
 
+class Utilities:
+    """
+    Utilities definitions
+    """
+
+    ROISIGNALS = 'MiniAnROISignals'
+    IMAGES = 'MiniAnImages'
+    RESIDUALS = 'MiniAnResidualImages'
+    SPIKES = 'MiniAnSpikes'
 
 class Preview:
     """
