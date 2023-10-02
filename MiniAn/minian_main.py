@@ -40,7 +40,7 @@ def main(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Main.INTERMEDIATE)
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Text.Main.INTERMEDIATE)
     subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -124,7 +124,7 @@ def preview(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Main.INTERMEDIATE)
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Text.Main.INTERMEDIATE)
     subset = {"frame": slice(*minian_parameters.preview_parameters[defs.Parameters.Preview.RANGE])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)

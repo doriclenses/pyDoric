@@ -69,28 +69,40 @@ class Messages:
         NO_CELLS_FOUND              = "No cells where found"
 
 
-class Main:
+class Text:
     """
-    main definitions
-    """
-
-    INTERMEDIATE = "intermediate"
-
-class Utilities:
-    """
-    Utilities definitions
+    Text definitions
     """
 
-    ROISIGNALS = 'MiniAnROISignals'
-    IMAGES = 'MiniAnImages'
-    RESIDUALS = 'MiniAnResidualImages'
-    SPIKES = 'MiniAnSpikes'
+    class Main:
+        """
+        main definitions
+        """
 
-class Preview:
+        INTERMEDIATE = "intermediate"
+
+    class Utilities:
+        """
+        Utilities definitions
+        """
+
+        ROISIGNALS  = 'MiniAnROISignals'
+        IMAGES      = 'MiniAnImages'
+        RESIDUALS   = 'MiniAnResidualImages'
+        SPIKES      = 'MiniAnSpikes'
+
+
+class DictionaryKeys:
     """
-    Preview keys
+    Dictionary keys
     """
 
-    MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
-    SEED_GROUP_NAME         = "SeedGroupName"
+    class Preview:
+        """
+        Preview keys
+        """
+
+        MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
+        SEED_GROUP_NAME         = "SeedGroupName"
+
 
