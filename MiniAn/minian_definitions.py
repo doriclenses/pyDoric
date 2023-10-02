@@ -69,6 +69,12 @@ class Messages:
         NO_CELLS_FOUND              = "No cells where found"
 
 
+class Main:
+    """
+    main definitions
+    """
+
+    INTERMEDIATE = "intermediate"
 
 class Utilities:
     """

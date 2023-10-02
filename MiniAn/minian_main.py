@@ -40,7 +40,7 @@ def main(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Main.INTERMEDIATE)
     subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -76,7 +76,7 @@ def main(minian_parameters):
     # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/ImageStack")
+    attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")
     file_.close()
 
     # Parameters
@@ -94,10 +94,10 @@ def main(minian_parameters):
         Y, A, C, AC, S,
         fr = minian_parameters.fr,
         bits_count = attrs[defs.DoricFile.Attribute.BIT_COUNT],
-        qt_format = attrs['Format'],
-        username = attrs['Username'] if 'Username' in attrs else sensor,
+        qt_format = attrs[defs.DoricFile.Attribute.FORMAT],
+        username = attrs.get(defs.DoricFile.Attribute.USERNAME, sensor),
         vname = minian_parameters.params_load_doric['fname'],
-        vpath = f"DataProcessed/{driver}/",
+        vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
         vdataset = f"{series}/{sensor}/",
         params_doric = minian_parameters.parameters,
         params_source = params_source_data,
@@ -124,7 +124,7 @@ def preview(minian_parameters):
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], "intermediate")
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Main.INTERMEDIATE)
     subset = {"frame": slice(*minian_parameters.preview_parameters[defs.Parameters.Preview.RANGE])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)

@@ -1,10 +1,14 @@
 class DoricFile:
 
-    class Dataset:
+    class Group:
+        DATA_PROCESSED  = "DataProcessed"
 
-        IMAGE_STACK = "ImageStack"
+    class Dataset:
+        IMAGE_STACK     = "ImageStack"
 
     class Attribute:
+        FORMAT          = "Format"
+        USERNAME        = "Username"
         OPERATION_NAME  = "OperationName"
         OPERATIONS      = "Operations"
         BIT_COUNT       = "BitCount"
