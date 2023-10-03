@@ -388,7 +388,7 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         # All Ok till here
 
         # function to get ROI footprints ('A') for the base (reference) file
-        refFootprints = getRefFileFootprints(refFileName, refRois)
+        refFootprints = getRefFileFootprints(refFileName, refRois, refCR.coords)
         mergedFootprints  = xr.merge(refFootprints, currentFile_A)
 
         # Apply shifts to spatial footprint of each session
@@ -410,8 +410,22 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         mappings_meta_fill = fill_mapping(mappings_meta, cents)
         mappings_meta_fill.head()
 
-    return refFile
+        return refFileName
 
-def getRefFileFootprints(refFileName, refRois):
+def getRefFileFootprints(refFileName, refRois, dimensions):
 
-    return refFootprints
+    file_ = h5py.File(refFileName, 'r')
+    ReferenceROIS =  np.array(file_.get(refRois))
+
+    refFootPrints = np.zeros((dimensions['height'].size, dimensions['width'].size, len(ReferenceROIS)), np.float32)
+    for i in range(len(ReferenceROIS) - 1):
+        attrs = utils.load_attributes(file_, f"{refRois}/{ReferenceROIS[i]}")
+        contours = np.array((attrs['Coordinates']))
+
+        currentFrame = cv2.cvtColor(refFootPrints[:,:,i], cv2.COLOR_GRAY2BGR)
+        cv2.drawContours(currentFrame, [contours], -1, 255, cv2.FILLED)
+
+        gray = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2GRAY)
+        refFootPrints[:,:,i] = gray
+    return refFootPrints
+  
