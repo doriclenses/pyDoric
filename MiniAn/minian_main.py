@@ -4,6 +4,7 @@ import sys
 import tempfile
 import numpy as np
 import pandas as pd
+import cv2
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
 
