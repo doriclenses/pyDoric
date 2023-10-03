@@ -133,20 +133,20 @@ def preview(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
-    seeds_final, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
 
     # Save data for preview to hdf5 file
     try:
         with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
 
-            if minian_parameters.preview_parameters[mn_defs.Preview.MAX_PROJ_DATASET_NAME] in hdf5_file:
-                del hdf5_file[minian_parameters.preview_parameters[mn_defs.Preview.MAX_PROJ_DATASET_NAME]]
+            if minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME] in hdf5_file:
+                del hdf5_file[minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME]]
 
-            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.Preview.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype='float', chunks = True)
+            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype='float', chunks = True)
 
-            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters[mn_defs.Preview.SEED_GROUP_NAME])
-            for key in seeds_final:
-                groupseed.create_dataset(key, data = seeds_final[key], dtype = 'float',chunks = True)
+            groupseed = hdf5_file.create_group(minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.SEED_GROUP_NAME])
+            for key in seeds:
+                groupseed.create_dataset(key, data = seeds[key], dtype = 'float',chunks = True)
 
     except Exception as error:
         utils.print_error(error, mn_defs.Messages.Preview.SAVE_TO_HDF5)
