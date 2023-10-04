@@ -145,8 +145,8 @@ def preview(minian_parameters):
             hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype = 'float', chunks = True)
 
             seeds_dataset = hdf5_file.create_dataset(mn_defs.DictionaryKeys.Preview.SEEDS, data = seeds[['height', 'width']], dtype='int', chunks = True)
-            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.MERGED]    = seeds.index[seeds['mask_mrg'] is True].tolist()
-            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.REFINED]   = seeds.index[(seeds['mask_ks'] is True) & (seeds['mask_pnr'] is True)].tolist()
+            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.MERGED]    = seeds.index[seeds['mask_mrg'] == True].tolist()
+            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.REFINED]   = seeds.index[(seeds['mask_ks'] == True) & (seeds['mask_pnr'] == True)].tolist()
 
     except Exception as error:
         utils.print_error(error, mn_defs.Messages.Preview.SAVE_TO_HDF5)
