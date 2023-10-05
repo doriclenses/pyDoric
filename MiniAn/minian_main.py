@@ -387,19 +387,33 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
         shiftds = xr.merge([temps, shifts, temps_sh])
 
+        window    = shiftds['temps_shifted'].isnull().sum('session')
+        window, _ = xr.broadcast(window, shiftds['temps_shifted'])
+
         # function to get ROI footprints ('A') for the base (reference) file
         refFootprints = getRefFileFootprints(refFileName, refRois, refCR.coords)
-        mergedFootprints  = xr.merge(refFootprints, currentFile_A)
+
+        id_dims =  []
+        mergedFootprints  = xr.concat([refFootprints, currentFile_A], pd.Index(['session1', 'session2'], name="session"))
 
         # Apply shifts to spatial footprint of each session
-        A_shifted = apply_transform(mergedFootprints.chunk(dict(height=-1, width=-1)), shiftds['shifts'])
-        
+        A_shifted = apply_transform(mergedFootprints.chunk(dict(height = -1, width = -1)), shiftds['shifts'])
+
+        def set_window(wnd):
+            return wnd == wnd.min()
+        window = xr.apply_ufunc(
+            set_window,
+            window,
+            input_core_dims=[['height', 'width']],
+            output_core_dims=[['height', 'width']],
+            vectorize=True)
+
         # Calculate centroids
         cents = calculate_centroids(A_shifted, window)
 
         # Calculate centroid distance
-        id_dims.remove("session")
-        dist = calculate_centroid_distance(cents, index_dim=id_dims)
+        dist = calculate_centroid_distance(cents, "session", id_dims)
+
         # Threshold centroid distances
         dist_ft = dist[dist['variable', 'distance'] < param_dist].copy()
         dist_ft = group_by_session(dist_ft)
@@ -409,7 +423,7 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         mappings_meta = resolve_mapping(mappings)
         mappings_meta_fill = fill_mapping(mappings_meta, cents)
         mappings_meta_fill.head()
-
+        
         return refFileName
 
 def getRefFileFootprints(refFileName, refRois, dimensions):
