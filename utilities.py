@@ -10,7 +10,7 @@ import definitions as defs
 def load_attributes(
     file_: Union[h5py.File, str],
     path: str = ''
-) -> dict:
+    ) -> dict:
 
     """
     Loads group/dataset attributes as a dictionary
@@ -62,7 +62,7 @@ def load_attributes(
 def get_frequency(
     file_: Union[h5py.File, str],
     vdataset: str
-) -> float:
+    ) -> float:
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
@@ -98,7 +98,7 @@ def get_frequency(
 def get_dims(
     file_: Union[h5py.File, str],
     path: str
-) -> Tuple[Tuple[int, int], int]:
+    ) -> Tuple[Tuple[int, int], int]:
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
@@ -130,7 +130,7 @@ def save_images(
     bits_count: int = 16,
     qt_format: int = 28,
     username: Optional[str] = defs.DoricFile.Dataset.IMAGE_STACK
-):
+    ):
     """
     Saves images and time vector in HDF file as 'ImageStack' and 'Time'
     datasets in `path` group. Saves images width, height, `bits_count`, and
@@ -153,6 +153,7 @@ def save_images(
         username: Optional[str]
             Give an username for Danse
     """
+
     duration = images.shape[0]
     height = images.shape[1]
     width = images.shape[2]
@@ -191,7 +192,7 @@ def save_roi_signals(
     usernames: Optional[List[str]] = None,
     bits_count: int = -1,
     attrs_add: Optional[dict] = None
-):
+    ):
 
     """
     Saves ROI signals, time vector, and ROI coordinates.
@@ -260,7 +261,7 @@ def save_signal(
     f: h5py.File,
     path: str,
     attrs: Optional[dict] = None
-):
+    ):
 
     try:
         f.create_dataset(path, data=signal, dtype='float64', chunks=True, maxshape=None)
@@ -284,7 +285,7 @@ def save_signals(
     range_min: Optional[float] = None,
     range_max: Optional[float] = None,
     unit: Optional[str] = "Intensity",
-):
+    ):
 
     if bits_count is None and (range_min is None or range_max is None or unit is None):
         raise ValueError('Set either bits count attribute, or range min, range max, and unit attributes.')
@@ -323,7 +324,7 @@ def save_attributes(
     attributes: dict,
     f: h5py.File,
     path: str
-):
+    ):
 
     for key in attributes.keys():
         try:
@@ -334,7 +335,7 @@ def save_attributes(
 
 def footprint_to_coords(
     footprint: np.array
-) -> np.array:
+    ) -> np.array:
 
     _, mask = cv2.threshold(footprint, 0, 255, 0)
     contours, _ = cv2.findContours(mask.astype('uint8'), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -369,10 +370,11 @@ def merge_params(
     params_current,
     params_source = {},
     operation_name = None
-):
-    '''
+    ):
+    """
     Merge params
-    '''
+    """
+
     params_final = {}
 
     if operation_name is None:
@@ -413,10 +415,10 @@ def merge_params(
 def create_params_item(
     key: List[str],
     value
-):
-    '''
+    ):
+    """
     creat_params_value
-    '''
+    """
 
     key_final = "-".join(key)
 

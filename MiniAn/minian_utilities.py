@@ -34,21 +34,18 @@ def load_doric_to_xarray(
 
 
     Raises:
-
-
     """
 
     file_ = h5py.File(fname, 'r')
     varr = da.array.from_array(file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK])
     varr = xr.DataArray(
-        varr,
-        dims=["height", "width", "frame"],
-        coords=dict(
-            height=np.arange(varr.shape[0]),
-            width=np.arange(varr.shape[1]),
-            frame=np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
-        ),
-    )
+            varr,
+            dims = ["height", "width", "frame"],
+            coords = {"height" : np.arange(varr.shape[0]),
+                    "width" : np.arange(varr.shape[1]),
+                    "frame" : np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
+                    },
+            )
     varr = varr.transpose('frame', 'height', 'width')
 
     if dtype != varr.dtype:
@@ -65,7 +62,7 @@ def load_doric_to_xarray(
         elif downsample_strategy == "subset":
             varr = varr.isel(**{d: slice(None, None, w) for d, w in downsample.items()})
         else:
-            raise NotImplementedError("unrecognized downsampling strategy")
+            raise NotImplementedError(mn_defs.Messages.Utilities.UNREC_DOWNSAMPLING_STRAT)
     varr = varr.rename("fluorescence")
 
     if post_process:
@@ -76,10 +73,10 @@ def load_doric_to_xarray(
     with da.config.set(array_optimize=arr_opt):
         varr = da.optimize(varr)[0]
 
-    varr = varr.assign_coords(dict(height=np.arange(varr.sizes["height"]),
-                        width=np.arange(varr.sizes["width"]),
-                        frame=np.arange(varr.sizes["frame"]) + 1, #Frame number start a 1 not 0
-                        ))
+    varr = varr.assign_coords({"height" : np.arange(varr.sizes["height"]),
+                                "width" : np.arange(varr.sizes["width"]),
+                                "frame" : np.arange(varr.sizes["frame"]) + 1, #Frame number start a 1 not 0
+                                })
 
     return varr, file_
 
@@ -93,7 +90,7 @@ def save_minian_to_doric(
     fr: int,
     bits_count: int,
     qt_format: int,
-    imagesStackUsername:str,
+    username:str,
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
@@ -150,35 +147,32 @@ def save_minian_to_doric(
         Absolute path of the resulting video.
     """
 
-    ROISIGNALS = 'MiniAnROISignals'
-    IMAGES = 'MiniAnImages'
-    RESIDUALS = 'MiniAnResidualImages'
-    SPIKES = 'MiniAnSpikes'
+
 
     res = Y - AC # residual images
 
     duration = Y.shape[0]
     time_ = np.arange(0, duration/fr, 1/fr, dtype='float64')
 
-    print("generating ROI names")
+    print(mn_defs.Messages.Utilities.GEN_ROI_NAMES, flush = True)
     names = []
     usernames = []
     for i in range(len(C)):
         names.append('ROI'+str(i+1).zfill(4))
-        usernames.append('ROI {}'.format(i+1))
+        usernames.append('ROI {0}'.format(i+1))
 
     with h5py.File(vname, 'a') as f:
 
         # Check if MiniAn results already exist
         operationCount = ''
         if vpath in f:
-            operations = [ name for name in f[vpath] if ROISIGNALS in name ]
+            operations = [ name for name in f[vpath] if mn_defs.Text.Utilities.ROISIGNALS in name ]
             if len(operations) > 0:
                 operationCount = str(len(operations))
                 for operation in operations:
                     operationAttrs = utils.load_attributes(f, vpath+operation)
                     if utils.merge_params(params_doric, params_source) == operationAttrs:
-                        if(len(operation) == len(ROISIGNALS)):
+                        if(len(operation) == len(mn_defs.Text.Utilities.ROISIGNALS)):
                             operationCount = ''
                         else:
                             operationCount = operation[-1]
@@ -194,34 +188,34 @@ def save_minian_to_doric(
 
         params_doric[defs.DoricFile.Attribute.OPERATIONS] += operationCount
 
-        print("saving ROI signals")
-        pathROIs = vpath+ROISIGNALS+operationCount+'/'
+        print(mn_defs.Messages.Utilities.SAVE_ROI_SIG, flush=True)
+        pathROIs = vpath+mn_defs.Text.Utilities.ROISIGNALS+operationCount+'/'
         utils.save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         utils.print_group_path_for_DANSE(pathROIs+vdataset)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
 
         if saveimages:
-            print("saving images")
-            pathImages = vpath+IMAGES+operationCount+'/'
-            utils.save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            print(mn_defs.Messages.Utilities.SAVE_IMAGES, flush=True)
+            pathImages = vpath+mn_defs.Text.Utilities.IMAGES+operationCount+'/'
+            utils.save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
-            print("saving residual images")
-            pathResiduals = vpath+RESIDUALS+operationCount+'/'
-            utils.save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            print(mn_defs.Messages.Utilities.SAVE_RES_IMAGES, flush=True)
+            pathResiduals = vpath+mn_defs.Text.Utilities.RESIDUALS+operationCount+'/'
+            utils.save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
-            print("saving spikes")
-            pathSpikes = vpath+SPIKES+operationCount+'/'
+            print(mn_defs.Messages.Utilities.SAVE_SPIKES, flush=True)
+            pathSpikes = vpath+mn_defs.Text.Utilities.SPIKES+operationCount+'/'
             utils.save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
             utils.print_group_path_for_DANSE(pathSpikes+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
 
-    print("Saved to {}".format(vname))
+    print(mn_defs.Messages.Utilities.SAVE_TO.format(vname))
 
 def round_up_to_odd(f):
     f = int(np.ceil(f))
@@ -241,7 +235,7 @@ def except_type_error(function_name: str):
     try:
         yield
     except TypeError:
-        utils.print_to_intercept(mn_defs.Messages.ONE_PARM_WRONG_TYPE.format(function_name))
+        utils.print_to_intercept(mn_defs.Messages.Utilities.ONE_PARM_WRONG_TYPE.format(function_name))
         sys.exit()
 
 @contextmanager
@@ -254,5 +248,5 @@ def except_print_error_no_cells(position: str):
         yield
     except Exception as error:
         utils.print_error(error, position)
-        utils.print_to_intercept(mn_defs.Messages.NO_CELLS_FOUND)
+        utils.print_to_intercept(mn_defs.Messages.Utilities.NO_CELLS_FOUND)
         sys.exit()

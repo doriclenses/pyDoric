@@ -17,9 +17,9 @@ import minian_utilities as mn_utils
 import minian_definitions as mn_defs
 
 class MinianParameters:
-    '''
+    """
     MinianParameters
-    '''
+    """
 
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
@@ -37,7 +37,7 @@ class MinianParameters:
         self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH]+'Time')
 
         neuron_diameter     = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
-        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP]
+        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
         neuron_diameter     = tuple(neuron_diameter.round().astype('int'))
 
         noise_freq: float   = self.parameters[defs.Parameters.danse.NOISE_FREQ]
@@ -56,9 +56,9 @@ class MinianParameters:
             "fname": self.paths[defs.Parameters.Path.FILEPATH],
             "h5path": self.paths[defs.Parameters.Path.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": self.parameters[defs.Parameters.danse.TEMPORAL_DOWN_SAMP],
-                            "height": self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP],
-                            "width": self.parameters[defs.Parameters.danse.SPATIAL_DOWN_SAMP]},
+            "downsample": {"frame": self.parameters[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE] if not self.preview else self.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE],
+                            "height": self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
+                            "width": self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]},
             "downsample_strategy": "subset",
         }
 
@@ -213,12 +213,12 @@ class MinianParameters:
         new_params: dict,
         func
         ) -> [dict, dict]:
-        '''
+        """
         This function remove unused keys from new_params (keys that are not related to any function func arguements)
         and then update old_param dictionary with the new_params.
 
         It return the updated old_params and the new_params with keys removed
-        '''
+        """
         # remove unused keys
         func_arguments = inspect.getfullargspec(func).args
         new_params = {key: new_params[key] for key in new_params if key in func_arguments}
@@ -227,14 +227,12 @@ class MinianParameters:
 
         return [old_param, new_params]
 
-    def set_denoise_advanced_params(self,
-        ):
-
-        '''
+    def set_denoise_advanced_params(self):
+        """
         Denoise function have some specific parameters that update_func_advanced_param() can not see therefor
         the function is to update the value of the advanced parameter for the denoise function.
 
-        '''
+        """
 
         if 'method' in self.advanced_settings["denoise"]:
             self.params_denoise['method'] = self.advanced_settings["denoise"]['method']
@@ -269,14 +267,11 @@ class MinianParameters:
         self.advanced_settings["denoise"].update(denoise_method_parameters)
 
 
-    def set_estimate_motion_advanced_params(self,
-        ):
-
-        '''
+    def set_estimate_motion_advanced_params(self):
+        """
         Denoise function have some specific parameters that update_func_advanced_param() can not see therefor
         the function is to update the value of the advanced parameter for the estimate_motion function
-
-        '''
+        """
 
         # Doc for estimate motion function
         # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
