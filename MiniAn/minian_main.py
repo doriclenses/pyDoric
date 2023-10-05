@@ -431,15 +431,22 @@ def getRefFileFootprints(refFileName, refRois, dimensions):
     file_ = h5py.File(refFileName, 'r')
     ReferenceROIS =  np.array(file_.get(refRois))
 
-    refFootPrints = np.zeros((dimensions['height'].size, dimensions['width'].size, len(ReferenceROIS)), np.float32)
+    unitId = np.arange(1, len(ReferenceROIS), 1)
+
+    refFootPrints = np.zeros(((len(ReferenceROIS)-1), dimensions['height'].size, dimensions['width'].size), np.float32)
+
     for i in range(len(ReferenceROIS) - 1):
         attrs = utils.load_attributes(file_, f"{refRois}/{ReferenceROIS[i]}")
         contours = np.array((attrs['Coordinates']))
 
-        currentFrame = cv2.cvtColor(refFootPrints[:,:,i], cv2.COLOR_GRAY2BGR)
+        currentFrame = cv2.cvtColor(refFootPrints[i, :, :], cv2.COLOR_GRAY2BGR)
         cv2.drawContours(currentFrame, [contours], -1, 255, cv2.FILLED)
 
         gray = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2GRAY)
-        refFootPrints[:,:,i] = gray
-    return refFootPrints
-  
+        refFootPrints[i, :, :] = gray
+
+    data_xr = xr.DataArray(refFootPrints, 
+    coords = {'unit_id': unitId, 'height': dimensions['height'], 'width': dimensions['width']}, 
+    dims = ["unit_id", "height", "width"])
+
+    return data_xr
