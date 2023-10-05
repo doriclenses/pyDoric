@@ -3,6 +3,7 @@ import os
 import sys
 import tempfile
 import numpy as np
+import pandas as pand
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
 
@@ -133,7 +134,7 @@ def preview(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
-    seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, True)
 
     # Save data for preview to hdf5 file
     try:
@@ -214,7 +215,7 @@ def correct_motion(varr_ref, intpath, chk, minian_parameters):
 
     return Y, Y_fm_chk, Y_hw_chk
 
-def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters):
+def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, return_all_seeds = False):
     ### Seed initialization ###
     print(mn_defs.Messages.Main.INIT_SEEDS, flush=True)
     with mn_utils.except_print_error_no_cells(mn_defs.Messages.Main.INIT_SEEDS):
@@ -240,7 +241,11 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters):
         with mn_utils.except_type_error("seeds_merge"):
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
 
-        return seeds_final, max_proj
+        if return_all_seeds:
+            return pand.merge(seeds, seeds_final, how="outer").fillna(False), max_proj
+        else:
+            return seeds_final, max_proj
+
 
 def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters):
     ### Component initialization ###
