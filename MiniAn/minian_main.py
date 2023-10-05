@@ -362,7 +362,7 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
 def cross_register(minian_parameters, currentFile_AC, currentFile_A):
     performCrossReg = minian_parameters.params_crossRegister["crossReg"]
     if performCrossReg:
-        param_dist = 5
+        param_dist = 5 # Defines the max dist between centroids on different sessions to consider them as same cell
         refFileName = minian_parameters.params_crossRegister["fname_crossReg"]
         refImages   = minian_parameters.params_crossRegister["h5path_images"]
         refRois     = minian_parameters.params_crossRegister["h5path_roi"]
