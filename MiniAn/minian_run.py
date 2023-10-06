@@ -531,7 +531,7 @@ if __name__ == "__main__":
     params_source_data = utils.load_attributes(file_, data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
     IMAGE_STACK = "ImageStack"
-    if h5path+'ImageStack' not in file_:
+    if IMAGE_STACK not in file_[h5path]:
         IMAGE_STACK = "ImagesStack"
 
     attrs = utils.load_attributes(file_, h5path+'/'+IMAGE_STACK)
