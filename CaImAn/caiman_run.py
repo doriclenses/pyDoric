@@ -67,8 +67,14 @@ else : # for backwards compatibility
     tmpDir = tempfile.TemporaryDirectory(prefix="caiman_")
     tmpDirName = tmpDir.name
 
+IMAGE_STACK = 'ImageStack'
+with h5py.File(paths["fname"], 'r') as f:
+    if IMAGE_STACK not in f[paths['h5path']]:
+        IMAGE_STACK = "ImagesStack"
+
 fr = utils.get_frequency(paths['fname'], paths['h5path']+'Time')
-dims, T = utils.get_dims(paths['fname'], paths['h5path']+'ImagesStack')
+dims, T = utils.get_dims(paths['fname'], paths['h5path']+IMAGE_STACK)
+
 
 neuron_diameter             = tuple([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])
 
@@ -128,7 +134,7 @@ if __name__ == "__main__":
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
     with h5py.File(paths["fname"], 'r') as f:
-        images = np.array(f[paths['h5path']+'ImagesStack'])
+        images = np.array(f[paths['h5path']+IMAGE_STACK])
 
     logging.debug(images.shape)
 
@@ -205,7 +211,7 @@ if __name__ == "__main__":
     # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(paths['fname'], data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(paths['fname'], paths['h5path']+'/ImagesStack')
+    attrs = utils.load_attributes(paths['fname'], paths['h5path']+'/'+IMAGE_STACK)
 
     # Parameters
     # Set only "Operations" for params_srouce_data
@@ -229,7 +235,7 @@ if __name__ == "__main__":
             cnm.estimates.S[cnm.estimates.idx_components,:],
             fr=fr,
             shape=(dims[0],dims[1],T),
-            bits_count=attrs['BitsCount'],
+            bits_count=attrs['BitCount'],
             qt_format=attrs['Format'],
             imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
             vname=paths['fname'],
