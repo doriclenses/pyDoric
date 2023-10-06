@@ -51,8 +51,8 @@ def load_doric_to_xarray(
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
-            bitsCount = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT]
-            varr = varr / 2**bitsCount * 2**8
+            bit_count = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT]
+            varr = varr / 2**bit_count * 2**8
 
         varr = varr.astype(dtype)
 
@@ -88,7 +88,7 @@ def save_minian_to_doric(
     AC: xr.DataArray,
     S: xr.DataArray,
     fr: int,
-    bits_count: int,
+    bit_count: int,
     qt_format: int,
     username:str,
     vname: str = "minian.doric",
@@ -197,14 +197,14 @@ def save_minian_to_doric(
         if saveimages:
             print(mn_defs.Messages.Utilities.SAVE_IMAGES, flush=True)
             pathImages = vpath+mn_defs.Text.Utilities.IMAGES+operationCount+'/'
-            utils.save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=username)
+            utils.save_images(AC.values, time_, f, pathImages+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print(mn_defs.Messages.Utilities.SAVE_RES_IMAGES, flush=True)
             pathResiduals = vpath+mn_defs.Text.Utilities.RESIDUALS+operationCount+'/'
-            utils.save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=username)
+            utils.save_images(res.values, time_, f, pathResiduals+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 

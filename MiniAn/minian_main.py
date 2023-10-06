@@ -99,7 +99,7 @@ def main(minian_parameters):
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr = minian_parameters.fr,
-        bits_count = attrs[defs.DoricFile.Attribute.BIT_COUNT],
+        bit_count = attrs[defs.DoricFile.Attribute.BIT_COUNT],
         qt_format = attrs[defs.DoricFile.Attribute.FORMAT],
         username = attrs.get(defs.DoricFile.Attribute.USERNAME, sensor),
         vname = minian_parameters.params_load_doric['fname'],

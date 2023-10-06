@@ -127,13 +127,13 @@ def save_images(
     time_: np.array,
     f: h5py.File,
     path: str,
-    bits_count: int = 16,
+    bit_count: int = 16,
     qt_format: int = 28,
     username: Optional[str] = defs.DoricFile.Dataset.IMAGE_STACK
     ):
     """
     Saves images and time vector in HDF file as 'ImageStack' and 'Time'
-    datasets in `path` group. Saves images width, height, `bits_count`, and
+    datasets in `path` group. Saves images width, height, `bit_count`, and
     `qt_format` as 'ImageStack' dataset attribute
 
     Args:
@@ -145,7 +145,7 @@ def save_images(
             Opened HDF file where the information should be saved
         path  : str
             Group path in the HDF file
-        bits_count : int
+        bit_count : int
             Bits depth of images
         qt_format : int
             QImage_Format, necessary to display images in DNS. For reference, please
@@ -176,7 +176,7 @@ def save_images(
         f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
 
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Username'] = username
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT] = bits_count
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Format'] = qt_format
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Height'] = height
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Width'] = width
@@ -190,7 +190,7 @@ def save_roi_signals(
     path: str,
     names: Optional[List[str]] = None,
     usernames: Optional[List[str]] = None,
-    bits_count: int = -1,
+    bit_count: int = -1,
     attrs_add: Optional[dict] = None
     ):
 
@@ -208,7 +208,7 @@ def save_roi_signals(
         Opened HDF file where the information should be saved
     path  : str
         Group path in the HDF file
-    bits_count : int
+    bit_count : int
         Bits depth of images
     qt_format : int
         QImage_Format, necessary to display images in DNS. For reference, please
@@ -240,8 +240,8 @@ def save_roi_signals(
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
 
-        if bits_count > -1:
-            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bits_count
+        if bit_count > -1:
+            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
 
         if names is not None:
             attrs['Name'] = names[i]
@@ -281,13 +281,13 @@ def save_signals(
     path: str,
     names: List[str],
     usernames: Optional[List[str]] = None,
-    bits_count: Optional[int] = None,
+    bit_count: Optional[int] = None,
     range_min: Optional[float] = None,
     range_max: Optional[float] = None,
     unit: Optional[str] = "Intensity",
     ):
 
-    if bits_count is None and (range_min is None or range_max is None or unit is None):
+    if bit_count is None and (range_min is None or range_max is None or unit is None):
         raise ValueError('Set either bits count attribute, or range min, range max, and unit attributes.')
 
     if path[-1] != '/':
@@ -309,8 +309,8 @@ def save_signals(
 
         attrs['Username'] = usernames[i] if usernames is not None else name
 
-        if bits_count is not None:
-            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bits_count
+        if bit_count is not None:
+            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
         else:
             attrs['RangeMin'] = range_min
             attrs['RangeMax'] = range_max
