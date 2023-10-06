@@ -534,7 +534,7 @@ if __name__ == "__main__":
     if h5path+'ImageStack' not in file_:
         IMAGE_STACK = "ImagesStack"
 
-    attrs = utils.load_attributes(file_, h5path+'/ImageStack')
+    attrs = utils.load_attributes(file_, h5path+'/'+IMAGE_STACK)
     file_.close()
 
     # Parameters
