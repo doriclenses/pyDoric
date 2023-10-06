@@ -551,7 +551,7 @@ if __name__ == "__main__":
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr=fr,
-        bits_count=attrs['BitCount'],
+        bit_count=attrs['BitCount'],
         qt_format=attrs['Format'],
         imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
         vname=params_load_doric['fname'],
