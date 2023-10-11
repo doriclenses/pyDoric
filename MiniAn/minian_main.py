@@ -61,7 +61,7 @@ def main(minian_parameters):
     A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
 
     # Cross registration
-    cross_register(minian_parameters, AC, A)
+    A = cross_register(minian_parameters, AC, A)
 
     ### Save final results ###
     print(mn_defs.Messages.Main.SAVING_FINAL, flush=True)
@@ -406,6 +406,14 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         # function to get ROI footprints ('A') for the base (reference) file
         refFootprints = getRefFileFootprints(refFileName, refRois, refCR.coords)
 
+        # change the unitIds of the current file footprints to number starting from max UnitId in ref file
+        updatedUnitIds = []
+        refUnitIDMax = (refFootprints.coords["unit_id"].values).max() + 1
+        for idx, a in enumerate(currentFile_A.coords["unit_id"]):
+            updatedUnitIds.append(refUnitIDMax)
+            refUnitIDMax = refUnitIDMax + 1
+        currentFile_A["unit_id"] = updatedUnitIds
+
         id_dims =  []
         mergedFootprints  = xr.concat([refFootprints, currentFile_A], pd.Index(['session1', 'session2'], name="session"))
 
@@ -436,8 +444,15 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
         mappings_meta = resolve_mapping(mappings)
         mappings_meta_fill = fill_mapping(mappings_meta, cents)
         mappings_meta_fill.head()
+
+        # update unitIds of the current file footprints if they have a mapped unitID in ref file
+        for i in range(len(mappings_meta_fill)):
+            if mappings_meta_fill.iloc[i]['group'][0] == ('session1', 'session2'):
+                updatedUnitIds = [mappings_meta_fill.iloc[i]['session']['session1'] if x==mappings_meta_fill.iloc[i]['session']['session2'] else x for x in updatedUnitIds]
+        currentFile_A["unit_id"] = updatedUnitIds
         
-        return refFileName
+        # return currentFile footprints with updated unitIds
+        return currentFile_A
 
 def getRefFileFootprints(refFileName, refRois, dimensions):
 
