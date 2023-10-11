@@ -92,7 +92,7 @@ def save_minian_to_doric(
     AC: xr.DataArray,
     S: xr.DataArray,
     fr: int,
-    bits_count: int,
+    bit_count: int,
     qt_format: int,
     imagesStackUsername:str,
     vname: str = "minian.doric",
@@ -204,14 +204,14 @@ def save_minian_to_doric(
         if saveimages:
             print("saving images")
             pathImages = vpath+IMAGES+operationCount+'/'
-            utils.save_images(AC.values, time_, f, pathImages+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            utils.save_images(AC.values, time_, f, pathImages+vdataset, bit_count=bit_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric["Operations"] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print("saving residual images")
             pathResiduals = vpath+RESIDUALS+operationCount+'/'
-            utils.save_images(res.values, time_, f, pathResiduals+vdataset, bits_count=bits_count, qt_format=qt_format, username=imagesStackUsername)
+            utils.save_images(res.values, time_, f, pathResiduals+vdataset, bit_count=bit_count, qt_format=qt_format, username=imagesStackUsername)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric["Operations"] + "(Residuals)"), f, pathResiduals)
 

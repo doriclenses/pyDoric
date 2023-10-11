@@ -531,10 +531,10 @@ if __name__ == "__main__":
     params_source_data = utils.load_attributes(file_, data+'/'+driver+'/'+operation)
     # Get the attributes of the images stack
     IMAGE_STACK = "ImageStack"
-    if h5path+'ImageStack' not in file_:
+    if IMAGE_STACK not in file_[h5path]:
         IMAGE_STACK = "ImagesStack"
 
-    attrs = utils.load_attributes(file_, h5path+'/ImageStack')
+    attrs = utils.load_attributes(file_, h5path+'/'+IMAGE_STACK)
     file_.close()
 
     # Parameters
@@ -551,7 +551,7 @@ if __name__ == "__main__":
     mn_utils.save_minian_to_doric(
         Y, A, C, AC, S,
         fr=fr,
-        bits_count=attrs['BitCount'],
+        bit_count=attrs['BitCount'],
         qt_format=attrs['Format'],
         imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
         vname=params_load_doric['fname'],

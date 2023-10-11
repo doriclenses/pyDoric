@@ -235,7 +235,7 @@ if __name__ == "__main__":
             cnm.estimates.S[cnm.estimates.idx_components,:],
             fr=fr,
             shape=(dims[0],dims[1],T),
-            bits_count=attrs['BitCount'],
+            bit_count=attrs['BitCount'],
             qt_format=attrs['Format'],
             imagesStackUsername=attrs['Username'] if 'Username' in attrs else sensor,
             vname=paths['fname'],
