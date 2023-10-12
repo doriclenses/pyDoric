@@ -190,7 +190,7 @@ def save_minian_to_doric(
 
         print(mn_defs.Messages.Utilities.SAVE_ROI_SIG, flush=True)
         pathROIs = vpath+mn_defs.Text.Utilities.ROISIGNALS+operationCount+'/'
-        utils.save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
+        utils.save_roi_signals(C.values, A, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         utils.print_group_path_for_DANSE(pathROIs+vdataset)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
 

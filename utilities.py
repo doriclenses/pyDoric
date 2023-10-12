@@ -3,6 +3,7 @@ import cv2
 import h5py
 import warnings
 import numpy as np
+import xarray as xr
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 import definitions as defs
@@ -184,7 +185,7 @@ def save_images(
 
 def save_roi_signals(
     signals: np.ndarray,
-    footprints: np.ndarray,
+    A: xr.DataArray, 
     time_: np.array,
     f: h5py.File,
     path: str,
@@ -201,7 +202,8 @@ def save_roi_signals(
     signals : np.ndarray
         2D array of signals, with shape (n_ROI, time).
     footprints:
-        3D array of spatial cell footprints with shape (n_ROI, height, width)
+        3D array of spatial cell footprints with shape (n_ROI, height, width)  instead of A.values (footprints: np.ndarray) 
+        now the input has been changed to A (xr.DataArray),
     time_ : np.array
         1D vector of timestamps
     f : h5py.File
