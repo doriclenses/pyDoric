@@ -227,14 +227,16 @@ def save_roi_signals(
     if path[-1] != '/':
         path += '/'
 
+    footprints = A.values
+
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
 
         attrs = {
-            'ID': i+1,
-            'Index': i+1,
-            'Name': 'ROI {}'.format(i+1),
-            'Username': 'ROI {}'.format(i+1),
+            'ID': A.coords["unit_id"][i].values + 1,
+            'Index': A.coords["unit_id"][i].values + 1,
+            'Name': 'ROI {}'.format(A.coords["unit_id"][i].values + 1),
+            'Username': 'ROI {}'.format(A.coords["unit_id"][i].values + 1),
             'Shape': 0,
             'Coordinates': coords
         }
