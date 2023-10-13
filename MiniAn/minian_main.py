@@ -81,13 +81,6 @@ def main(minian_parameters):
     file_.close()
 
     # Parameters
-    # Set only "Operations" for params_srouce_data
-    if defs.DoricFile.Attribute.OPERATION_NAME in params_source_data:
-        if defs.DoricFile.Attribute.OPERATIONS not in params_source_data:
-            params_source_data[defs.DoricFile.Attribute.OPERATIONS] = params_source_data[defs.DoricFile.Attribute.OPERATION_NAME]
-
-        del params_source_data[defs.DoricFile.Attribute.OPERATION_NAME]
-
     if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
         minian_parameters.parameters[defs.DoricFile.Attribute.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
