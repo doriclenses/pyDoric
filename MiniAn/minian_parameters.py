@@ -289,9 +289,29 @@ class MinianParameters:
         self.advanced_settings["estimate_motion"].update(special_parameters)
 
 
-    def clean_h5path(self):
+    def remove_unused_keys(self,
+        all_params: dict, #old_param
+        advanced_params: dict, #new_params
+        func
+        ) -> [dict, dict]:
+
         """
-        clean_h5path
+        Remove the keys from advanced_params that don't exist in the func arguments.
+        Update all_params with advanced_params, and return both
+        """
+
+        func_arguments = inspect.getfullargspec(func).args
+        advanced_params = {key: advanced_params[key] for key in advanced_params if key in func_arguments}
+
+        all_params.update(advanced_params)
+
+        return [all_params, advanced_params]
+
+
+    def clean_h5path(self):
+        
+        """
+        Correct the path for hdf5 file
         """
 
         h5path = self.paths[defs.Parameters.Path.H5PATH]
