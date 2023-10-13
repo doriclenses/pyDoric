@@ -124,7 +124,7 @@ class MinianParameters:
         }
 
         self.params_get_noise_fft = {
-            'noise_range': (noise_freq, 0.5)
+            'noise_range': (noise_freq, fr/2) # the range max has to be Nyquist frequency (sample rate / 2)
         }
 
         self.params_update_spatial = {
