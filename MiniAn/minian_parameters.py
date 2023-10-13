@@ -16,7 +16,7 @@ import definitions as defs
 import minian_definitions as mn_defs
 
 class MinianParameters:
-    
+
     """
     Parameters used in minian library
     """
@@ -24,7 +24,7 @@ class MinianParameters:
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
         self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
-        
+
         self.preview = False
         if defs.Parameters.Main.PREVIEW in danse_parameters:
             self.preview = True
@@ -126,7 +126,7 @@ class MinianParameters:
         }
 
         self.params_get_noise_fft = {
-            'noise_range': (noise_freq, fr/2) # the range max has to be Nyquist frequency (sample rate / 2)
+            'noise_range': (noise_freq, self.fr/2) # the range max has to be Nyquist frequency (sample rate / 2)
         }
 
         self.params_update_spatial = {
@@ -203,7 +203,7 @@ class MinianParameters:
 
 
     def set_denoise_advanced_params(self):
-        
+
         """
         denoise() function has specific parameters that update_func_advanced_params() can not see
         Here, the parameters of the denoise() are manually checked and updated
@@ -240,7 +240,7 @@ class MinianParameters:
 
 
     def set_estimate_motion_advanced_params(self):
-        
+
         """
         estimate_motion() function has specific parameters that update_func_advanced_params() can not see
         Here, the parameters of the estimate_motion() are manually checked and updated
@@ -287,7 +287,7 @@ class MinianParameters:
 
 
     def clean_h5path(self):
-        
+
         """
         Correct the path for hdf5 file
         """
@@ -303,7 +303,7 @@ class MinianParameters:
 
 
     def get_h5path_names(self):
-        
+
         """
         Split the path to dataset into relevant names
         """
@@ -320,7 +320,7 @@ class MinianParameters:
 
 
     def round_up_to_odd(self, x):
-        
+
         """
         Round up to odd
         """
@@ -329,7 +329,7 @@ class MinianParameters:
         return x + 1 if x % 2 == 0 else x
 
     def round_down_to_odd(self, x):
-        
+
         """
         Round down to odd
         """
