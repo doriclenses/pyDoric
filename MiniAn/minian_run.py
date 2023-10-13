@@ -12,7 +12,6 @@ import xarray as xr
 sys.path.append('..')
 import utilities as utils
 import minian_main        as mn_main
-import minian_utilities   as mn_utils
 import minian_parameters  as mn_params
 import minian_definitions as mn_defs
 
