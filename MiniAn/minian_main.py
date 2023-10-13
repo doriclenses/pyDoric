@@ -565,14 +565,6 @@ def save_minian_to_doric(
 
     print(mn_defs.Messages.Utilities.SAVE_TO.format(vname))
 
-def round_up_to_odd(f):
-    f = int(np.ceil(f))
-    return f + 1 if f % 2 == 0 else f
-
-def round_down_to_odd(f):
-    f = int(np.ceil(f))
-    return f - 1 if f % 2 == 0 else f
-
 #################### definition of try: expect:
 @contextmanager
 def except_type_error(function_name: str):

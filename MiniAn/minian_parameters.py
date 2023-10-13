@@ -13,7 +13,6 @@ import minian.motion_correction as mnMotcorr
 sys.path.append('..')
 import utilities as utils
 import definitions as defs
-import minian_utilities as mn_utils
 import minian_definitions as mn_defs
 
 class MinianParameters:
@@ -74,7 +73,7 @@ class MinianParameters:
 
         self.params_denoise = {
             'method': 'median',
-            'ksize': mn_utils.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
+            'ksize': self.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
         }
 
         self.params_remove_background = {
@@ -317,3 +316,19 @@ class MinianParameters:
         sensor = h5path_names[-1]
 
         return [data, driver, operation, series, sensor]
+
+    def round_up_to_odd(self, x):
+        """
+        round up to odd
+        """
+
+        x = int(np.ceil(x))
+        return x + 1 if x % 2 == 0 else x
+
+    def round_down_to_odd(self, x):
+        """
+        round down to odd
+        """
+
+        x = int(np.ceil(x))
+        return x - 1 if x % 2 == 0 else x
