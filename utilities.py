@@ -351,28 +351,15 @@ def footprint_to_coords(
 
     return coords
 
-def print_to_intercept(msg):
-    if not isinstance(msg, str):
-        msg = str(msg)
-
-    print("[intercept] " + msg + " [end]", flush = True, end = '\n')
-
-def print_group_path_for_DANSE(path):
-    if(path[-1] == "/"):
-        path = path[:-1]
-
-    print_to_intercept("[pathgroup] " + "/" + path)
-
-def print_error(error, position):
-    print(f"Error in {position}: {type(error).__name__} - {error}", flush=True)
 
 def merge_params(
     params_current,
     params_source = {},
     operation_name = None
     ):
+
     """
-    Merge params
+    Merge parameters of the current operation and the previous ones
     """
 
     params_final = {}
@@ -392,10 +379,12 @@ def merge_params(
 
         if key == "AdvancedSettings":
             for variable_name, variable_value in params_current[key].items():
-                if isinstance(variable_value, dict): # MinIan case
+                # MiniAn
+                if isinstance(variable_value, dict):
                     for sub_variable_name, sub_variable_value in variable_value.items():
                         params_final.update(create_params_item(["Advanced", variable_name, sub_variable_name], sub_variable_value))
-                else : # Caiman case
+                # CaImAn
+                else:
                     params_final.update(create_params_item(["Advanced", variable_name], variable_value))
         else:
             params_final[key] = params_current[key]
@@ -412,12 +401,14 @@ def merge_params(
 
     return params_final
 
+
 def create_params_item(
     key: List[str],
     value
     ):
+
     """
-    creat_params_value
+    Create dictionary instance
     """
 
     key_final = "-".join(key)
@@ -428,3 +419,21 @@ def create_params_item(
         value_final = '"' + value + '"'
 
     return {key_final: value_final}
+
+
+def print_to_intercept(msg):
+    if not isinstance(msg, str):
+        msg = str(msg)
+
+    print("[intercept] " + msg + " [end]", flush = True, end = '\n')
+
+
+def print_group_path_for_DANSE(path):
+    if(path[-1] == "/"):
+        path = path[:-1]
+
+    print_to_intercept("[pathgroup] " + "/" + path)
+
+
+def print_error(error, position):
+    print(f"Error in {position}: {type(error).__name__} - {error}", flush=True)
