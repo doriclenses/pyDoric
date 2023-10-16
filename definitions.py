@@ -100,7 +100,13 @@ class Messages:
     Messages
     """
 
-    CANT_SAVE_ATT_VAL   = "Cannot save attribute {attribute} with value {value}"
-    PATHGROUP           = "[pathgroup] {path}"
-    INTERCEPT_MESSAGE   = "[intercept] {message} [end]"
-    ERROR_IN            = "Error in {position}: {type_error_name} - {error}"
+    CANT_SAVE_ATT_VAL       = "Cannot save attribute {attribute} with value {value}"
+    PATHGROUP               = "[pathgroup] {path}"
+    INTERCEPT_MESSAGE       = "[intercept] {message} [end]"
+    ERROR_IN                = "Error in {position}: {type_error_name} - {error}"
+    PATH_NOT_EXIT           = '"{path}" path does not exist in the file'
+    FILE_CLOSE              = "File is closed"
+    DATASET_NOT_TIME        = "The dataset is not a time vector"
+    F_NOT_H5_FILE_FILEPATH  = "f is not h5py.File or filepath to HDF file"
+    DATPATH_DOESNT_EXIT     = '"{datasetpath}" path does not exist in the file'
+    HAS_TO_BE_PATH          = "{path} has to be a path to dataset"
