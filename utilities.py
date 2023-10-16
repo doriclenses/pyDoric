@@ -330,7 +330,7 @@ def save_attributes(
         try:
             f[path].attrs[key] = attributes[key]
         except:
-            print('Cannot save attribute {} with value {}'.format(key, attributes[key]))
+            print(def.Messages.CANT_SAVE_ATT_VAL.format(attribute = key, value = attributes[key]))
 
 
 def footprint_to_coords(
@@ -392,7 +392,7 @@ def merge_params(
     # Add Operations operation_name- to the keys
     for key in params_final.copy():
         if key != defs.DoricFile.Attribute.OPERATIONS:
-            params_final[operation_name + "-" + key] = params_final.pop(key)
+            params_final[f"{operation_name}-{key}"] = params_final.pop(key)
 
     # Merging with params source
     for key in params_source:
@@ -432,8 +432,8 @@ def print_group_path_for_DANSE(path):
     if(path[-1] == "/"):
         path = path[:-1]
 
-    print_to_intercept("[pathgroup] " + "/" + path)
+    print_to_intercept(def.Messages.PATHGROUP.format(path = f"/{path}"))
 
 
 def print_error(error, position):
-    print(f"Error in {position}: {type(error).__name__} - {error}", flush=True)
+    print(def.Messages.ERROR_IN.format(position = position, type_error_name = type(error).__name__, error = error), flush=True)
