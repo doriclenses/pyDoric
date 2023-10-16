@@ -18,6 +18,12 @@ class DoricFile:
         OPERATIONS      = "Operations"
         BIT_COUNT       = "BitCount"
         BINNING_FACTOR  = "BinningFactor"
+        HEIGHT          = "Height"
+        WIDTH           = "Width"
+        NAME            = "Name"
+        RANGE_MIN       = "RangeMin"
+        RANGE_MAX       = "RangeMax"
+        UNIT            = "Unit"
 
 
 class Parameters:

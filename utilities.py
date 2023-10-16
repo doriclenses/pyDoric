@@ -175,11 +175,11 @@ def save_images(
         del f[path+defs.DoricFile.Dataset.TIME]
         f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
 
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Username'] = username
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Format'] = qt_format
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Height'] = height
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Width'] = width
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.USERNAME]     = username
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT]    = bit_count
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.FORMAT]       = qt_format
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.HEIGHT]       = height
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.WIDTH]        = width
 
 
 def save_roi_signals(
@@ -244,10 +244,10 @@ def save_roi_signals(
             attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
 
         if names is not None:
-            attrs['Name'] = names[i]
+            attrs[defs.DoricFile.Attribute.NAME] = names[i]
 
         if usernames is not None:
-            attrs['Username'] = usernames[i]
+            attrs[defs.DoricFile.Attribute.USERNAME] = usernames[i]
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
 
@@ -307,14 +307,14 @@ def save_signals(
 
         attrs = {}
 
-        attrs['Username'] = usernames[i] if usernames is not None else name
+        attrs[defs.DoricFile.Attribute.USERNAME] = usernames[i] if usernames is not None else name
 
         if bit_count is not None:
             attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
         else:
-            attrs['RangeMin'] = range_min
-            attrs['RangeMax'] = range_max
-            attrs['Unit'] = unit
+            attrs[defs.DoricFile.Attribute.RANGE_MIN]   = range_min
+            attrs[defs.DoricFile.Attribute.RANGE_MAX]   = range_max
+            attrs[defs.DoricFile.Attribute.UNIT]        = unit
 
         if attrs is not None:
             save_attributes(attrs, f, path+name)
