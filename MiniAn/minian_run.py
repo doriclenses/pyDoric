@@ -23,7 +23,7 @@ danse_parameters = {}
 
 try:
     for arg in sys.argv[1:]:
-        exec(arg)
+        danse_parameters = eval(arg)
 
 except SyntaxError:
     utils.print_to_intercept(mn_defs.Messages.Run.ADVANCED_BAD_TYPE)
