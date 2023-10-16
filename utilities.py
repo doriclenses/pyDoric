@@ -231,8 +231,8 @@ def save_roi_signals(
         attrs = {
             'ID': i+1,
             'Index': i+1,
-            'Name': 'ROI {}'.format(i+1),
-            'Username': 'ROI {}'.format(i+1),
+            'Name': defs.DoricFile.Dataset.ROI.format(i+1),
+            'Username': defs.DoricFile.Dataset.ROI.format(i+1),
             'Shape': 0,
             'Coordinates': coords
         }
