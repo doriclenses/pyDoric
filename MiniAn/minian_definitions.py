@@ -64,7 +64,7 @@ class FolderName:
 class DoricFile:
 
     """
-    Structure name for saving in Doric File
+    Names of the .doric file structue
     """
 
     class Group:
@@ -76,7 +76,7 @@ class DoricFile:
 class Preview:
 
     """
-    Structure Name for saving in Preview hdf5 file
+    Names of the HDF5 preview file structue
     """
 
     class Dataset:
@@ -84,5 +84,5 @@ class Preview:
         MAX_PROJECTION  = "MaxProjection"
 
     class Attribute:
-        MERGED                  = "Merged"
-        REFINED                 = "Refined"
+        MERGED  = "Merged"
+        REFINED = "Refined"
