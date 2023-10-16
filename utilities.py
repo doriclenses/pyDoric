@@ -35,7 +35,7 @@ def load_attributes(
     if type(file_) == h5py.File:
         f = file_
         if not f.__bool__():
-            raise ValueError('File is closed')
+            raise ValueError(defs.Messages.FILE_CLOSE)
     else:
         f = h5py.File(file_, 'r')
 
@@ -71,7 +71,7 @@ def get_frequency(
     if type(file_) == h5py.File:
         f = file_
         if not f.__bool__():
-            raise ValueError('File is closed')
+            raise ValueError(defs.Messages.FILE_CLOSE)
     else:
         f = h5py.File(file_, 'r')
 
@@ -107,7 +107,7 @@ def get_dims(
     if type(file_) == h5py.File:
         f = file_
         if not f.__bool__():
-            raise ValueError('File is closed')
+            raise ValueError(defs.Messages.FILE_CLOSE)
     else:
         f = h5py.File(file_, 'r')
 
