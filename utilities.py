@@ -229,25 +229,24 @@ def save_roi_signals(
         coords = footprint_to_coords(footprints[i])
 
         attrs = {
-            'ID': i+1,
-            'Index': i+1,
-            'Name': defs.DoricFile.Dataset.ROI.format(i+1),
-            'Username': defs.DoricFile.Dataset.ROI.format(i+1),
-            'Shape': 0,
-            'Coordinates': coords
+            defs.DoricFile.Attribute.ROI.ID:           i+1,
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(i+1),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(i+1),
+            defs.DoricFile.Attribute.ROI.SHAPE:        0,
+            defs.DoricFile.Attribute.ROI.COORDS:       coords
         }
 
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
 
         if bit_count > -1:
-            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
+            attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
 
         if names is not None:
-            attrs[defs.DoricFile.Attribute.NAME] = names[i]
+            attrs[defs.DoricFile.Attribute.Dataset.NAME] = names[i]
 
         if usernames is not None:
-            attrs[defs.DoricFile.Attribute.USERNAME] = usernames[i]
+            attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i]
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
 
@@ -312,9 +311,9 @@ def save_signals(
         if bit_count is not None:
             attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
         else:
-            attrs[defs.DoricFile.Attribute.RANGE_MIN]   = range_min
-            attrs[defs.DoricFile.Attribute.RANGE_MAX]   = range_max
-            attrs[defs.DoricFile.Attribute.UNIT]        = unit
+            attrs[defs.DoricFile.Attribute.RANGE_MIN] = range_min
+            attrs[defs.DoricFile.Attribute.RANGE_MAX] = range_max
+            attrs[defs.DoricFile.Attribute.UNIT]      = unit
 
         if attrs is not None:
             save_attributes(attrs, f, path+name)
