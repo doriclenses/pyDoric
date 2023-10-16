@@ -1,5 +1,9 @@
 class DoricFile:
 
+    """
+    Doric file structure name
+    """
+
     class Group:
         DATA_PROCESSED  = "DataProcessed"
 
@@ -16,11 +20,13 @@ class DoricFile:
 
 
 class Parameters:
+
     """
-    All the parameters that danse sends
+    All the parameters that danse software sends to python
     """
 
     class Main:
+
         """
         Main keys to distinguish different parameters
         """
@@ -30,7 +36,9 @@ class Parameters:
         PREVIEW    = "Preview"
         CROSS_REG  = "CrossReg"
 
+
     class Path:
+
         """
         Paths to file and dataset to process
         """
@@ -39,7 +47,9 @@ class Parameters:
         FILEPATH = "Filepath"
         H5PATH   = "HDF5Path"
 
+
     class danse:
+
         """
         Parameters of danse Find Cells operation
         """
@@ -55,7 +65,9 @@ class Parameters:
         CORRECT_MOTION      = "CorrectMotion"
         ADVANCED_SETTINGS   = "AdvancedSettings"
 
+
     class Preview:
+
         """
         Preview parameters
         """
@@ -64,9 +76,11 @@ class Parameters:
         RANGE                   = "PreviewRange"
         TEMPORAL_DOWNSAMPLE     = "TemporalDownsample"
 
+
     class CrossReg:
+
         """
-        Cross Registration parameters
+        Cross registration parameters
         """
 
         _ = ""

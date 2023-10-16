@@ -13,17 +13,18 @@ import minian.motion_correction as mnMotcorr
 sys.path.append('..')
 import utilities as utils
 import definitions as defs
-import minian_utilities as mn_utils
 import minian_definitions as mn_defs
 
 class MinianParameters:
+
     """
-    MinianParameters
+    Parameters used in minian library
     """
 
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
         self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
+
         self.preview = False
         if defs.Parameters.Main.PREVIEW in danse_parameters:
             self.preview = True
@@ -36,9 +37,9 @@ class MinianParameters:
 
         self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH]+'Time')
 
-        neuron_diameter     = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
-        neuron_diameter     = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
-        neuron_diameter     = tuple(neuron_diameter.round().astype('int'))
+        neuron_diameter = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
+        neuron_diameter = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+        neuron_diameter = tuple(neuron_diameter.round().astype('int'))
 
         noise_freq: float   = self.parameters[defs.Parameters.danse.NOISE_FREQ]
         thres_corr: float   = self.parameters[defs.Parameters.danse.THRES_CORR]
@@ -74,7 +75,7 @@ class MinianParameters:
 
         self.params_denoise = {
             'method': 'median',
-            'ksize': mn_utils.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
+            'ksize': self.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
         }
 
         self.params_remove_background = {
@@ -125,7 +126,7 @@ class MinianParameters:
         }
 
         self.params_get_noise_fft = {
-            'noise_range': (noise_freq, 0.5)
+            'noise_range': (noise_freq, self.fr/2) # the range max has to be Nyquist frequency (sample rate / 2)
         }
 
         self.params_update_spatial = {
@@ -142,7 +143,7 @@ class MinianParameters:
             'jac_thres': 0.2
         }
 
-        # removing advanced_sesttings function keys that are not in the minian functions list
+        # Remove advanced_sesttings function keys that are not in the minian functions list
         self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
         self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings
                             if (hasattr(mnUtils, key) or hasattr(mnPreproc, key) or hasattr(mnInit, key)
@@ -157,13 +158,12 @@ class MinianParameters:
             'h5path_roi': self.paths[mn_defs.DictionaryKeys.CrossReg.H5PATH_ROI_CROSSREG],
             'crossReg': self.parameters[mn_defs.DictionaryKeys.CrossReg.CROSS_REGISTRATION] 
         }
-
-    #--------------------------------------------- functions for advanced parameters -------------------------------------------------------------------------
     def update_all_func_params(self):
         for func_name in self.advanced_settings:
-            self.update_func_params(func_name)
+            self.update_func_advanced_params(func_name)
 
-    def update_func_params(self,
+
+    def update_func_advanced_params(self,
         func_name
         ):
 
@@ -186,9 +186,8 @@ class MinianParameters:
             self.set_estimate_motion_advanced_params()
             return
 
-        # hasattr(object, "name") give true if object.name is possible and false if not
-        # In our case check if the package have the function in it
-        if hasattr(mnUtils, func_name):
+        # Check if the package contains the function name
+        if hasattr(mnUtils, func_name):  # hasattr(object, "name") give true if object.name is possible and false if not
             mn_package = mnUtils
         elif hasattr(mnPreproc, func_name):
             mn_package = mnPreproc
@@ -201,37 +200,22 @@ class MinianParameters:
         else:
             return
 
-        # getattr(object, "name") is like doing object.name
-        func_arguments = inspect.getfullargspec(getattr(mn_package, func_name)).args
+        func_arguments = inspect.getfullargspec(getattr(mn_package, func_name)).args # getattr(object, "name") is like doing object.name
         new_params = {key: params[key] for key in params if key in func_arguments}
 
         getattr(self, "params_" + func_name).update(new_params)
         self.advanced_settings[func_name] = new_params
 
-    def remove_unused_keys(self,
-        old_param: dict,
-        new_params: dict,
-        func
-        ) -> [dict, dict]:
-        """
-        This function remove unused keys from new_params (keys that are not related to any function func arguements)
-        and then update old_param dictionary with the new_params.
-
-        It return the updated old_params and the new_params with keys removed
-        """
-        # remove unused keys
-        func_arguments = inspect.getfullargspec(func).args
-        new_params = {key: new_params[key] for key in new_params if key in func_arguments}
-
-        old_param.update(new_params)
-
-        return [old_param, new_params]
 
     def set_denoise_advanced_params(self):
-        """
-        Denoise function have some specific parameters that update_func_advanced_param() can not see therefor
-        the function is to update the value of the advanced parameter for the denoise function.
 
+        """
+        denoise() function has specific parameters that update_func_advanced_params() can not see
+        Here, the parameters of the denoise() are manually checked and updated
+
+        denoise() -- https://minian.readthedocs.io/en/stable/_modules/minian/preprocessing.html#denoise
+        openCV -- https://docs.opencv.org/4.7.0/index.html
+        anisotropic() from medpy - https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
         """
 
         if 'method' in self.advanced_settings["denoise"]:
@@ -239,13 +223,6 @@ class MinianParameters:
 
         if self.params_denoise['method'] != 'median':
             del self.params_denoise['ksize']
-
-        # Doc for denoise function
-        # https://minian.readthedocs.io/en/stable/_modules/minian/preprocessing.html#denoise
-        # opencv functions
-        # https://docs.opencv.org/4.7.0/index.html
-        # anisotropic is function from medpy
-        # https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
 
         method = self.params_denoise['method']
         method_keys = []
@@ -268,13 +245,13 @@ class MinianParameters:
 
 
     def set_estimate_motion_advanced_params(self):
-        """
-        Denoise function have some specific parameters that update_func_advanced_param() can not see therefor
-        the function is to update the value of the advanced parameter for the estimate_motion function
-        """
 
-        # Doc for estimate motion function
-        # https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
+        """
+        estimate_motion() function has specific parameters that update_func_advanced_params() can not see
+        Here, the parameters of the estimate_motion() are manually checked and updated
+
+        https://minian.readthedocs.io/en/stable/_modules/minian/motion_correction.html#estimate_motion
+        """
 
         keys = ["mesh_size"]
         # est_motion_part()
@@ -295,9 +272,29 @@ class MinianParameters:
         self.advanced_settings["estimate_motion"].update(special_parameters)
 
 
-    def clean_h5path(self):
+    def remove_unused_keys(self,
+        all_params: dict, #old_param
+        advanced_params: dict, #new_params
+        func
+        ) -> [dict, dict]:
+
         """
-        clean_h5path
+        Remove the keys from advanced_params that don't exist in the func arguments.
+        Update all_params with advanced_params, and return both
+        """
+
+        func_arguments = inspect.getfullargspec(func).args
+        advanced_params = {key: advanced_params[key] for key in advanced_params if key in func_arguments}
+
+        all_params.update(advanced_params)
+
+        return [all_params, advanced_params]
+
+
+    def clean_h5path(self):
+
+        """
+        Correct the path for hdf5 file
         """
 
         h5path = self.paths[defs.Parameters.Path.H5PATH]
@@ -309,10 +306,13 @@ class MinianParameters:
 
         return h5path
 
+
     def get_h5path_names(self):
+
         """
-        get_hdf5path_struct
+        Split the path to dataset into relevant names
         """
+
         h5path_names = self.clean_h5path().split('/')
 
         data = h5path_names[0]
@@ -322,3 +322,22 @@ class MinianParameters:
         sensor = h5path_names[-1]
 
         return [data, driver, operation, series, sensor]
+
+
+    def round_up_to_odd(self, x):
+
+        """
+        Round up to odd
+        """
+
+        x = int(np.ceil(x))
+        return x + 1 if x % 2 == 0 else x
+
+    def round_down_to_odd(self, x):
+
+        """
+        Round down to odd
+        """
+
+        x = int(np.ceil(x))
+        return x - 1 if x % 2 == 0 else x
