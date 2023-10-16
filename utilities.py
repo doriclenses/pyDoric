@@ -79,7 +79,7 @@ def get_frequency(
         raise KeyError(f'"{vdataset}" path does not exist in the file')
 
     if not isinstance(f[vdataset], h5py.Dataset):
-        raise ValueError(f'{vdataset} has to be a path to dataset')
+        raise ValueError(defs.Messages.HAS_TO_BE_PATH.format(path = vdataset))
 
     t = np.array(f[vdataset])
 
