@@ -330,7 +330,7 @@ def save_attributes(
         try:
             f[path].attrs[key] = attributes[key]
         except:
-            print(def.Messages.CANT_SAVE_ATT_VAL.format(attribute = key, value = attributes[key]))
+            print(defs.Messages.CANT_SAVE_ATT_VAL.format(attribute = key, value = attributes[key]))
 
 
 def footprint_to_coords(
@@ -425,15 +425,15 @@ def print_to_intercept(msg):
     if not isinstance(msg, str):
         msg = str(msg)
 
-    print(def.Messages.INTERCEPT_MESSAGE.format(message = msg), flush = True, end = '\n')
+    print(defs.Messages.INTERCEPT_MESSAGE.format(message = msg), flush = True, end = '\n')
 
 
 def print_group_path_for_DANSE(path):
     if(path[-1] == "/"):
         path = path[:-1]
 
-    print_to_intercept(def.Messages.PATHGROUP.format(path = f"/{path}"))
+    print_to_intercept(defs.Messages.PATHGROUP.format(path = f"/{path}"))
 
 
 def print_error(error, position):
-    print(def.Messages.ERROR_IN.format(position = position, type_error_name = type(error).__name__, error = error), flush=True)
+    print(defs.Messages.ERROR_IN.format(position = position, type_error_name = type(error).__name__, error = error), flush=True)
