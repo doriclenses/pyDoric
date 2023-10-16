@@ -377,7 +377,7 @@ def merge_params(
         if key == defs.DoricFile.Attribute.OPERATIONS:
             continue
 
-        if key == "AdvancedSettings":
+        if key == defs.Parameters.danse.ADVANCED_SETTINGS:
             for variable_name, variable_value in params_current[key].items():
                 # MiniAn
                 if isinstance(variable_value, dict):
