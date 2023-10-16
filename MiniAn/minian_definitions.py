@@ -54,34 +54,25 @@ class Messages:
 
     _ = ""
 
-class Text:
+class FolderName:
     """
-    Text definitions
+    Folder Name
     """
 
-    class Main:
-        """
-        main definitions
-        """
+    INTERMEDIATE = "Intermediate"
 
-        INTERMEDIATE = "intermediate"
+class DoricFile:
 
-    class Utilities:
-        """
-        Utilities definitions
-        """
+    """
+    Doric file structure name
+    """
 
+    class Group:
         ROISIGNALS  = 'MiniAnROISignals'
         IMAGES      = 'MiniAnImages'
         RESIDUALS   = 'MiniAnResidualImages'
         SPIKES      = 'MiniAnSpikes'
 
-    class CrossReg:
-        """
-        Cross Registration
-        """
-
-        _ = ""
 
 class DictionaryKeys:
     """
