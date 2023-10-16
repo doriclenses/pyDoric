@@ -13,17 +13,30 @@ class DoricFile:
         ROI             = "ROI{0}"
 
     class Attribute:
-        FORMAT          = "Format"
-        USERNAME        = "Username"
-        OPERATIONS      = "Operations"
-        BIT_COUNT       = "BitCount"
-        BINNING_FACTOR  = "BinningFactor"
-        HEIGHT          = "Height"
-        WIDTH           = "Width"
-        NAME            = "Name"
-        RANGE_MIN       = "RangeMin"
-        RANGE_MAX       = "RangeMax"
-        UNIT            = "Unit"
+
+        class Dataset:
+            USERNAME = "Username"
+            NAME     = "Name"
+
+        class Group:
+            OPERATIONS      = "Operations"
+            BINNING_FACTOR  = "BinningFactor"
+        
+        class Image:
+            BIT_COUNT = "BitCount"
+            FORMAT    = "Format"
+            HEIGHT    = "Height"
+            WIDTH     = "Width"
+
+        class ROI:
+            ID     = "ID"
+            COORDS = "Coordinates"
+            SHAPE  = "Shape"
+
+        class Signal:    
+            RANGE_MIN = "RangeMin"
+            RANGE_MAX = "RangeMax"
+            UNIT      = "Unit"
 
 
 class Parameters:
