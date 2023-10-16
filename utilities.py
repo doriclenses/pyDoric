@@ -40,7 +40,7 @@ def load_attributes(
         f = h5py.File(file_, 'r')
 
     if path not in f:
-        raise KeyError(f'"{path}" path does not exist in the file')
+        raise KeyError(defs.Messages.DATPATH_DOESNT_EXIST.format(datasetpath = path))
 
     params = {}
     for key, value in f[path].attrs.items():
@@ -76,7 +76,7 @@ def get_frequency(
         f = h5py.File(file_, 'r')
 
     if vdataset not in f:
-        raise KeyError(f'"{vdataset}" path does not exist in the file')
+        raise KeyError(defs.Messages.DATPATH_DOESNT_EXIST.format(datasetpath = vdataset))
 
     if not isinstance(f[vdataset], h5py.Dataset):
         raise ValueError(defs.Messages.HAS_TO_BE_PATH.format(path = vdataset))
@@ -84,7 +84,7 @@ def get_frequency(
     t = np.array(f[vdataset])
 
     if len(t.shape) > 1:
-        warnings.warn('The dataset is not a time vector')
+        warnings.warn(defs.Messages.DATASET_NOT_TIME)
 
     dt = np.diff(t)
     T = np.round(np.median(dt),10)
@@ -112,7 +112,7 @@ def get_dims(
         f = h5py.File(file_, 'r')
 
     if path not in f:
-        raise KeyError(f'"{path}" path does not exist in the file')
+        raise KeyError(defs.Messages.DATPATH_DOESNT_EXIST.format(datasetpath = path))
 
     shape = np.array(f[path]).shape
 
