@@ -135,14 +135,14 @@ def preview(minian_parameters):
     try:
         with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
 
-            if minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME] in hdf5_file:
-                del hdf5_file[minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME]]
+            if mn_defs.Preview.Dataset.MAX_PROJECTION in hdf5_file:
+                del hdf5_file[mn_defs.Preview.Dataset.MAX_PROJECTION]
 
-            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype = 'float', chunks = True)
+            hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = 'float', chunks = True)
 
-            seeds_dataset = hdf5_file.create_dataset(mn_defs.DictionaryKeys.Preview.SEEDS, data = seeds[['width', 'height']], dtype='int', chunks = True)
-            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.MERGED]    = seeds.index[seeds['mask_mrg'] == True].tolist()
-            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.REFINED]   = seeds.index[(seeds['mask_ks'] == True) & (seeds['mask_pnr'] == True)].tolist()
+            seeds_dataset = hdf5_file.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[['width', 'height']], dtype='int', chunks = True)
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]    = seeds.index[seeds['mask_mrg'] == True].tolist()
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED]   = seeds.index[(seeds['mask_ks'] == True) & (seeds['mask_pnr'] == True)].tolist()
 
     except Exception as error:
         utils.print_error(error, mn_defs.Messages.SAVE_TO_HDF5)

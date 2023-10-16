@@ -64,7 +64,7 @@ class FolderName:
 class DoricFile:
 
     """
-    Doric file structure name
+    Structure name for saving in Doric File
     """
 
     class Group:
@@ -73,24 +73,16 @@ class DoricFile:
         RESIDUALS   = 'MiniAnResidualImages'
         SPIKES      = 'MiniAnSpikes'
 
+class Preview:
 
-class DictionaryKeys:
     """
-    Dictionary keys
+    Structure Name for saving in Preview hdf5 file
     """
 
-    class Preview:
-        """
-        Preview keys
-        """
-        SEEDS                   = "Seeds"
+    class Dataset:
+        SEEDS           = "Seeds"
+        MAX_PROJECTION  = "MaxProjection"
+
+    class Attribute:
         MERGED                  = "Merged"
         REFINED                 = "Refined"
-        MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
-
-    class CrossReg:
-            """
-            Cross Registration keys
-            """
-
-            _ = ""
