@@ -99,4 +99,4 @@ class Messages:
     """
     Messages
     """
-    _ = ""
+    INTERCEPT_MESSAGE   = "[intercept] {message} [end]"

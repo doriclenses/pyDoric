@@ -425,7 +425,7 @@ def print_to_intercept(msg):
     if not isinstance(msg, str):
         msg = str(msg)
 
-    print("[intercept] " + msg + " [end]", flush = True, end = '\n')
+    print(def.Messages.INTERCEPT_MESSAGE.format(message = msg), flush = True, end = '\n')
 
 
 def print_group_path_for_DANSE(path):
