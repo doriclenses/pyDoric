@@ -13,7 +13,6 @@ class DoricFile:
     class Attribute:
         FORMAT          = "Format"
         USERNAME        = "Username"
-        OPERATION_NAME  = "OperationName"
         OPERATIONS      = "Operations"
         BIT_COUNT       = "BitCount"
         BINNING_FACTOR  = "BinningFactor"
