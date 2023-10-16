@@ -1,16 +1,16 @@
 class DoricFile:
 
     """
-    Doric file structure name
+    Doric file structure names
     """
 
     class Group:
-        DATA_PROCESSED  = "DataProcessed"
+        DATA_PROCESSED = "DataProcessed"
 
     class Dataset:
-        IMAGE_STACK     = "ImageStack"
-        TIME            = "Time"
-        ROI             = "ROI{0}"
+        IMAGE_STACK = "ImageStack"
+        TIME        = "Time"
+        ROI         = "ROI{0}"
 
     class Attribute:
 
@@ -92,9 +92,9 @@ class Parameters:
         Preview parameters
         """
 
-        FILEPATH                = "PreviewFilepath"
-        RANGE                   = "PreviewRange"
-        TEMPORAL_DOWNSAMPLE     = "TemporalDownsample"
+        FILEPATH            = "PreviewFilepath"
+        RANGE               = "PreviewRange"
+        TEMPORAL_DOWNSAMPLE = "TemporalDownsample"
 
 
     class CrossReg:
