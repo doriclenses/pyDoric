@@ -30,7 +30,7 @@ def load_attributes(
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
-            raise TypeError('f is not h5py.File or filepath to HDF file')
+            raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
     if type(file_) == h5py.File:
         f = file_
@@ -66,7 +66,7 @@ def get_frequency(
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
-            raise TypeError('f is not h5py.File or filepath to HDF file')
+            raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
     if type(file_) == h5py.File:
         f = file_
@@ -102,7 +102,7 @@ def get_dims(
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
-            raise TypeError('f is not h5py.File or filepath to HDF file')
+            raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
     if type(file_) == h5py.File:
         f = file_
