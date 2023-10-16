@@ -249,7 +249,7 @@ def save_roi_signals(
         if usernames is not None:
             attrs['Username'] = usernames[i]
 
-        dataset_name = 'ROI'+str(i+1).zfill(4)
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
 
         save_signal(signals[i], f, path+dataset_name, attrs)
 
