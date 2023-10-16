@@ -170,10 +170,10 @@ def save_images(
         dataset[:,:,i] = image
 
     try:
-        f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
     except:
-        del f[path+'Time']
-        f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
+        del f[path+defs.DoricFile.Dataset.TIME]
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
 
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Username'] = username
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
@@ -253,7 +253,7 @@ def save_roi_signals(
 
         save_signal(signals[i], f, path+dataset_name, attrs)
 
-    save_signal(time_, f, path+'Time')
+    save_signal(time_, f, path+defs.DoricFile.Dataset.TIME)
 
 
 def save_signal(
@@ -294,7 +294,7 @@ def save_signals(
         path += '/'
 
     try:
-        f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
     except:
         pass
 

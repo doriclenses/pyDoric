@@ -9,6 +9,7 @@ class DoricFile:
 
     class Dataset:
         IMAGE_STACK     = "ImageStack"
+        TIME            = "Time"
 
     class Attribute:
         FORMAT          = "Format"
