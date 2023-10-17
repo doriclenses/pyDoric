@@ -13,7 +13,7 @@ from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
 from typing import Optional, Callable
 
-sys.path.append('..')
+sys.path.append("..")
 import utilities as utils
 import definitions as defs
 import minian_parameters as mn_params
@@ -91,7 +91,7 @@ def main(minian_parameters):
         bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
         qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
         username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-        vname = minian_parameters.params_load_doric['fname'],
+        vname = minian_parameters.params_load_doric["fname"],
         vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
         vdataset = f"{series}/{sensor}/",
         params_doric = minian_parameters.parameters,
@@ -137,11 +137,11 @@ def preview(minian_parameters):
             if mn_defs.Preview.Dataset.MAX_PROJECTION in hdf5_file:
                 del hdf5_file[mn_defs.Preview.Dataset.MAX_PROJECTION]
 
-            hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = 'float', chunks = True)
+            hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float", chunks = True)
 
-            seeds_dataset = hdf5_file.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[['width', 'height']], dtype='int', chunks = True)
-            seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]    = seeds.index[seeds['mask_mrg'] == True].tolist()
-            seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED]   = seeds.index[(seeds['mask_ks'] == True) & (seeds['mask_pnr'] == True)].tolist()
+            seeds_dataset = hdf5_file.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]    = seeds.index[seeds["mask_mrg"] == True].tolist()
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED]   = seeds.index[(seeds["mask_ks"] == True) & (seeds["mask_pnr"] == True)].tolist()
 
     except Exception as error:
         utils.print_error(error, mn_defs.Messages.SAVE_TO_HDF5)
@@ -396,7 +396,7 @@ def load_doric_to_xarray(
                     "frame" : np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
                     },
             )
-    varr = varr.transpose('frame', 'height', 'width')
+    varr = varr.transpose("frame", "height", "width")
 
     if dtype != varr.dtype:
         if dtype == np.uint8:
@@ -443,7 +443,7 @@ def save_minian_to_doric(
     username:str,
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
-    vdataset: str = 'Series1/Sensor1/',
+    vdataset: str = "Series1/Sensor1/",
     params_doric: Optional[dict] = {},
     params_source: Optional[dict] = {},
     saveimages: bool = True,
@@ -502,19 +502,19 @@ def save_minian_to_doric(
     res = Y - AC # residual images
 
     duration = Y.shape[0]
-    time_ = np.arange(0, duration/fr, 1/fr, dtype='float64')
+    time_ = np.arange(0, duration/fr, 1/fr, dtype="float64")
 
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
     usernames = []
     for i in range(len(C)):
-        names.append('ROI'+str(i+1).zfill(4))
-        usernames.append('ROI {0}'.format(i+1))
+        names.append("ROI"+str(i+1).zfill(4))
+        usernames.append("ROI {0}".format(i+1))
 
     with h5py.File(vname, 'a') as f:
 
         # Check if MiniAn results already exist
-        operationCount = ''
+        operationCount = ""
         if vpath in f:
             operations = [ name for name in f[vpath] if mn_defs.DoricFile.Group.ROISIGNALS in name ]
             if len(operations) > 0:
@@ -523,7 +523,7 @@ def save_minian_to_doric(
                     operationAttrs = utils.load_attributes(f, vpath+operation)
                     if utils.merge_params(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(mn_defs.DoricFile.Group.ROISIGNALS)):
-                            operationCount = ''
+                            operationCount = ""
                         else:
                             operationCount = operation[-1]
 

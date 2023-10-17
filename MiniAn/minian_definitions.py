@@ -68,10 +68,10 @@ class DoricFile:
     """
 
     class Group:
-        ROISIGNALS  = 'MiniAnROISignals'
-        IMAGES      = 'MiniAnImages'
-        RESIDUALS   = 'MiniAnResidualImages'
-        SPIKES      = 'MiniAnSpikes'
+        ROISIGNALS  = "MiniAnROISignals"
+        IMAGES      = "MiniAnImages"
+        RESIDUALS   = "MiniAnResidualImages"
+        SPIKES      = "MiniAnSpikes"
 
 class Preview:
 

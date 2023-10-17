@@ -9,7 +9,7 @@ from dask.distributed import Client, LocalCluster
 import h5py
 import xarray as xr
 
-sys.path.append('..')
+sys.path.append("..")
 import utilities as utils
 import minian_main        as mn_main
 import minian_parameters  as mn_params

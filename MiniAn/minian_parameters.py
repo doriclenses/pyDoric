@@ -10,7 +10,7 @@ import minian.initialization as mnInit
 import minian.cnmf as mnCnmf
 import minian.motion_correction as mnMotcorr
 
-sys.path.append('..')
+sys.path.append("..")
 import utilities as utils
 import definitions as defs
 import minian_definitions as mn_defs
@@ -39,7 +39,7 @@ class MinianParameters:
 
         neuron_diameter = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
         neuron_diameter = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
-        neuron_diameter = tuple(neuron_diameter.round().astype('int'))
+        neuron_diameter = tuple(neuron_diameter.round().astype("int"))
 
         noise_freq: float   = self.parameters[defs.Parameters.danse.NOISE_FREQ]
         thres_corr: float   = self.parameters[defs.Parameters.danse.THRES_CORR]
@@ -74,30 +74,30 @@ class MinianParameters:
         }
 
         self.params_denoise = {
-            'method': 'median',
-            'ksize': self.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
+            "method": "median",
+            "ksize": self.round_down_to_odd(neuron_diameter[-1]/2.0) # half of the maximum diameter
         }
 
         self.params_remove_background = {
-            'method': 'tophat',
-            'wnd': np.ceil(neuron_diameter[-1]) # largest neuron diameter
+            "method": "tophat",
+            "wnd": np.ceil(neuron_diameter[-1]) # largest neuron diameter
         }
 
         self.params_estimate_motion = {
-            'dim': 'frame'
+            "dim": "frame"
         }
 
         self.params_apply_transform = {
-            'fill': 0
+            "fill": 0
         }
 
         wnd = 60 # time window of 60 seconds
         self.params_seeds_init = {
-            'wnd_size': self.fr*wnd,
-            'method': 'rolling',
-            'stp_size': self.fr*wnd / 2,
-            'max_wnd': neuron_diameter[-1],
-            'diff_thres': 3
+            "wnd_size": self.fr*wnd,
+            "method": "rolling",
+            "stp_size": self.fr*wnd / 2,
+            "max_wnd": neuron_diameter[-1],
+            "diff_thres": 3
         }
 
         self.params_pnr_refine = {
@@ -110,37 +110,37 @@ class MinianParameters:
         }
 
         self.params_seeds_merge = {
-            'thres_dist': neuron_diameter[0],
-            'thres_corr': thres_corr,
-            'noise_freq': noise_freq
+            "thres_dist": neuron_diameter[0],
+            "thres_corr": thres_corr,
+            "noise_freq": noise_freq
         }
 
         self.params_initA = {
-            'thres_corr': thres_corr,
-            'wnd': neuron_diameter[-1],
-            'noise_freq': noise_freq
+            "thres_corr": thres_corr,
+            "wnd": neuron_diameter[-1],
+            "noise_freq": noise_freq
         }
 
         self.params_unit_merge = {
-            'thres_corr': thres_corr
+            "thres_corr": thres_corr
         }
 
         self.params_get_noise_fft = {
-            'noise_range': (noise_freq, self.fr/2) # the range max has to be Nyquist frequency (sample rate / 2)
+            "noise_range": (noise_freq, self.fr/2) # the range max has to be Nyquist frequency (sample rate / 2)
         }
 
         self.params_update_spatial = {
-            'dl_wnd': neuron_diameter[-1],
-            'sparse_penal': self.parameters[defs.Parameters.danse.SPATIAL_PENALTY],
-            'size_thres': (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
+            "dl_wnd": neuron_diameter[-1],
+            "sparse_penal": self.parameters[defs.Parameters.danse.SPATIAL_PENALTY],
+            "size_thres": (np.ceil(0.9*(np.pi*neuron_diameter[0]/2)**2), np.ceil(1.1*(np.pi*neuron_diameter[-1]/2)**2))
         }
 
         self.params_update_temporal = {
-            'noise_freq': noise_freq,
-            'sparse_penal': self.parameters[defs.Parameters.danse.TEMPORAL_PENALTY],
-            'p': 1,
-            'add_lag': 20,
-            'jac_thres': 0.2
+            "noise_freq": noise_freq,
+            "sparse_penal": self.parameters[defs.Parameters.danse.TEMPORAL_PENALTY],
+            "p": 1,
+            "add_lag": 20,
+            "jac_thres": 0.2
         }
 
         # Remove advanced_sesttings function keys that are not in the minian functions list
@@ -213,13 +213,13 @@ class MinianParameters:
         anisotropic() from medpy - https://loli.github.io/medpy/generated/medpy.filter.smoothing.anisotropic_diffusion.html
         """
 
-        if 'method' in self.advanced_settings["denoise"]:
-            self.params_denoise['method'] = self.advanced_settings["denoise"]['method']
+        if "method" in self.advanced_settings["denoise"]:
+            self.params_denoise["method"] = self.advanced_settings["denoise"]["method"]
 
-        if self.params_denoise['method'] != 'median':
-            del self.params_denoise['ksize']
+        if self.params_denoise["method"] != "median":
+            del self.params_denoise["ksize"]
 
-        method = self.params_denoise['method']
+        method = self.params_denoise["method"]
         method_keys = []
 
         if method == "gaussian":

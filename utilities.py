@@ -9,7 +9,7 @@ import definitions as defs
 
 def load_attributes(
     file_: Union[h5py.File, str],
-    path: str = ''
+    path: str = ""
     ) -> dict:
 
     """
@@ -159,21 +159,21 @@ def save_images(
     width = images.shape[2]
 
     try:
-        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
+        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
                                   chunks=(height,width,1), maxshape=(height,width,None))
     except:
         del f[path+defs.DoricFile.Dataset.IMAGE_STACK]
-        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
+        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
                                   chunks=(height,width,1), maxshape=(height,width,None))
 
     for i, image in enumerate(images):
         dataset[:,:,i] = image
 
     try:
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
     except:
         del f[path+defs.DoricFile.Dataset.TIME]
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
 
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME]     = username
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]    = bit_count
@@ -263,10 +263,10 @@ def save_signal(
     ):
 
     try:
-        f.create_dataset(path, data=signal, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path, data=signal, dtype="float64", chunks=True, maxshape=None)
     except:
         del f[path]
-        f.create_dataset(path, data=signal, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path, data=signal, dtype="float64", chunks=True, maxshape=None)
 
 
     if attrs is not None:
@@ -287,22 +287,22 @@ def save_signals(
     ):
 
     if bit_count is None and (range_min is None or range_max is None or unit is None):
-        raise ValueError('Set either bits count attribute, or range min, range max, and unit attributes.')
+        raise ValueError("Set either bits count attribute, or range min, range max, and unit attributes.")
 
     if path[-1] != '/':
         path += '/'
 
     try:
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
     except:
         pass
 
     for i,name in enumerate(names):
         try:
-            f.create_dataset(path+name, data=signals[i], dtype='float64', chunks=True, maxshape=None)
+            f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=True, maxshape=None)
         except:
             del f[path+name]
-            f.create_dataset(path+name, data=signals[i], dtype='float64', chunks=True, maxshape=None)
+            f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=True, maxshape=None)
 
         attrs = {}
 
@@ -337,7 +337,7 @@ def footprint_to_coords(
     ) -> np.array:
 
     _, mask = cv2.threshold(footprint, 0, 255, 0)
-    contours, _ = cv2.findContours(mask.astype('uint8'), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(mask.astype("uint8"), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     maxI = 0
     maxArea = 0
