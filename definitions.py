@@ -21,7 +21,7 @@ class DoricFile:
         class Group:
             OPERATIONS      = "Operations"
             BINNING_FACTOR  = "BinningFactor"
-        
+
         class Image:
             BIT_COUNT = "BitCount"
             FORMAT    = "Format"
@@ -33,7 +33,7 @@ class DoricFile:
             COORDS = "Coordinates"
             SHAPE  = "Shape"
 
-        class Signal:    
+        class Signal:
             RANGE_MIN = "RangeMin"
             RANGE_MAX = "RangeMax"
             UNIT      = "Unit"
@@ -120,5 +120,5 @@ class Messages:
     FILE_CLOSE              = "File is closed"
     DATASET_NOT_TIME        = "The dataset is not a time vector"
     F_NOT_H5_FILE_FILEPATH  = "f is not h5py.File or filepath to HDF file"
-    DATPATH_DOESNT_EXIST    = '"{datasetpath}" path does not exist in the file'
+    DATPATH_DOESNT_EXIST    = "{datasetpath} path does not exist in the file"
     HAS_TO_BE_PATH          = "{path} has to be a path to dataset"
