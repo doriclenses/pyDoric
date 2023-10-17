@@ -84,6 +84,7 @@ class Parameters:
         TEMPORAL_PENALTY    = "TemporalPenalty"
         CORRECT_MOTION      = "CorrectMotion"
         ADVANCED_SETTINGS   = "AdvancedSettings"
+        # CrossReg parameters HERE
 
 
     class Preview:
@@ -95,15 +96,6 @@ class Parameters:
         FILEPATH            = "PreviewFilepath"
         RANGE               = "PreviewRange"
         TEMPORAL_DOWNSAMPLE = "TemporalDownsample"
-
-
-    class CrossReg:
-
-        """
-        Cross registration parameters
-        """
-
-        _ = ""
 
 
 
