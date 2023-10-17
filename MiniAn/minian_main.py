@@ -84,14 +84,14 @@ def main(minian_parameters):
 
     # Parameters
     if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
-        minian_parameters.parameters[defs.DoricFile.Attribute.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+        minian_parameters.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
     save_minian_to_doric(
         Y, A, C, AC, S,
         fr = minian_parameters.fr,
-        bit_count = attrs[defs.DoricFile.Attribute.BIT_COUNT],
-        qt_format = attrs[defs.DoricFile.Attribute.FORMAT],
-        username = attrs.get(defs.DoricFile.Attribute.USERNAME, sensor),
+        bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
+        qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
+        username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
         vname = minian_parameters.params_load_doric['fname'],
         vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
         vdataset = f"{series}/{sensor}/",
@@ -402,7 +402,7 @@ def load_doric_to_xarray(
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
-            bit_count = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT]
+            bit_count = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]
             varr = varr / 2**bit_count * 2**8
 
         varr = varr.astype(dtype)
@@ -537,7 +537,7 @@ def save_minian_to_doric(
         if vdataset[-1] != '/':
             vdataset += '/'
 
-        params_doric[defs.DoricFile.Attribute.OPERATIONS] += operationCount
+        params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
         pathROIs = vpath+mn_defs.DoricFile.Group.ROISIGNALS+operationCount+'/'
@@ -550,14 +550,14 @@ def save_minian_to_doric(
             pathImages = vpath+mn_defs.DoricFile.Group.IMAGES+operationCount+'/'
             utils.save_images(AC.values, time_, f, pathImages+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Images)"), f, pathImages)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print(mn_defs.Messages.SAVE_RES_IMAGES, flush=True)
             pathResiduals = vpath+mn_defs.DoricFile.Group.RESIDUALS+operationCount+'/'
             utils.save_images(res.values, time_, f, pathResiduals+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Residuals)"), f, pathResiduals)
+            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
             print(mn_defs.Messages.SAVE_SPIKES, flush=True)

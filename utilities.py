@@ -175,11 +175,11 @@ def save_images(
         del f[path+defs.DoricFile.Dataset.TIME]
         f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype='float64', chunks=True, maxshape=None)
 
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.USERNAME]     = username
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT]    = bit_count
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.FORMAT]       = qt_format
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.HEIGHT]       = height
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.WIDTH]        = width
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME]     = username
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]    = bit_count
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.FORMAT]       = qt_format
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.HEIGHT]       = height
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.WIDTH]        = width
 
 
 def save_roi_signals(
@@ -306,14 +306,14 @@ def save_signals(
 
         attrs = {}
 
-        attrs[defs.DoricFile.Attribute.USERNAME] = usernames[i] if usernames is not None else name
+        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i] if usernames is not None else name
 
         if bit_count is not None:
-            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
+            attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
         else:
-            attrs[defs.DoricFile.Attribute.RANGE_MIN] = range_min
-            attrs[defs.DoricFile.Attribute.RANGE_MAX] = range_max
-            attrs[defs.DoricFile.Attribute.UNIT]      = unit
+            attrs[defs.DoricFile.Attribute.Signal.RANGE_MIN] = range_min
+            attrs[defs.DoricFile.Attribute.Signal.RANGE_MAX] = range_max
+            attrs[defs.DoricFile.Attribute.Signal.UNIT]      = unit
 
         if attrs is not None:
             save_attributes(attrs, f, path+name)
@@ -364,16 +364,16 @@ def merge_params(
     params_final = {}
 
     if operation_name is None:
-        operation_name = params_current[defs.DoricFile.Attribute.OPERATIONS]
+        operation_name = params_current[defs.DoricFile.Attribute.Group.OPERATIONS]
 
-    if defs.DoricFile.Attribute.OPERATIONS not in params_source :
-        params_final[defs.DoricFile.Attribute.OPERATIONS] = operation_name
+    if defs.DoricFile.Attribute.Group.OPERATIONS not in params_source :
+        params_final[defs.DoricFile.Attribute.Group.OPERATIONS] = operation_name
     else:
-        params_final[defs.DoricFile.Attribute.OPERATIONS] = params_source[defs.DoricFile.Attribute.OPERATIONS] + " > " + operation_name
+        params_final[defs.DoricFile.Attribute.Group.OPERATIONS] = params_source[defs.DoricFile.Attribute.Group.OPERATIONS] + " > " + operation_name
 
     # Set the advanced Settings keys
     for key in params_current:
-        if key == defs.DoricFile.Attribute.OPERATIONS:
+        if key == defs.DoricFile.Attribute.Group.OPERATIONS:
             continue
 
         if key == defs.Parameters.danse.ADVANCED_SETTINGS:
@@ -390,12 +390,12 @@ def merge_params(
 
     # Add Operations operation_name- to the keys
     for key in params_final.copy():
-        if key != defs.DoricFile.Attribute.OPERATIONS:
+        if key != defs.DoricFile.Attribute.Group.OPERATIONS:
             params_final[f"{operation_name}-{key}"] = params_final.pop(key)
 
     # Merging with params source
     for key in params_source:
-        if key != defs.DoricFile.Attribute.OPERATIONS:
+        if key != defs.DoricFile.Attribute.Group.OPERATIONS:
             params_final[key] = params_source[key]
 
     return params_final
