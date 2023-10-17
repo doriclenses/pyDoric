@@ -51,9 +51,9 @@ def main(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
-    seeds_final, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
 
-    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
+    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_parameters)
 
     A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters)
 
