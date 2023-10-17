@@ -175,11 +175,11 @@ def save_images(
         del f[path+defs.DoricFile.Dataset.TIME]
         f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
 
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME]     = username
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]    = bit_count
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.FORMAT]       = qt_format
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.HEIGHT]       = height
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.WIDTH]        = width
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = username
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]  = bit_count
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.FORMAT]     = qt_format
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
 
 
 def save_roi_signals(
