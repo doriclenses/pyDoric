@@ -12,7 +12,6 @@ import functools as fct
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
 from typing import Optional, Callable
-import functools as fct
 
 sys.path.append('..')
 import utilities as utils
