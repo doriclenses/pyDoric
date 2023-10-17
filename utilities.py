@@ -369,7 +369,7 @@ def merge_params(
     if defs.DoricFile.Attribute.Group.OPERATIONS not in params_source :
         params_final[defs.DoricFile.Attribute.Group.OPERATIONS] = operation_name
     else:
-        params_final[defs.DoricFile.Attribute.Group.OPERATIONS] = params_source[defs.DoricFile.Attribute.Group.OPERATIONS] + " > " + operation_name
+        params_final[defs.DoricFile.Attribute.Group.OPERATIONS] = f"{params_source[defs.DoricFile.Attribute.Group.OPERATIONS]} > {operation_name}"
 
     # Set the advanced Settings keys
     for key in params_current:
@@ -415,7 +415,7 @@ def create_params_item(
     if not isinstance(value, str):
         value_final = str(value)
     else:
-        value_final = '"' + value + '"'
+        value_final = f'"{value}"'
 
     return {key_final: value_final}
 
