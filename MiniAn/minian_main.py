@@ -31,7 +31,7 @@ from multiprocessing import freeze_support
 freeze_support()
 
 def main(minian_parameters):
-    
+
     """
     MiniAn CNMF algorithm
     """
@@ -61,7 +61,7 @@ def main(minian_parameters):
 
     A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
 
-    # Save final MiniAn results 
+    # Save final MiniAn results
     print(mn_defs.Messages.SAVING_FINAL, flush=True)
     A = save_minian(A.rename("A"), **minian_parameters.params_save_minian)
     C = save_minian(C.rename("C"), **minian_parameters.params_save_minian)
@@ -78,11 +78,11 @@ def main(minian_parameters):
     # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = minian_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")   
+    attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")
     if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
         minian_parameters.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
-    file_.close() 
+    file_.close()
 
     save_minian_to_doric(
         Y, A, C, AC, S,
