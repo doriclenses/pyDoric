@@ -39,8 +39,8 @@ class Messages:
     SAVE_IMAGES                 = "Saving images"
     SAVE_RES_IMAGES             = "Saving residual images"
     SAVE_SPIKES                 = "Saving spikes"
-    SAVE_TO                     = "Saved to {0}"
-    ONE_PARM_WRONG_TYPE         = "One parameter of {0} function is of the wrong type"
+    SAVE_TO                     = "Saved to {path}"
+    ONE_PARM_WRONG_TYPE         = "One parameter of {func} function is of the wrong type"
     NO_CELLS_FOUND              = "No cells where found"
 
     SAVE_TO_HDF5                = "Saving to hdf5"

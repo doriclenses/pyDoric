@@ -565,7 +565,7 @@ def save_minian_to_doric(
             utils.print_group_path_for_DANSE(pathSpikes+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
 
-    print(mn_defs.Messages.SAVE_TO.format(vname))
+    print(mn_defs.Messages.SAVE_TO.format(path = vname))
 
 #################### definition of try: expect:
 @contextmanager
@@ -577,7 +577,7 @@ def except_type_error(function_name: str):
     try:
         yield
     except TypeError:
-        utils.print_to_intercept(mn_defs.Messages.ONE_PARM_WRONG_TYPE.format(function_name))
+        utils.print_to_intercept(mn_defs.Messages.ONE_PARM_WRONG_TYPE.format(func = function_name))
         sys.exit()
 
 @contextmanager
