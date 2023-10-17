@@ -30,12 +30,12 @@ class MinianParameters:
             self.preview = True
             self.preview_parameters = danse_parameters[defs.Parameters.Main.PREVIEW]
 
-        os.environ["OMP_NUM_THREADS"] = "1"
-        os.environ["MKL_NUM_THREADS"] = "1"
-        os.environ["OPENBLAS_NUM_THREADS"] = "1"
-        os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
+        os.environ["OMP_NUM_THREADS"]       = "1"
+        os.environ["MKL_NUM_THREADS"]       = "1"
+        os.environ["OPENBLAS_NUM_THREADS"]  = "1"
+        os.environ["MINIAN_INTERMEDIATE"]   = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
-        self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH]+'Time')
+        self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH] + defs.DoricFile.Dataset.TIME)
 
         neuron_diameter = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
         neuron_diameter = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
