@@ -33,7 +33,7 @@ class MinianParameters:
         os.environ["OMP_NUM_THREADS"] = "1"
         os.environ["MKL_NUM_THREADS"] = "1"
         os.environ["OPENBLAS_NUM_THREADS"] = "1"
-        os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], "intermediate")
+        os.environ["MINIAN_INTERMEDIATE"] = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
         self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH]+'Time')
 

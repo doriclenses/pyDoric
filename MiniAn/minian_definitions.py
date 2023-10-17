@@ -54,7 +54,7 @@ class Messages:
 
     _ = ""
 
-class FolderName:
+class Folder:
     """
     Folder Name
     """
