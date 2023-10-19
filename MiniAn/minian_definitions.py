@@ -78,10 +78,22 @@ class Preview:
     """
     Names of the HDF5 preview file structue
     """
+    class Group:
+        INITIALIZATION   = "Initialization"
+        NOISE_FREQ       = "NoiseFreq"
+        TEMPORAL_PENALTY = "TemporalPenalty"
+        NOISE            = "Noise"
+        SIGNAL           = "Signal"
+
+        FITTED_CALCIUM_TRACE = "FittedCalciumTrace"
+        FITTED_SIGNAL        = "FittedSignal"
+        FITTED_SPIKES        = "FittedSpikes"
+        RAW_SIGNAL           = "RawSignal"
 
     class Dataset:
         SEEDS           = "Seeds"
         MAX_PROJECTION  = "MaxProjection"
+        SPATIAL_PENALTY = "SpatialPenalty"
 
     class Attribute:
         MERGED  = "Merged"
