@@ -86,7 +86,7 @@ def main(minian_parameters):
 
     save_minian_to_doric(
         Y, A, C, AC, S,
-        fr = minian_parameters.fr,
+        freq = minian_parameters.freq,
         bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
         qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
         username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
@@ -442,7 +442,7 @@ def save_minian_to_doric(
     C: xr.DataArray,
     AC: xr.DataArray,
     S: xr.DataArray,
-    fr: int,
+    freq: int,
     bit_count: int,
     qt_format: int,
     username:str,
@@ -505,7 +505,7 @@ def save_minian_to_doric(
     res = Y - AC # residual images
 
     duration = Y.shape[0]
-    time_ = np.arange(0, duration/fr, 1/fr, dtype="float64")
+    time_ = np.arange(0, duration/freq, 1/freq, dtype="float64")
 
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
