@@ -137,7 +137,7 @@ def preview(minian_parameters):
             if mn_defs.Preview.Dataset.MAX_PROJECTION in hdf5_file:
                 del hdf5_file[mn_defs.Preview.Dataset.MAX_PROJECTION]
 
-            hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float", chunks = True)
+            hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 
             seeds_dataset = hdf5_file.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
             seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]  = seeds.index[seeds["mask_mrg"] == True].tolist()
