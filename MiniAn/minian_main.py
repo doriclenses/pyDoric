@@ -134,8 +134,6 @@ def preview(minian_parameters):
     try:
         with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
 
-            if mn_defs.Preview.Dataset.MAX_PROJECTION in hdf5_file:
-                del hdf5_file[mn_defs.Preview.Dataset.MAX_PROJECTION]
 
             hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 
