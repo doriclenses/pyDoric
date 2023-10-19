@@ -145,9 +145,7 @@ def preview(minian_parameters):
     # Save data for preview to hdf5 file
     try:
         with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
-
             initialization_group = hdf5_file.create_group(mn_defs.Preview.Group.INITIALIZATION)
-
             initialization_group.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 
             seeds_dataset = initialization_group.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
