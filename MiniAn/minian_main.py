@@ -7,7 +7,7 @@ import tempfile
 import dask as da
 import numpy as np
 import xarray as xr
-import pandas as pand
+import pandas as pd
 import functools as fct
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
@@ -258,7 +258,7 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, return_all_seeds = F
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
 
         if return_all_seeds:
-            return pand.merge(seeds, seeds_final, how="outer").fillna(False), max_proj
+            return pd.merge(seeds, seeds_final, how="outer").fillna(False), max_proj
         else:
             return seeds_final, max_proj
 
