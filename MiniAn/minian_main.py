@@ -128,7 +128,19 @@ def preview(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
+    duration = Y.shape[0]
+    time = np.arange(0, duration/minian_parameters.freq, 1/minian_parameters.freq, dtype="float64")
+
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, True)
+
+    example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
+                                 width=seeds["width"].to_xarray(),
+                                 ).rename(**{"index": "seed"})
+
+    trace_smth_low = smooth_sig(example_trace, minian_parameters.parameters[defs.Parameters.danse.NOISE_FREQ])
+    trace_smth_high = smooth_sig(example_trace, minian_parameters.freq, btype="high")
+    trace_smth_low = trace_smth_low.compute()
+    trace_smth_high = trace_smth_high.compute()
 
     # Save data for preview to hdf5 file
     try:
@@ -141,6 +153,15 @@ def preview(minian_parameters):
             seeds_dataset = initialization_group.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
             seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]  = seeds.index[seeds["mask_mrg"] == True].tolist()
             seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED] = seeds.index[(seeds["mask_ks"] == True) & (seeds["mask_pnr"] == True)].tolist()
+
+            noise_freq_group = hdf5_file.create_group(mn_defs.Preview.Group.NOISE_FREQ)
+            noise_freq_group.create_dataset(defs.DoricFile.Dataset.TIME, data = time, dtype='float', chunks = True)
+
+            signal_group = noise_freq_group.create_group(mn_defs.Preview.Group.SIGNAL)
+            noise_group  = noise_freq_group.create_group(mn_defs.Preview.Group.NOISE)
+            for seed in range(trace_smth_high.shape[0]):
+                signal_group.create_dataset(mn_defs.Preview.Dataset.SEEDS+str(seed).zfill(4), data = trace_smth_low[seed], dtype='float64', chunks = True)
+                noise_group.create_dataset(mn_defs.Preview.Dataset.SEEDS+str(seed).zfill(4), data = trace_smth_high[seed], dtype='float64', chunks = True)
 
     except Exception as error:
         utils.print_error(error, mn_defs.Messages.SAVE_TO_HDF5)
