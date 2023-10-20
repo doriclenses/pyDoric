@@ -84,8 +84,11 @@ class Parameters:
         TEMPORAL_PENALTY    = "TemporalPenalty"
         CORRECT_MOTION      = "CorrectMotion"
         ADVANCED_SETTINGS   = "AdvancedSettings"
-        # CrossReg parameters HERE
-
+        # CrossReg parameters
+        CROSS_REGISTRATION      = "CrossRegister";
+        CROSS_REG_FNAME         = "CrossRegFileName";
+        CROSS_REG_H5PATH_IMAGES = "CrossRegHDF5PathImages";
+        CROSS_REG_H5PATH_ROI    = "CrossRegHDF5PathROI";
 
     class Preview:
 

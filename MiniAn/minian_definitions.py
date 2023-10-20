@@ -86,9 +86,3 @@ class Preview:
     class Attribute:
         MERGED  = "Merged"
         REFINED = "Refined"
-
-    class CrossReg:
-        CROSS_REGISTRATION_FNAME         = "CrossRegister_Fname"
-        CROSS_REGISTRATION_H5PATH_IMAGES = "CrossRegister_HDF5PathImages"
-        CROSS_REGISTRATION_H5PATH_ROI    = "CrossRegister_HDF5PathROI"
-        CROSS_REGISTRATION               = "CrossRegister"
