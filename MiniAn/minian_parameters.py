@@ -153,11 +153,12 @@ class MinianParameters:
         self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
         self.params_crossRegister = {
-            'fname_crossReg': self.paths[mn_defs.DictionaryKeys.CrossReg.FNAME_CROSSREG],
-            'h5path_images': self.paths[mn_defs.DictionaryKeys.CrossReg.H5PATH_IMAGES_CROSSREG],
-            'h5path_roi': self.paths[mn_defs.DictionaryKeys.CrossReg.H5PATH_ROI_CROSSREG],
-            'crossReg': self.parameters[mn_defs.DictionaryKeys.CrossReg.CROSS_REGISTRATION] 
+            'fname'        : self.parameters[mn_defs.DictionaryKeys.CrossReg.CROSS_REGISTRATION_FNAME],
+            'h5path_images': self.parameters[mn_defs.DictionaryKeys.CrossReg.CROSS_REGISTRATION_H5PATH_IMAGES],
+            'h5path_roi'   : self.parameters[mn_defs.DictionaryKeys.CrossReg.CROSS_REGISTRATION_H5PATH_ROI],
+            'crossReg'     : self.parameters[mn_defs.DictionaryKeys.CrossReg.CROSS_REGISTRATION] 
         }
+
     def update_all_func_params(self):
         for func_name in self.advanced_settings:
             self.update_func_advanced_params(func_name)

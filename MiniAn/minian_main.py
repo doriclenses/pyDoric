@@ -435,84 +435,85 @@ def load_doric_to_xarray(
             
 def cross_register(minian_parameters, currentFile_AC, currentFile_A):
     performCrossReg = minian_parameters.params_crossRegister["crossReg"]
-    if performCrossReg:
-        param_dist = 5 # Defines the max dist between centroids on different sessions to consider them as same cell
-        refFileName = minian_parameters.params_crossRegister["fname_crossReg"]
-        refImages   = minian_parameters.params_crossRegister["h5path_images"]
-        refRois     = minian_parameters.params_crossRegister["h5path_roi"]
-
-        # Load base/reference file to xarray
-        refCR, fileCR_ =  mn_utils.load_doric_to_xarray(refFileName, refImages, np.float64, None, "subset", None)
-
-        # max project of the miniAn images for base file and current file
-        ref_max     = refCR.max("frame")
-        current_max = currentFile_AC.max("frame")
-
-        result = xr.concat([ref_max, current_max], pd.Index(['session1', 'session2'], name = "session"))
-        temps = result.rename('temps')
-        # chk, _ = get_optimal_chk(temps, **minian_parameters.params_get_optimal_chk)
-        # temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
-
-        # estimate shift 
-        shifts = estimate_motion(temps, dim = 'session').compute().rename('shifts')
-
-        # Apply Shifts
-        temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
-        shiftds = xr.merge([temps, shifts, temps_sh])
-
-        window    = shiftds['temps_shifted'].isnull().sum('session')
-        window, _ = xr.broadcast(window, shiftds['temps_shifted'])
-
-        # function to get ROI footprints ('A') for the base (reference) file
-        refFootprints = getRefFileFootprints(refFileName, refRois, refCR.coords)
-
-        # change the unitIds of the current file footprints to number starting from max UnitId in ref file
-        updatedUnitIds = []
-        refUnitIDMax = (refFootprints.coords["unit_id"].values).max() + 1
-        for idx, a in enumerate(currentFile_A.coords["unit_id"]):
-            updatedUnitIds.append(refUnitIDMax)
-            refUnitIDMax = refUnitIDMax + 1
-        currentFile_A["unit_id"] = updatedUnitIds
-
-        id_dims =  []
-        mergedFootprints  = xr.concat([refFootprints, currentFile_A], pd.Index(['session1', 'session2'], name="session"))
-
-        # Apply shifts to spatial footprint of each session
-        A_shifted = apply_transform(mergedFootprints.chunk(dict(height = -1, width = -1)), shiftds['shifts'])
-
-        def set_window(wnd):
-            return wnd == wnd.min()
-        window = xr.apply_ufunc(
-            set_window,
-            window,
-            input_core_dims=[['height', 'width']],
-            output_core_dims=[['height', 'width']],
-            vectorize=True)
-
-        # Calculate centroids
-        cents = calculate_centroids(A_shifted, window)
-                
-        # Calculate centroid distance
-        dist = calculate_centroid_distance(cents, "session", id_dims)
-
-        # Threshold centroid distances
-        dist_ft = dist[dist['variable', 'distance'] < param_dist].copy()
-        dist_ft = group_by_session(dist_ft)
-
-        # Generate mappings
-        mappings = calculate_mapping(dist_ft)
-        mappings_meta = resolve_mapping(mappings)
-        mappings_meta_fill = fill_mapping(mappings_meta, cents)
-        mappings_meta_fill.head()
-
-        # update unitIds of the current file footprints if they have a mapped unitID in ref file
-        for i in range(len(mappings_meta_fill)):
-            if mappings_meta_fill.iloc[i]['group'][0] == ('session1', 'session2'):
-                updatedUnitIds = [mappings_meta_fill.iloc[i]['session']['session1'] if x==mappings_meta_fill.iloc[i]['session']['session2'] else x for x in updatedUnitIds]
-        currentFile_A["unit_id"] = updatedUnitIds
-        
-        # return currentFile footprints with updated unitIds
+    if not performCrossReg:
         return currentFile_A
+    param_dist = 5 # Defines the max dist between centroids on different sessions to consider them as same cell
+    refFileName = minian_parameters.params_crossRegister["fname"]
+    refImages   = minian_parameters.params_crossRegister["h5path_images"]
+    refRois     = minian_parameters.params_crossRegister["h5path_roi"]
+
+    # Load base/reference file to xarray
+    refCR, fileCR_ =  load_doric_to_xarray(refFileName, refImages, np.float64, None, "subset", None)
+
+    # max project of the miniAn images for base file and current file
+    ref_max     = refCR.max("frame")
+    current_max = currentFile_AC.max("frame")
+
+    result = xr.concat([ref_max, current_max], pd.Index(['session1', 'session2'], name = "session"))
+    temps = result.rename('temps')
+    # chk, _ = get_optimal_chk(temps, **minian_parameters.params_get_optimal_chk)
+    # temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
+
+    # estimate shift 
+    shifts = estimate_motion(temps, dim = 'session').compute().rename('shifts')
+
+    # Apply Shifts
+    temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
+    shiftds = xr.merge([temps, shifts, temps_sh])
+
+    window    = shiftds['temps_shifted'].isnull().sum('session')
+    window, _ = xr.broadcast(window, shiftds['temps_shifted'])
+
+    # function to get ROI footprints ('A') for the base (reference) file
+    refFootprints = getRefFileFootprints(refFileName, refRois, refCR.coords)
+
+    # change the unitIds of the current file footprints to number starting from max UnitId in ref file
+    updatedUnitIds = []
+    refUnitIDMax = (refFootprints.coords["unit_id"].values).max() + 1
+    for idx, a in enumerate(currentFile_A.coords["unit_id"]):
+        updatedUnitIds.append(refUnitIDMax)
+        refUnitIDMax = refUnitIDMax + 1
+    currentFile_A["unit_id"] = updatedUnitIds
+
+    id_dims =  []
+    mergedFootprints  = xr.concat([refFootprints, currentFile_A], pd.Index(['session1', 'session2'], name="session"))
+
+    # Apply shifts to spatial footprint of each session
+    A_shifted = apply_transform(mergedFootprints.chunk(dict(height = -1, width = -1)), shiftds['shifts'])
+
+    def set_window(wnd):
+        return wnd == wnd.min()
+    window = xr.apply_ufunc(
+        set_window,
+        window,
+        input_core_dims=[['height', 'width']],
+        output_core_dims=[['height', 'width']],
+        vectorize=True)
+
+    # Calculate centroids
+    cents = calculate_centroids(A_shifted, window)
+                
+    # Calculate centroid distance
+    dist = calculate_centroid_distance(cents, "session", id_dims)
+
+    # Threshold centroid distances
+    dist_ft = dist[dist['variable', 'distance'] < param_dist].copy()
+    dist_ft = group_by_session(dist_ft)
+
+    # Generate mappings
+    mappings = calculate_mapping(dist_ft)
+    mappings_meta = resolve_mapping(mappings)
+    mappings_meta_fill = fill_mapping(mappings_meta, cents)
+    mappings_meta_fill.head()
+
+    # update unitIds of the current file footprints if they have a mapped unitID in ref file
+    for i in range(len(mappings_meta_fill)):
+        if mappings_meta_fill.iloc[i]['group'][0] == ('session1', 'session2'):
+            updatedUnitIds = [mappings_meta_fill.iloc[i]['session']['session1'] if x==mappings_meta_fill.iloc[i]['session']['session2'] else x for x in updatedUnitIds]
+    currentFile_A["unit_id"] = updatedUnitIds
+        
+    # return currentFile footprints with updated unitIds
+    return currentFile_A
 
 def getRefFileFootprints(refFileName, refRois, dimensions):
 

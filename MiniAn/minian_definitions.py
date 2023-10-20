@@ -119,7 +119,7 @@ class DictionaryKeys:
         MAX_PROJ_DATASET_NAME   = "MaxProjDatasetName"
 
     class CrossReg:
-        FNAME_CROSSREG          = "fname_crossReg"
-        H5PATH_IMAGES_CROSSREG  = "h5path_crossRegImages"
-        H5PATH_ROI_CROSSREG     = "h5path_crossRegRoi"
-        CROSS_REGISTRATION      = "CrossRegister"
+        CROSS_REGISTRATION_FNAME         = "CrossRegister_Fname"
+        CROSS_REGISTRATION_H5PATH_IMAGES = "CrossRegister_HDF5PathImages"
+        CROSS_REGISTRATION_H5PATH_ROI    = "CrossRegister_HDF5PathROI"
+        CROSS_REGISTRATION               = "CrossRegister"
