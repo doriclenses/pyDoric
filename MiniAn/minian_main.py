@@ -13,9 +13,8 @@ import functools as fct
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
 from typing import Optional, Callable
-import functools as fct
 
-sys.path.append('..')
+sys.path.append("..")
 import utilities as utils
 import definitions as defs
 import minian_parameters as mn_params
@@ -34,18 +33,20 @@ from multiprocessing import freeze_support
 freeze_support()
 
 def main(minian_parameters):
-    """minian_main.py
+
+    """
+    MiniAn CNMF algorithm
     """
 
     # Start cluster
-    print(mn_defs.Messages.Main.START_CLUSTER, flush=True)
+    print(mn_defs.Messages.START_CLUSTER, flush=True)
     cluster = LocalCluster(**minian_parameters.params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Text.Main.INTERMEDIATE)
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
     subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -54,9 +55,9 @@ def main(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
-    seeds_final, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
 
-    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters)
+    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_parameters)
 
     A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters)
 
@@ -64,9 +65,10 @@ def main(minian_parameters):
 
     # Cross registration
     A = cross_register(minian_parameters, AC, A)
+    
+    # Save final MiniAn results
+    print(mn_defs.Messages.SAVING_FINAL, flush=True)
 
-    ### Save final results ###
-    print(mn_defs.Messages.Main.SAVING_FINAL, flush=True)
     A = save_minian(A.rename("A"), **minian_parameters.params_save_minian)
     C = save_minian(C.rename("C"), **minian_parameters.params_save_minian)
     AC = save_minian(AC.rename("AC"), **minian_parameters.params_save_minian)
@@ -76,28 +78,25 @@ def main(minian_parameters):
     b = save_minian(b.rename("b"), **minian_parameters.params_save_minian)
     f = save_minian(f.rename("f"), **minian_parameters.params_save_minian)
 
-    ### Save results to doric file ###
-    print(mn_defs.Messages.Main.SAVING_TO_DORIC, flush=True)
-    # Get the path from the source data
+    # Save results to .doric file
+    print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+
+    # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = minian_parameters.get_h5path_names()
-
-    # Get paramaters of the operation on source data
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    # Get the attributes of the images stack
     attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")
-    file_.close()
-
-    # Parameters
     if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
-        minian_parameters.parameters[defs.DoricFile.Attribute.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+        minian_parameters.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+
+    file_.close()
 
     save_minian_to_doric(
         Y, A, C, AC, S,
         fr = minian_parameters.fr,
-        bit_count = attrs[defs.DoricFile.Attribute.BIT_COUNT],
-        qt_format = attrs[defs.DoricFile.Attribute.FORMAT],
-        username = attrs.get(defs.DoricFile.Attribute.USERNAME, sensor),
-        vname = minian_parameters.params_load_doric['fname'],
+        bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
+        qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
+        username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
+        vname = minian_parameters.params_load_doric["fname"],
         vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
         vdataset = f"{series}/{sensor}/",
         params_doric = minian_parameters.parameters,
@@ -112,18 +111,19 @@ def main(minian_parameters):
     cluster.close()
 
 def preview(minian_parameters):
-    """minian_preview
+    """
+    Saves max projection image and seeds in HDF5 file
     """
 
     # Start cluster
-    print(mn_defs.Messages.Main.START_CLUSTER, flush=True)
+    print(mn_defs.Messages.START_CLUSTER, flush=True)
     cluster = LocalCluster(**minian_parameters.params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Text.Main.INTERMEDIATE)
+    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
     subset = {"frame": slice(*minian_parameters.preview_parameters[defs.Parameters.Preview.RANGE])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
@@ -138,18 +138,17 @@ def preview(minian_parameters):
     try:
         with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
 
-            if minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME] in hdf5_file:
-                del hdf5_file[minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME]]
+            if mn_defs.Preview.Dataset.MAX_PROJECTION in hdf5_file:
+                del hdf5_file[mn_defs.Preview.Dataset.MAX_PROJECTION]
 
-            hdf5_file.create_dataset(minian_parameters.preview_parameters[mn_defs.DictionaryKeys.Preview.MAX_PROJ_DATASET_NAME], data = max_proj.values, dtype = 'float', chunks = True)
+            hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 
-            seeds_dataset = hdf5_file.create_dataset(mn_defs.DictionaryKeys.Preview.SEEDS, data = seeds[['width', 'height']], dtype='int', chunks = True)
-            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.MERGED]    = seeds.index[seeds['mask_mrg'] == True].tolist()
-            seeds_dataset.attrs[mn_defs.DictionaryKeys.Preview.REFINED]   = seeds.index[(seeds['mask_ks'] == True) & (seeds['mask_pnr'] == True)].tolist()
+            seeds_dataset = hdf5_file.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]  = seeds.index[seeds["mask_mrg"] == True].tolist()
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED] = seeds.index[(seeds["mask_ks"] == True) & (seeds["mask_pnr"] == True)].tolist()
 
     except Exception as error:
-        utils.print_error(error, mn_defs.Messages.Preview.SAVE_TO_HDF5)
-
+        utils.print_error(error, mn_defs.Messages.SAVE_TO_HDF5)
 
     file_.close()
 
@@ -157,10 +156,10 @@ def preview(minian_parameters):
     client.close()
     cluster.close()
 
-################### Functions defintion ###################
+
 def load_chunk(intpath, subset, minian_parameters):
-    ### Load and chunk the data ###
-    print(mn_defs.Messages.Main.LOAD_DATA, flush=True)
+
+    print(mn_defs.Messages.LOAD_DATA, flush=True)
     varr, file_ = load_doric_to_xarray(**minian_parameters.params_load_doric)
     chk, _ = get_optimal_chk(varr, **minian_parameters.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
@@ -170,71 +169,76 @@ def load_chunk(intpath, subset, minian_parameters):
     return file_, chk, varr_ref
 
 def preprocess(varr_ref, intpath, minian_parameters):
-    ### Pre-process data ###
-    print(mn_defs.Messages.Main.PREPROCESS, flush=True)
+
+    print(mn_defs.Messages.PREPROCESS, flush=True)
+
     # 1. Glow removal
-    print(mn_defs.Messages.Main.PREPROC_REMOVE_GLOW, flush=True)
+    print(mn_defs.Messages.PREPROC_REMOVE_GLOW, flush=True)
     varr_min = varr_ref.min("frame").compute()
     varr_ref = varr_ref - varr_min
+
     # 2. Denoise
-    print(mn_defs.Messages.Main.PREPROC_DENOISING, flush=True)
+    print(mn_defs.Messages.PREPROC_DENOISING, flush=True)
     with except_type_error("denoise"):
         varr_ref = denoise(varr_ref, **minian_parameters.params_denoise)
 
     # 3. Background removal
-    print(mn_defs.Messages.Main.PREPROC_REMOV_BACKG, flush=True)
+    print(mn_defs.Messages.PREPROC_REMOV_BACKG, flush=True)
     with except_type_error("remove_background"):
         varr_ref = remove_background(varr_ref, **minian_parameters.params_remove_background)
 
     # Save
-    print(mn_defs.Messages.Main.PREPROC_SAVE, flush=True)
+    print(mn_defs.Messages.PREPROC_SAVE, flush=True)
     varr_ref = save_minian(varr_ref.rename("varr_ref"), intpath, overwrite=True)
 
     return varr_ref
 
+
 def correct_motion(varr_ref, intpath, chk, minian_parameters):
-    ### Motion correction ###
+
     if minian_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]:
-        print(mn_defs.Messages.Main.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
+        print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
         with except_type_error("estimate_motion"):
             motion = estimate_motion(varr_ref, **minian_parameters.params_estimate_motion)
 
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **minian_parameters.params_save_minian)
-        print(mn_defs.Messages.Main.CORRECT_MOTION_APPLY_SHIFT, flush=True)
+        print(mn_defs.Messages.CORRECT_MOTION_APPLY_SHIFT, flush=True)
         Y = apply_transform(varr_ref, motion, **minian_parameters.params_apply_transform)
 
     else:
         Y = varr_ref
 
-    print(mn_defs.Messages.Main.PREP_DATA_INIT, flush=True)
+    print(mn_defs.Messages.PREP_DATA_INIT, flush=True)
     Y_fm_chk = save_minian(Y.astype(float).rename("Y_fm_chk"), intpath, overwrite=True)
     Y_hw_chk = save_minian(Y_fm_chk.rename("Y_hw_chk"), intpath, overwrite=True,
                            chunks={"frame": -1, "height": chk["height"], "width": chk["width"]})
 
     return Y, Y_fm_chk, Y_hw_chk
 
+
 def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, return_all_seeds = False):
-    ### Seed initialization ###
-    print(mn_defs.Messages.Main.INIT_SEEDS, flush=True)
-    with except_print_error_no_cells(mn_defs.Messages.Main.INIT_SEEDS):
+
+    print(mn_defs.Messages.INIT_SEEDS, flush=True)
+    with except_print_error_no_cells(mn_defs.Messages.INIT_SEEDS):
         # 1. Compute max projection
         max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **minian_parameters.params_save_minian).compute()
+
         # 2. Generating over-complete set of seeds
         with except_type_error("seeds_init"):
             seeds = seeds_init(Y_fm_chk, **minian_parameters.params_seeds_init)
 
         # 3. Peak-Noise-Ratio refine
-        print(mn_defs.Messages.Main.INIT_SEEDS_PNR_REFI, flush=True)
+        print(mn_defs.Messages.INIT_SEEDS_PNR_REFI, flush=True)
         with except_type_error("pnr_refine"):
             seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **minian_parameters.params_pnr_refine)
 
         # 4. Kolmogorov-Smirnov refine
-        print(mn_defs.Messages.Main.INIT_SEEDS_KOLSM_REF, flush=True)
+        print(mn_defs.Messages.INIT_SEEDS_KOLSM_REF, flush=True)
         with except_type_error("ks_refine"):
             seeds = ks_refine(Y_hw_chk, seeds, **minian_parameters.params_ks_refine)
 
         # 5. Merge seeds
-        print(mn_defs.Messages.Main.INIT_SEEDS_MERG, flush=True)
+        print(mn_defs.Messages.INIT_SEEDS_MERG, flush=True)
         seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
         with except_type_error("seeds_merge"):
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
@@ -246,22 +250,23 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, return_all_seeds = F
 
 
 def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters):
-    ### Component initialization ###
-    print(mn_defs.Messages.Main.INIT_COMP, flush=True)
-    with except_print_error_no_cells(mn_defs.Messages.Main.INIT_COMP):
+
+    print(mn_defs.Messages.INIT_COMP, flush=True)
+    with except_print_error_no_cells(mn_defs.Messages.INIT_COMP):
         # 1. Initialize spatial
-        print(mn_defs.Messages.Main.INIT_COMP_SPATIAL, flush=True)
+        print(mn_defs.Messages.INIT_COMP_SPATIAL, flush=True)
         with except_type_error("initA"):
             A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **minian_parameters.params_initA)
-
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
+
         # 2. Initialize temporal
-        print(mn_defs.Messages.Main.INIT_COMP_TEMP, flush=True)
+        print(mn_defs.Messages.INIT_COMP_TEMP, flush=True)
         C_init = initC(Y_fm_chk, A_init)
         C_init = save_minian(C_init.rename("C_init"), intpath, overwrite=True,
                             chunks={"unit_id": 1, "frame": -1})
+
         # 3. Merge components
-        print(mn_defs.Messages.Main.INIT_COMP_MERG, flush=True)
+        print(mn_defs.Messages.INIT_COMP_MERG, flush=True)
         with except_type_error("unit_merge"):
             A, C = unit_merge(A_init, C_init, **minian_parameters.params_unit_merge)
 
@@ -269,40 +274,45 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
         C = save_minian(C.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True,
                             chunks={"unit_id": -1, "frame": chk["frame"]})
+
         # 4. Initialize background
-        print(mn_defs.Messages.Main.INIT_COMP_BACKG, flush=True)
+        print(mn_defs.Messages.INIT_COMP_BACKG, flush=True)
         b, f = update_background(Y_fm_chk, A, C_chk)
         f = save_minian(f.rename("f"), intpath, overwrite=True)
         b = save_minian(b.rename("b"), intpath, overwrite=True)
 
     return A, C, C_chk, f, b
 
+
 def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
-    ### CNMF 1st itteration ###
-    with except_print_error_no_cells(mn_defs.Messages.Main.CNMF_IT.format("1st")):
+
+    with except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("1st")):
         # 1. Estimate spatial noise
-        print(mn_defs.Messages.Main.CNMF_ESTIM_NOISE.format("1st"), flush=True)
+        print(mn_defs.Messages.CNMF_ESTIM_NOISE.format("1st"), flush=True)
         with except_type_error("get_noise_fft"):
             sn_spatial = get_noise_fft(Y_hw_chk, **minian_parameters.params_get_noise_fft)
             
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
+
         # 2. First spatial update
-        print(mn_defs.Messages.Main.CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
+        print(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
         with except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
+
         # 3. Update background
-        print(mn_defs.Messages.Main.CNMF_UPDAT_BACKG.format("1st"), flush=True)
+        print(mn_defs.Messages.CNMF_UPDAT_BACKG.format("1st"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
         f = save_minian(f_new.chunk({"frame": chk["frame"]}).rename("f"), intpath, overwrite=True)
         C = save_minian(C_new.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
+
         # 4. First temporal update
-        print(mn_defs.Messages.Main.CNMF_UPDAT_TEMP.format("1st"), flush=True)
+        print(mn_defs.Messages.CNMF_UPDAT_TEMP.format("1st"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with except_type_error("update_temporal"):
@@ -314,13 +324,14 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
         b0 = save_minian(b0_new.rename("b0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         A = A.sel(unit_id=C.coords["unit_id"].values)
+
         # 5. Merge components
-        print(mn_defs.Messages.Main.CNMF_MERG_COMP.format("1st"), flush=True)
+        print(mn_defs.Messages.CNMF_MERG_COMP.format("1st"), flush=True)
         with except_type_error("unit_merge"):
             A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **minian_parameters.params_unit_merge)
 
         # Save
-        print(mn_defs.Messages.Main.CNMF_SAVE_INTERMED.format("1st"), flush=True)
+        print(mn_defs.Messages.CNMF_SAVE_INTERMED.format("1st"), flush=True)
         A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
         C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
@@ -330,32 +341,34 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
     return A, C, C_chk, sn_spatial
     
 def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters):
-    ### CNMF 2nd itteration ###
-    with except_print_error_no_cells(mn_defs.Messages.Main.CNMF_IT.format("2nd")):
-        # 5. Second spatial update
-        print(mn_defs.Messages.Main.CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
+
+    with except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("2nd")):
+        # 1. Second spatial update
+        print(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
         with except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
-        # 6. Second background update
-        print(mn_defs.Messages.Main.CNMF_UPDAT_BACKG.format("2nd"), flush=True)
+
+        # 2. Second background update
+        print(mn_defs.Messages.CNMF_UPDAT_BACKG.format("2nd"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
         f = save_minian(f_new.chunk({"frame": chk["frame"]}).rename("f"), intpath, overwrite=True)
         C = save_minian(C_new.rename("C"), intpath, overwrite=True)
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
-        # 7. Second temporal update
-        print(mn_defs.Messages.Main.CNMF_UPDAT_TEMP.format("2nd"), flush=True)
+
+        # 3. Second temporal update
+        print(mn_defs.Messages.CNMF_UPDAT_TEMP.format("2nd"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with except_type_error("update_temporal"):
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_parameters.params_update_temporal)
 
         # Save
-        print(mn_defs.Messages.Main.CNMF_SAVE_INTERMED.format("2nd"), flush=True)
+        print(mn_defs.Messages.CNMF_SAVE_INTERMED.format("2nd"), flush=True)
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]})
         S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
@@ -367,7 +380,7 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
 
     return A, C, AC, S, c0, b0
 
-#################################################################### Utilities functions ###################################################################
+
 def load_doric_to_xarray(
     fname: str,
     h5path: str,
@@ -376,16 +389,9 @@ def load_doric_to_xarray(
     downsample_strategy="subset",
     post_process: Optional[Callable] = None,
 ) -> xr.DataArray:
+
     """
     Loads images stack from HDF as xarray
-
-    Args:
-        fname: full path to the file
-        
-    Returns:
-
-
-    Raises:
     """
 
     file_ = h5py.File(fname, 'r')
@@ -398,12 +404,12 @@ def load_doric_to_xarray(
                     "frame" : np.arange(varr.shape[2]) + 1, #Frame number start a 1 not 0
                     },
             )
-    varr = varr.transpose('frame', 'height', 'width')
+    varr = varr.transpose("frame", "height", "width")
     
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
-            bit_count = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT]
+            bit_count = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]
             varr = varr / 2**bit_count * 2**8
 
         varr = varr.astype(dtype)
@@ -414,7 +420,7 @@ def load_doric_to_xarray(
         elif downsample_strategy == "subset":
             varr = varr.isel(**{d: slice(None, None, w) for d, w in downsample.items()})
         else:
-            raise NotImplementedError(mn_defs.Messages.Utilities.UNREC_DOWNSAMPLING_STRAT)
+            raise NotImplementedError(mn_defs.Messages.UNREC_DOWNSAMPLING_STRAT)
     varr = varr.rename("fluorescence")
 
     if post_process:
@@ -551,7 +557,7 @@ def save_minian_to_doric(
     username:str,
     vname: str = "minian.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
-    vdataset: str = 'Series1/Sensor1/',
+    vdataset: str = "Series1/Sensor1/",
     params_doric: Optional[dict] = {},
     params_source: Optional[dict] = {},
     saveimages: bool = True,
@@ -605,33 +611,31 @@ def save_minian_to_doric(
         Absolute path of the resulting video.
     """
 
-
-
     res = Y - AC # residual images
 
     duration = Y.shape[0]
-    time_ = np.arange(0, duration/fr, 1/fr, dtype='float64')
+    time_ = np.arange(0, duration/fr, 1/fr, dtype="float64")
 
-    print(mn_defs.Messages.Utilities.GEN_ROI_NAMES, flush = True)
+    print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
     usernames = []
     for i in range(len(C)):
-        names.append('ROI'+str(i+1).zfill(4))
-        usernames.append('ROI {0}'.format(i+1))
+        names.append("ROI"+str(i+1).zfill(4))
+        usernames.append("ROI {0}".format(i+1))
 
     with h5py.File(vname, 'a') as f:
 
         # Check if MiniAn results already exist
-        operationCount = ''
+        operationCount = ""
         if vpath in f:
-            operations = [ name for name in f[vpath] if mn_defs.Text.Utilities.ROISIGNALS in name ]
+            operations = [ name for name in f[vpath] if mn_defs.DoricFile.Group.ROISIGNALS in name ]
             if len(operations) > 0:
                 operationCount = str(len(operations))
                 for operation in operations:
                     operationAttrs = utils.load_attributes(f, vpath+operation)
                     if utils.merge_params(params_doric, params_source) == operationAttrs:
-                        if(len(operation) == len(mn_defs.Text.Utilities.ROISIGNALS)):
-                            operationCount = ''
+                        if(len(operation) == len(mn_defs.DoricFile.Group.ROISIGNALS)):
+                            operationCount = ""
                         else:
                             operationCount = operation[-1]
 
@@ -644,38 +648,38 @@ def save_minian_to_doric(
         if vdataset[-1] != '/':
             vdataset += '/'
 
-        params_doric[defs.DoricFile.Attribute.OPERATIONS] += operationCount
+        params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
-        print(mn_defs.Messages.Utilities.SAVE_ROI_SIG, flush=True)
-        pathROIs = vpath+mn_defs.Text.Utilities.ROISIGNALS+operationCount+'/'
+        print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
+        pathROIs = vpath+mn_defs.DoricFile.Group.ROISIGNALS+operationCount+'/'
         utils.save_roi_signals(C.values, A, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
         utils.print_group_path_for_DANSE(pathROIs+vdataset)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
 
         if saveimages:
-            print(mn_defs.Messages.Utilities.SAVE_IMAGES, flush=True)
-            pathImages = vpath+mn_defs.Text.Utilities.IMAGES+operationCount+'/'
+            print(mn_defs.Messages.SAVE_IMAGES, flush=True)
+            pathImages = vpath+mn_defs.DoricFile.Group.IMAGES+operationCount+'/'
             utils.save_images(AC.values, time_, f, pathImages+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Images)"), f, pathImages)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
-            print(mn_defs.Messages.Utilities.SAVE_RES_IMAGES, flush=True)
-            pathResiduals = vpath+mn_defs.Text.Utilities.RESIDUALS+operationCount+'/'
+            print(mn_defs.Messages.SAVE_RES_IMAGES, flush=True)
+            pathResiduals = vpath+mn_defs.DoricFile.Group.RESIDUALS+operationCount+'/'
             utils.save_images(res.values, time_, f, pathResiduals+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.DoricFile.Attribute.OPERATIONS] + "(Residuals)"), f, pathResiduals)
+            utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
-            print(mn_defs.Messages.Utilities.SAVE_SPIKES, flush=True)
-            pathSpikes = vpath+mn_defs.Text.Utilities.SPIKES+operationCount+'/'
+            print(mn_defs.Messages.SAVE_SPIKES, flush=True)
+            pathSpikes = vpath+mn_defs.DoricFile.Group.SPIKES+operationCount+'/'
             utils.save_signals(S.values > 0, time_, f, pathSpikes+vdataset, names, usernames, range_min=0, range_max=1)
             utils.print_group_path_for_DANSE(pathSpikes+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
 
-    print(mn_defs.Messages.Utilities.SAVE_TO.format(vname))
+    print(mn_defs.Messages.SAVE_TO.format(path = vname))
 
-#################### definition of try: expect:
+
 @contextmanager
 def except_type_error(function_name: str):
     """
@@ -685,7 +689,7 @@ def except_type_error(function_name: str):
     try:
         yield
     except TypeError:
-        utils.print_to_intercept(mn_defs.Messages.Utilities.ONE_PARM_WRONG_TYPE.format(function_name))
+        utils.print_to_intercept(mn_defs.Messages.ONE_PARM_WRONG_TYPE.format(func = function_name))
         sys.exit()
 
 @contextmanager
@@ -698,5 +702,5 @@ def except_print_error_no_cells(position: str):
         yield
     except Exception as error:
         utils.print_error(error, position)
-        utils.print_to_intercept(mn_defs.Messages.Utilities.NO_CELLS_FOUND)
+        utils.print_to_intercept(mn_defs.Messages.NO_CELLS_FOUND)
         sys.exit()

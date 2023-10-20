@@ -1,22 +1,42 @@
 class DoricFile:
 
     """
-    Doric file structure name
+    Doric file structure names
     """
 
     class Group:
-        DATA_PROCESSED  = "DataProcessed"
+        DATA_PROCESSED = "DataProcessed"
 
     class Dataset:
-        IMAGE_STACK     = "ImageStack"
+        IMAGE_STACK = "ImageStack"
+        TIME        = "Time"
+        ROI         = "ROI{0}"
 
     class Attribute:
-        FORMAT          = "Format"
-        USERNAME        = "Username"
-        OPERATION_NAME  = "OperationName"
-        OPERATIONS      = "Operations"
-        BIT_COUNT       = "BitCount"
-        BINNING_FACTOR  = "BinningFactor"
+
+        class Dataset:
+            USERNAME = "Username"
+            NAME     = "Name"
+
+        class Group:
+            OPERATIONS      = "Operations"
+            BINNING_FACTOR  = "BinningFactor"
+
+        class Image:
+            BIT_COUNT = "BitCount"
+            FORMAT    = "Format"
+            HEIGHT    = "Height"
+            WIDTH     = "Width"
+
+        class ROI:
+            ID     = "ID"
+            COORDS = "Coordinates"
+            SHAPE  = "Shape"
+
+        class Signal:
+            RANGE_MIN = "RangeMin"
+            RANGE_MAX = "RangeMax"
+            UNIT      = "Unit"
 
 
 class Parameters:
@@ -64,6 +84,7 @@ class Parameters:
         TEMPORAL_PENALTY    = "TemporalPenalty"
         CORRECT_MOTION      = "CorrectMotion"
         ADVANCED_SETTINGS   = "AdvancedSettings"
+        # CrossReg parameters HERE
 
 
     class Preview:
@@ -72,15 +93,24 @@ class Parameters:
         Preview parameters
         """
 
-        FILEPATH                = "PreviewFilepath"
-        RANGE                   = "PreviewRange"
-        TEMPORAL_DOWNSAMPLE     = "TemporalDownsample"
+        FILEPATH            = "PreviewFilepath"
+        RANGE               = "PreviewRange"
+        TEMPORAL_DOWNSAMPLE = "TemporalDownsample"
 
 
-    class CrossReg:
 
-        """
-        Cross registration parameters
-        """
+class Messages:
 
-        _ = ""
+    """
+    Messages
+    """
+
+    CANT_SAVE_ATT_VAL       = "Cannot save attribute {attribute} with value {value}"
+    PATHGROUP               = "[pathgroup] {path}"
+    INTERCEPT_MESSAGE       = "[intercept] {message} [end]"
+    ERROR_IN                = "Error in {position}: {type_error_name} - {error}"
+    FILE_CLOSE              = "File is closed"
+    DATASET_NOT_TIME        = "The dataset is not a time vector"
+    F_NOT_H5_FILE_FILEPATH  = "f is not h5py.File or filepath to HDF file"
+    DATPATH_DOESNT_EXIST    = "{datasetpath} path does not exist in the file"
+    HAS_TO_BE_PATH          = "{path} has to be a path to dataset"

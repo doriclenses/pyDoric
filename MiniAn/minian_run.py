@@ -9,7 +9,7 @@ from dask.distributed import Client, LocalCluster
 import h5py
 import xarray as xr
 
-sys.path.append('..')
+sys.path.append("..")
 import utilities as utils
 import minian_main        as mn_main
 import minian_parameters  as mn_params
@@ -23,14 +23,14 @@ danse_parameters = {}
 
 try:
     for arg in sys.argv[1:]:
-        exec(arg)
+        danse_parameters = eval(arg)
 
 except SyntaxError:
-    utils.print_to_intercept(mn_defs.Messages.Run.ADVANCED_BAD_TYPE)
+    utils.print_to_intercept(mn_defs.Messages.ADVANCED_BAD_TYPE)
     sys.exit()
 
 except Exception as error:
-    utils.print_error(error, mn_defs.Messages.Run.LOADING_ARGUMENTS)
+    utils.print_error(error, mn_defs.Messages.LOADING_ARGUMENTS)
     sys.exit()
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ import definitions as defs
 
 def load_attributes(
     file_: Union[h5py.File, str],
-    path: str = ''
+    path: str = ""
     ) -> dict:
 
     """
@@ -31,17 +31,17 @@ def load_attributes(
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
-            raise TypeError('f is not h5py.File or filepath to HDF file')
+            raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
     if type(file_) == h5py.File:
         f = file_
         if not f.__bool__():
-            raise ValueError('File is closed')
+            raise ValueError(defs.Messages.FILE_CLOSE)
     else:
         f = h5py.File(file_, 'r')
 
     if path not in f:
-        raise KeyError(f'"{path}" path does not exist in the file')
+        raise KeyError(defs.Messages.DATPATH_DOESNT_EXIST.format(datasetpath = path))
 
     params = {}
     for key, value in f[path].attrs.items():
@@ -67,25 +67,25 @@ def get_frequency(
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
-            raise TypeError('f is not h5py.File or filepath to HDF file')
+            raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
     if type(file_) == h5py.File:
         f = file_
         if not f.__bool__():
-            raise ValueError('File is closed')
+            raise ValueError(defs.Messages.FILE_CLOSE)
     else:
         f = h5py.File(file_, 'r')
 
     if vdataset not in f:
-        raise KeyError(f'"{vdataset}" path does not exist in the file')
+        raise KeyError(defs.Messages.DATPATH_DOESNT_EXIST.format(datasetpath = vdataset))
 
     if not isinstance(f[vdataset], h5py.Dataset):
-        raise ValueError(f'{vdataset} has to be a path to dataset')
+        raise ValueError(defs.Messages.HAS_TO_BE_PATH.format(path = vdataset))
 
     t = np.array(f[vdataset])
 
     if len(t.shape) > 1:
-        warnings.warn('The dataset is not a time vector')
+        warnings.warn(defs.Messages.DATASET_NOT_TIME)
 
     dt = np.diff(t)
     T = np.round(np.median(dt),10)
@@ -103,17 +103,17 @@ def get_dims(
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
-            raise TypeError('f is not h5py.File or filepath to HDF file')
+            raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
     if type(file_) == h5py.File:
         f = file_
         if not f.__bool__():
-            raise ValueError('File is closed')
+            raise ValueError(defs.Messages.FILE_CLOSE)
     else:
         f = h5py.File(file_, 'r')
 
     if path not in f:
-        raise KeyError(f'"{path}" path does not exist in the file')
+        raise KeyError(defs.Messages.DATPATH_DOESNT_EXIST.format(datasetpath = path))
 
     shape = np.array(f[path]).shape
 
@@ -160,27 +160,27 @@ def save_images(
     width = images.shape[2]
 
     try:
-        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
+        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
                                   chunks=(height,width,1), maxshape=(height,width,None))
     except:
         del f[path+defs.DoricFile.Dataset.IMAGE_STACK]
-        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype='uint16',
+        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
                                   chunks=(height,width,1), maxshape=(height,width,None))
 
     for i, image in enumerate(images):
         dataset[:,:,i] = image
 
     try:
-        f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
     except:
-        del f[path+'Time']
-        f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
+        del f[path+defs.DoricFile.Dataset.TIME]
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
 
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Username'] = username
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Format'] = qt_format
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Height'] = height
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs['Width'] = width
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = username
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]  = bit_count
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.FORMAT]     = qt_format
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
+    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
 
 
 def save_roi_signals(
@@ -233,31 +233,30 @@ def save_roi_signals(
         coords = footprint_to_coords(footprints[i])
 
         attrs = {
-            'ID': A.coords["unit_id"][i].values + 1,
-            'Index': A.coords["unit_id"][i].values + 1,
-            'Name': 'ROI {}'.format(A.coords["unit_id"][i].values + 1),
-            'Username': 'ROI {}'.format(A.coords["unit_id"][i].values + 1),
-            'Shape': 0,
-            'Coordinates': coords
+            defs.DoricFile.Attribute.ROI.ID:           A.coords["unit_id"][i].values + 1,
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(A.coords["unit_id"][i].values + 1),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(A.coords["unit_id"][i].values + 1),
+            defs.DoricFile.Attribute.ROI.SHAPE:        0,
+            defs.DoricFile.Attribute.ROI.COORDS:       coords
         }
 
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
 
         if bit_count > -1:
-            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
+            attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
 
         if names is not None:
-            attrs['Name'] = names[i]
+            attrs[defs.DoricFile.Attribute.Dataset.NAME] = names[i]
 
         if usernames is not None:
-            attrs['Username'] = usernames[i]
+            attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i]
 
-        dataset_name = 'ROI'+str(i+1).zfill(4)
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
 
         save_signal(signals[i], f, path+dataset_name, attrs)
 
-    save_signal(time_, f, path+'Time')
+    save_signal(time_, f, path+defs.DoricFile.Dataset.TIME)
 
 
 def save_signal(
@@ -268,10 +267,10 @@ def save_signal(
     ):
 
     try:
-        f.create_dataset(path, data=signal, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path, data=signal, dtype="float64", chunks=True, maxshape=None)
     except:
         del f[path]
-        f.create_dataset(path, data=signal, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path, data=signal, dtype="float64", chunks=True, maxshape=None)
 
 
     if attrs is not None:
@@ -292,33 +291,33 @@ def save_signals(
     ):
 
     if bit_count is None and (range_min is None or range_max is None or unit is None):
-        raise ValueError('Set either bits count attribute, or range min, range max, and unit attributes.')
+        raise ValueError("Set either bits count attribute, or range min, range max, and unit attributes.")
 
     if path[-1] != '/':
         path += '/'
 
     try:
-        f.create_dataset(path+'Time', data=time_, dtype='float64', chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
     except:
         pass
 
     for i,name in enumerate(names):
         try:
-            f.create_dataset(path+name, data=signals[i], dtype='float64', chunks=True, maxshape=None)
+            f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=True, maxshape=None)
         except:
             del f[path+name]
-            f.create_dataset(path+name, data=signals[i], dtype='float64', chunks=True, maxshape=None)
+            f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=True, maxshape=None)
 
         attrs = {}
 
-        attrs['Username'] = usernames[i] if usernames is not None else name
+        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i] if usernames is not None else name
 
         if bit_count is not None:
-            attrs[defs.DoricFile.Attribute.BIT_COUNT] = bit_count
+            attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
         else:
-            attrs['RangeMin'] = range_min
-            attrs['RangeMax'] = range_max
-            attrs['Unit'] = unit
+            attrs[defs.DoricFile.Attribute.Signal.RANGE_MIN] = range_min
+            attrs[defs.DoricFile.Attribute.Signal.RANGE_MAX] = range_max
+            attrs[defs.DoricFile.Attribute.Signal.UNIT]      = unit
 
         if attrs is not None:
             save_attributes(attrs, f, path+name)
@@ -334,7 +333,7 @@ def save_attributes(
         try:
             f[path].attrs[key] = attributes[key]
         except:
-            print('Cannot save attribute {} with value {}'.format(key, attributes[key]))
+            print(defs.Messages.CANT_SAVE_ATT_VAL.format(attribute = key, value = attributes[key]))
 
 
 def footprint_to_coords(
@@ -342,7 +341,7 @@ def footprint_to_coords(
     ) -> np.array:
 
     _, mask = cv2.threshold(footprint, 0, 255, 0)
-    contours, _ = cv2.findContours(mask.astype('uint8'), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(mask.astype("uint8"), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     maxI = 0
     maxArea = 0
@@ -369,19 +368,19 @@ def merge_params(
     params_final = {}
 
     if operation_name is None:
-        operation_name = params_current[defs.DoricFile.Attribute.OPERATIONS]
+        operation_name = params_current[defs.DoricFile.Attribute.Group.OPERATIONS]
 
-    if defs.DoricFile.Attribute.OPERATIONS not in params_source :
-        params_final[defs.DoricFile.Attribute.OPERATIONS] = operation_name
+    if defs.DoricFile.Attribute.Group.OPERATIONS not in params_source :
+        params_final[defs.DoricFile.Attribute.Group.OPERATIONS] = operation_name
     else:
-        params_final[defs.DoricFile.Attribute.OPERATIONS] = params_source[defs.DoricFile.Attribute.OPERATIONS] + " > " + operation_name
+        params_final[defs.DoricFile.Attribute.Group.OPERATIONS] = f"{params_source[defs.DoricFile.Attribute.Group.OPERATIONS]} > {operation_name}"
 
     # Set the advanced Settings keys
     for key in params_current:
-        if key == defs.DoricFile.Attribute.OPERATIONS:
+        if key == defs.DoricFile.Attribute.Group.OPERATIONS:
             continue
 
-        if key == "AdvancedSettings":
+        if key == defs.Parameters.danse.ADVANCED_SETTINGS:
             for variable_name, variable_value in params_current[key].items():
                 # MiniAn
                 if isinstance(variable_value, dict):
@@ -395,12 +394,12 @@ def merge_params(
 
     # Add Operations operation_name- to the keys
     for key in params_final.copy():
-        if key != defs.DoricFile.Attribute.OPERATIONS:
-            params_final[operation_name + "-" + key] = params_final.pop(key)
+        if key != defs.DoricFile.Attribute.Group.OPERATIONS:
+            params_final[f"{operation_name}-{key}"] = params_final.pop(key)
 
     # Merging with params source
     for key in params_source:
-        if key != defs.DoricFile.Attribute.OPERATIONS:
+        if key != defs.DoricFile.Attribute.Group.OPERATIONS:
             params_final[key] = params_source[key]
 
     return params_final
@@ -420,7 +419,7 @@ def create_params_item(
     if not isinstance(value, str):
         value_final = str(value)
     else:
-        value_final = '"' + value + '"'
+        value_final = f'"{value}"'
 
     return {key_final: value_final}
 
@@ -429,15 +428,15 @@ def print_to_intercept(msg):
     if not isinstance(msg, str):
         msg = str(msg)
 
-    print("[intercept] " + msg + " [end]", flush = True, end = '\n')
+    print(defs.Messages.INTERCEPT_MESSAGE.format(message = msg), flush = True, end = '\n')
 
 
 def print_group_path_for_DANSE(path):
     if(path[-1] == "/"):
         path = path[:-1]
 
-    print_to_intercept("[pathgroup] " + "/" + path)
+    print_to_intercept(defs.Messages.PATHGROUP.format(path = f"/{path}"))
 
 
 def print_error(error, position):
-    print(f"Error in {position}: {type(error).__name__} - {error}", flush=True)
+    print(defs.Messages.ERROR_IN.format(position = position, type_error_name = type(error).__name__, error = error), flush=True)
