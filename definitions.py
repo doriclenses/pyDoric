@@ -38,6 +38,12 @@ class DoricFile:
             RANGE_MAX = "RangeMax"
             UNIT      = "Unit"
 
+    class Deprecated:
+
+        class Dataset:
+
+            IMAGES_STACK = "ImagesStack"
+
 
 
 class Parameters:
@@ -115,13 +121,3 @@ class Messages:
     F_NOT_H5_FILE_FILEPATH  = "f is not h5py.File or filepath to HDF file"
     DATPATH_DOESNT_EXIST    = "{datasetpath} path does not exist in the file"
     HAS_TO_BE_PATH          = "{path} has to be a path to dataset"
-
-
-
-class Deprecated:
-
-    class DoricFile:
-
-        class Dataset:
-
-            IMAGES_STACK = "ImagesStack"

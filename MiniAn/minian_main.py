@@ -82,7 +82,7 @@ def main(minian_parameters):
     if defs.DoricFile.Dataset.IMAGE_STACK in file_[minian_parameters.clean_h5path()]:
         attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")
     else:
-        attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.Deprecated.DoricFile.Dataset.IMAGES_STACK}")
+        attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
     if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
         minian_parameters.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
@@ -401,7 +401,7 @@ def load_doric_to_xarray(
     if defs.DoricFile.Dataset.IMAGE_STACK in file_[h5path]:
         file_image_stack = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK]
     else:
-        file_image_stack= file_[h5path+defs.Deprecated.DoricFile.Dataset.IMAGES_STACK]
+        file_image_stack= file_[h5path+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK]
 
     varr = da.array.from_array(file_image_stack)
 
