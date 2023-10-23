@@ -79,7 +79,7 @@ def main(minian_parameters):
     data, driver, operation, series, sensor = minian_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
 
-    if defs.DoricFile.Dataset.IMAGE_STACK not in file_[minian_parameters.clean_h5path()]:
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[minian_parameters.clean_h5path()]:
         attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")
     else:
         attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.Deprecated.DoricFile.Dataset.IMAGES_STACK}")
