@@ -78,7 +78,12 @@ def main(minian_parameters):
     # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = minian_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")
+
+    if defs.DoricFile.Dataset.IMAGE_STACK not in file_[minian_parameters.clean_h5path()]:
+        attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.IMAGE_STACK}")
+    else:
+        attrs = utils.load_attributes(file_, f"{minian_parameters.clean_h5path()}/{defs.Deprecated.DoricFile.Dataset.IMAGES_STACK}")
+
     if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
         minian_parameters.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
@@ -392,7 +397,14 @@ def load_doric_to_xarray(
     """
 
     file_ = h5py.File(fname, 'r')
-    varr = da.array.from_array(file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK])
+
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[h5path]:
+        file_image_stack = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK]
+    else:
+        file_image_stack= file_[h5path+defs.Deprecated.DoricFile.Dataset.IMAGES_STACK]
+
+    varr = da.array.from_array(file_image_stack)
+
     varr = xr.DataArray(
             varr,
             dims = ["height", "width", "frame"],
@@ -406,7 +418,7 @@ def load_doric_to_xarray(
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
-            bit_count = file_[h5path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]
+            bit_count = file_image_stack.attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]
             varr = varr / 2**bit_count * 2**8
 
         varr = varr.astype(dtype)
