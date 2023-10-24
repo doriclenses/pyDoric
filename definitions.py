@@ -38,6 +38,13 @@ class DoricFile:
             RANGE_MAX = "RangeMax"
             UNIT      = "Unit"
 
+    class Deprecated:
+
+        class Dataset:
+
+            IMAGES_STACK = "ImagesStack"
+
+
 
 class Parameters:
 
