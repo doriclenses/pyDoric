@@ -492,8 +492,8 @@ def cross_register(AC, A, minian_parameters):
     window = xr.apply_ufunc(
         set_window,
         window,
-        input_core_dims=[['height', 'width']],
-        output_core_dims=[['height', 'width']],
+        input_core_dims=[["height", "width"]],
+        output_core_dims=[["height", "width"]],
         vectorize=True)
 
     # Calculate centroids
@@ -503,7 +503,7 @@ def cross_register(AC, A, minian_parameters):
     dist = calculate_centroid_distance(cents, "session", id_dims)
 
     # Threshold centroid distances
-    dist_ft = dist[dist['variable', 'distance'] < param_dist].copy()
+    dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 
     # Generate mappings
