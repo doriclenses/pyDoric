@@ -185,17 +185,20 @@ def save_images(
 
 def save_roi_signals(
     signals: np.ndarray,
-    A: xr.DataArray, 
+    footprints: np.ndarray,
     time_: np.array,
     f: h5py.File,
     path: str,
     names: Optional[List[str]] = None,
     usernames: Optional[List[str]] = None,
     bit_count: int = -1,
-    attrs_add: Optional[dict] = None
+    attrs_add: Optional[dict] = None,
+    unitIds: np.ndarray = None
     ):
 
     """
+    A_unit_id: np.array = None
+
     Saves ROI signals, time vector, and ROI coordinates.
     Parameters
     ----------
@@ -227,18 +230,21 @@ def save_roi_signals(
     if path[-1] != '/':
         path += '/'
 
-    footprints = A.values
-
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
 
         attrs = {
-            defs.DoricFile.Attribute.ROI.ID:           A.coords["unit_id"][i].values + 1,
-            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(A.coords["unit_id"][i].values + 1),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(A.coords["unit_id"][i].values + 1),
+            defs.DoricFile.Attribute.ROI.ID:           i+1,
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(i+1),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(i+1),
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
             defs.DoricFile.Attribute.ROI.COORDS:       coords
         }
+
+        if unitIds is not None:
+            attrs.update({defs.DoricFile.Attribute.ROI.ID:           unitIds[i] + 1,
+                          defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(unitIds[i] + 1),
+                          defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(unitIds[i] + 1)})
 
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
