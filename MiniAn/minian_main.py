@@ -133,8 +133,7 @@ def preview(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
-    duration = Y.shape[0]
-    time = np.arange(0, duration/minian_parameters.freq, 1/minian_parameters.freq, dtype="float64")
+    time = np.array(file_[f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.TIME}"])
 
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, True)
 
