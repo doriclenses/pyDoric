@@ -64,7 +64,7 @@ def main(minian_parameters):
     A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
 
     # Cross registration
-    A = cross_register(minian_parameters, AC, A)
+    A = cross_register(AC, A, minian_parameters)
     
     # Save final MiniAn results
     print(mn_defs.Messages.SAVING_FINAL, flush=True)
@@ -439,10 +439,10 @@ def load_doric_to_xarray(
     return varr, file_
 
             
-def cross_register(minian_parameters, currentFile_AC, currentFile_A):
-    performCrossReg = minian_parameters.params_crossRegister["crossReg"]
-    if not performCrossReg:
-        return currentFile_A
+def cross_register(AC, A, minian_parameters):
+    perform_cross_reg = minian_parameters.params_cross_reg["crossReg"]
+    if not perform_cross_reg:
+        return A
     param_dist = 5 # Defines the max dist between centroids on different sessions to consider them as same cell
     ref_filename = minian_parameters.params_cross_reg["fname"]
     ref_images   = minian_parameters.params_cross_reg["h5path_images"]
