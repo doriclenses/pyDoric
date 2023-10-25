@@ -444,48 +444,48 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
     if not performCrossReg:
         return currentFile_A
     param_dist = 5 # Defines the max dist between centroids on different sessions to consider them as same cell
-    refFileName = minian_parameters.params_crossRegister["fname"]
-    refImages   = minian_parameters.params_crossRegister["h5path_images"]
-    refRois     = minian_parameters.params_crossRegister["h5path_roi"]
+    ref_filename = minian_parameters.params_cross_reg["fname"]
+    ref_images   = minian_parameters.params_cross_reg["h5path_images"]
+    ref_ROIs     = minian_parameters.params_cross_reg["h5path_roi"]
 
     # Load base/reference file to xarray
-    refCR, fileCR_ =  load_doric_to_xarray(refFileName, refImages, np.float64, None, "subset", None)
+    ref, file_ref_ =  load_doric_to_xarray(ref_filename, ref_images, np.float64, None, "subset", None)
 
     # max project of the miniAn images for base file and current file
-    ref_max     = refCR.max("frame")
-    current_max = currentFile_AC.max("frame")
+    ref_max     = ref.max("frame")
+    AC_max = AC.max("frame")
 
-    result = xr.concat([ref_max, current_max], pd.Index(['session1', 'session2'], name = "session"))
-    temps = result.rename('temps')
+    concatenated_maxAC = xr.concat([ref_max, AC_max], pd.Index(["session1", "session2"], name = "session"))
+    # temps = result.rename('temps')
     # chk, _ = get_optimal_chk(temps, **minian_parameters.params_get_optimal_chk)
     # temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
 
     # estimate shift 
-    shifts = estimate_motion(temps, dim = 'session').compute().rename('shifts')
+    shifts = estimate_motion(concatenated_maxAC, dim = "session").compute().rename("shifts")
 
     # Apply Shifts
-    temps_sh = apply_transform(temps, shifts).compute().rename('temps_shifted')
-    shiftds = xr.merge([temps, shifts, temps_sh])
+    transformed = apply_transform(concatenated_maxAC, shifts).compute().rename("temps_shifted")
+    shiftds = xr.merge([concatenated_maxAC, shifts, transformed])
 
-    window    = shiftds['temps_shifted'].isnull().sum('session')
-    window, _ = xr.broadcast(window, shiftds['temps_shifted'])
+    window    = shiftds["temps_shifted"].isnull().sum("session")
+    window, _ = xr.broadcast(window, shiftds["temps_shifted"])
 
-    # function to get ROI footprints ('A') for the base (reference) file
-    refFootprints = getRefFileFootprints(refFileName, refRois, refCR.coords)
+    # get ROI footprints ('A') of the base (reference) file
+    ref_footprints = get_footprints(ref_filename, ref_ROIs, ref.coords)
 
     # change the unitIds of the current file footprints to number starting from max UnitId in ref file
-    updatedUnitIds = []
-    refUnitIDMax = (refFootprints.coords["unit_id"].values).max() + 1
-    for idx, a in enumerate(currentFile_A.coords["unit_id"]):
-        updatedUnitIds.append(refUnitIDMax)
-        refUnitIDMax = refUnitIDMax + 1
-    currentFile_A["unit_id"] = updatedUnitIds
+    updated_unit_ids = []
+    ref_unit_id_max = (ref_footprints.coords["unit_id"].values).max() + 1
+    for idx, a in enumerate(A.coords["unit_id"]):
+        updated_unit_ids.append(ref_unit_id_max)
+        ref_unit_id_max = ref_unit_id_max + 1
+    A["unit_id"] = updated_unit_ids
 
     id_dims =  []
-    mergedFootprints  = xr.concat([refFootprints, currentFile_A], pd.Index(['session1', 'session2'], name="session"))
+    merged_footprints  = xr.concat([ref_footprints, A], pd.Index(["session1", "session2"], name="session"))
 
     # Apply shifts to spatial footprint of each session
-    A_shifted = apply_transform(mergedFootprints.chunk(dict(height = -1, width = -1)), shiftds['shifts'])
+    A_shifted = apply_transform(merged_footprints.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
 
     def set_window(wnd):
         return wnd == wnd.min()
@@ -514,35 +514,35 @@ def cross_register(minian_parameters, currentFile_AC, currentFile_A):
 
     # update unitIds of the current file footprints if they have a mapped unitID in ref file
     for i in range(len(mappings_meta_fill)):
-        if mappings_meta_fill.iloc[i]['group'][0] == ('session1', 'session2'):
-            updatedUnitIds = [mappings_meta_fill.iloc[i]['session']['session1'] if x==mappings_meta_fill.iloc[i]['session']['session2'] else x for x in updatedUnitIds]
-    currentFile_A["unit_id"] = updatedUnitIds
+        if mappings_meta_fill.iloc[i]["group"][0] == ("session1", "session2"):
+            updated_unit_ids = [mappings_meta_fill.iloc[i]["session"]["session1"] if x==mappings_meta_fill.iloc[i]["session"]["session2"] else x for x in updated_unit_ids]
+    A["unit_id"] = updated_unit_ids
         
     # return currentFile footprints with updated unitIds
-    return currentFile_A
+    return A
 
-def getRefFileFootprints(refFileName, refRois, dimensions):
+def get_footprints(ref_filename, ref_ROIs, dimensions):
 
-    file_ = h5py.File(refFileName, 'r')
-    ReferenceROIS =  np.array(file_.get(refRois))
+    file_ = h5py.File(ref_filename, 'r')
+    reference_ROIs =  np.array(file_.get(ref_ROIs))
 
-    unitId = np.arange(1, len(ReferenceROIS), 1)
+    unit_id = np.arange(1, len(reference_ROIs), 1)
 
-    refFootPrints = np.zeros(((len(ReferenceROIS)-1), dimensions['height'].size, dimensions['width'].size), np.float32)
+    ref_footprints = np.zeros(((len(reference_ROIs)-1), dimensions["height"].size, dimensions["width"].size), np.float32)
 
-    for i in range(len(ReferenceROIS) - 1):
-        attrs = utils.load_attributes(file_, f"{refRois}/{ReferenceROIS[i]}")
-        contours = np.array((attrs['Coordinates']))
+    for i in range(len(reference_ROIs) - 1):
+        attrs = utils.load_attributes(file_, f"{ref_ROIs}/{reference_ROIs[i]}")
+        contours = np.array((attrs["Coordinates"]))
 
-        currentFrame = cv2.cvtColor(refFootPrints[i, :, :], cv2.COLOR_GRAY2BGR)
-        cv2.drawContours(currentFrame, [contours], -1, 255, cv2.FILLED)
+        current_frame = cv2.cvtColor(ref_footprints[i, :, :], cv2.COLOR_GRAY2BGR)
+        cv2.drawContours(current_frame, [contours], -1, 255, cv2.FILLED)
 
-        gray = cv2.cvtColor(currentFrame, cv2.COLOR_BGR2GRAY)
-        refFootPrints[i, :, :] = gray
+        gray = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
+        ref_footprints[i, :, :] = gray
 
-    data_xr = xr.DataArray(refFootPrints, 
-    coords = {'unit_id': unitId, 'height': dimensions['height'], 'width': dimensions['width']}, 
-    dims = ["unit_id", "height", "width"])
+    data_xr = xr.DataArray(ref_footprints, 
+    coords = {"unit_id": unit_id, "height": dimensions["height"], "width": dimensions["width"]}, 
+    dims   = ["unit_id", "height", "width"])
 
     return data_xr
 def save_minian_to_doric(

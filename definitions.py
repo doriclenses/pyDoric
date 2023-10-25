@@ -85,10 +85,10 @@ class Parameters:
         CORRECT_MOTION      = "CorrectMotion"
         ADVANCED_SETTINGS   = "AdvancedSettings"
         # CrossReg parameters
-        CROSS_REGISTRATION      = "CrossRegister";
-        CROSS_REG_FNAME         = "CrossRegFileName";
-        CROSS_REG_H5PATH_IMAGES = "CrossRegHDF5PathImages";
-        CROSS_REG_H5PATH_ROI    = "CrossRegHDF5PathROI";
+        CROSS_REG               = "CrossReg";
+        CROSS_REG_FILEPATH      = "CrossRegFilePath";
+        CROSS_REG_H5PATH_IMAGES = "CrossRegImagesPath";
+        CROSS_REG_H5PATH_ROI    = "CrossRegROIsPath";
 
     class Preview:
 

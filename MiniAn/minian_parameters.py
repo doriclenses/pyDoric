@@ -152,9 +152,9 @@ class MinianParameters:
         self.update_all_func_params()
         self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
-        self.params_crossRegister = {
-            'crossReg'     : self.parameters[defs.Parameters.danse.CROSS_REGISTRATION],
-            'fname'        : self.parameters[defs.Parameters.danse.CROSS_REG_FNAME],
+        self.params_cross_reg = {
+            'crossReg'     : self.parameters[defs.Parameters.danse.CROSS_REG],
+            'fname'        : self.parameters[defs.Parameters.danse.CROSS_REG_FILEPATH],
             'h5path_images': self.parameters[defs.Parameters.danse.CROSS_REG_H5PATH_IMAGES],
             'h5path_roi'   : self.parameters[defs.Parameters.danse.CROSS_REG_H5PATH_ROI]
         }
