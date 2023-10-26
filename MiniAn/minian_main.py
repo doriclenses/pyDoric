@@ -93,7 +93,6 @@ def main(minian_parameters):
 
     save_minian_to_doric(
         Y, A, C, AC, S,
-        freq = minian_parameters.freq,
         time = time,
         bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
         qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
@@ -474,7 +473,6 @@ def save_minian_to_doric(
     C: xr.DataArray,
     AC: xr.DataArray,
     S: xr.DataArray,
-    freq: int,
     time: np.array,
     bit_count: int,
     qt_format: int,
