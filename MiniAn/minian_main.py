@@ -144,7 +144,7 @@ def preview(minian_parameters):
                                  ).rename(**{"index": "seed"})
 
     trace_smth_low = smooth_sig(example_trace, minian_parameters.parameters[defs.Parameters.danse.NOISE_FREQ])
-    trace_smth_high = smooth_sig(example_trace, minian_parameters.freq, btype="high")
+    trace_smth_high = smooth_sig(example_trace, minian_parameters.parameters[defs.Parameters.danse.NOISE_FREQ], btype="high")
     trace_smth_low = trace_smth_low.compute()
     trace_smth_high = trace_smth_high.compute()
 
