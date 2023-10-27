@@ -7,7 +7,7 @@ import tempfile
 import dask as da
 import numpy as np
 import xarray as xr
-import pandas as pand
+import pandas as pd
 import functools as fct
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
@@ -23,7 +23,7 @@ import minian_definitions as mn_defs
 from minian.utilities import TaskAnnotation, get_optimal_chk, custom_arr_optimize, save_minian, open_minian
 from minian.preprocessing import denoise, remove_background
 from minian.initialization import seeds_init, pnr_refine, ks_refine, seeds_merge, initA, initC
-from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC
+from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC, smooth_sig
 from minian.motion_correction import apply_transform, estimate_motion
 
 # Import for PyInstaller
@@ -87,11 +87,13 @@ def main(minian_parameters):
     if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
         minian_parameters.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
+    time_ = np.array(file_[f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.TIME}"])
+
     file_.close()
 
     save_minian_to_doric(
         Y, A, C, AC, S,
-        fr = minian_parameters.fr,
+        time_ = time_,
         bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
         qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
         username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
@@ -133,20 +135,38 @@ def preview(minian_parameters):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
 
+    time_ = np.array(file_[f"{minian_parameters.clean_h5path()}/{defs.DoricFile.Dataset.TIME}"])
+
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, True)
+
+    example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
+                                 width=seeds["width"].to_xarray(),
+                                 ).rename(**{"index": "seed"})
+
+    trace_smth_low = smooth_sig(example_trace, minian_parameters.parameters[defs.Parameters.danse.NOISE_FREQ])
+    trace_smth_high = smooth_sig(example_trace, minian_parameters.freq, btype="high")
+    trace_smth_low = trace_smth_low.compute()
+    trace_smth_high = trace_smth_high.compute()
 
     # Save data for preview to hdf5 file
     try:
         with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
+            initialization_group = hdf5_file.create_group(mn_defs.Preview.Group.INITIALIZATION)
+            initialization_group.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 
-            if mn_defs.Preview.Dataset.MAX_PROJECTION in hdf5_file:
-                del hdf5_file[mn_defs.Preview.Dataset.MAX_PROJECTION]
+            seeds_dataset = initialization_group.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT]  = seeds.shape[0]
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]      = seeds.index[seeds["mask_mrg"] == True].tolist()
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED]     = seeds.index[(seeds["mask_ks"] == True) & (seeds["mask_pnr"] == True)].tolist()
 
-            hdf5_file.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
+            noise_freq_group = hdf5_file.create_group(mn_defs.Preview.Group.NOISE_FREQ)
+            noise_freq_group.create_dataset(defs.DoricFile.Dataset.TIME, data = time_, dtype='float', chunks = True)
 
-            seeds_dataset = hdf5_file.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
-            seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]  = seeds.index[seeds["mask_mrg"] == True].tolist()
-            seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED] = seeds.index[(seeds["mask_ks"] == True) & (seeds["mask_pnr"] == True)].tolist()
+            signal_group = noise_freq_group.create_group(mn_defs.Preview.Group.SIGNAL)
+            noise_group  = noise_freq_group.create_group(mn_defs.Preview.Group.NOISE)
+            for seed in range(trace_smth_high.shape[0]):
+                signal_group.create_dataset(mn_defs.Preview.Dataset.SEED.format(idx=str(seed).zfill(4)), data = trace_smth_low[seed], dtype='float64', chunks = True)
+                noise_group.create_dataset(mn_defs.Preview.Dataset.SEED.format(idx=str(seed).zfill(4)), data = trace_smth_high[seed], dtype='float64', chunks = True)
 
     except Exception as error:
         utils.print_error(error, mn_defs.Messages.SAVE_TO_HDF5)
@@ -245,7 +265,7 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, return_all_seeds = F
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
 
         if return_all_seeds:
-            return pand.merge(seeds, seeds_final, how="outer").fillna(False), max_proj
+            return pd.merge(seeds, seeds_final, how="outer").fillna(False), max_proj
         else:
             return seeds_final, max_proj
 
@@ -454,7 +474,7 @@ def save_minian_to_doric(
     C: xr.DataArray,
     AC: xr.DataArray,
     S: xr.DataArray,
-    fr: int,
+    time_: np.array,
     bit_count: int,
     qt_format: int,
     username:str,
@@ -515,9 +535,6 @@ def save_minian_to_doric(
     """
 
     res = Y - AC # residual images
-
-    duration = Y.shape[0]
-    time_ = np.arange(0, duration/fr, 1/fr, dtype="float64")
 
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []

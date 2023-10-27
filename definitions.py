@@ -113,8 +113,8 @@ class Messages:
     """
 
     CANT_SAVE_ATT_VAL       = "Cannot save attribute {attribute} with value {value}"
-    PATHGROUP               = "[pathgroup] {path}"
-    INTERCEPT_MESSAGE       = "[intercept] {message} [end]"
+    PATHGROUP               = "[pathgroup]{path}"
+    INTERCEPT_MESSAGE       = "[intercept]{message}[end]"
     ERROR_IN                = "Error in {position}: {type_error_name} - {error}"
     FILE_CLOSE              = "File is closed"
     DATASET_NOT_TIME        = "The dataset is not a time vector"
