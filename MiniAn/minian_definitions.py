@@ -96,5 +96,6 @@ class Preview:
         SPATIAL_PENALTY = "SpatialPenalty"
 
     class Attribute:
-        MERGED  = "Merged"
-        REFINED = "Refined"
+        MERGED      = "Merged"
+        REFINED     = "Refined"
+        SEED_COUNT  = "SeedCount"
