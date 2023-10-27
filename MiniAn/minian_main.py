@@ -155,7 +155,7 @@ def preview(minian_parameters):
             initialization_group.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 
             seeds_dataset = initialization_group.create_dataset(mn_defs.Preview.Dataset.SEEDS, data = seeds[["width", "height"]], dtype="int", chunks = True)
-            seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT] = seeds.shape[0]
+            seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT]  = seeds.shape[0]
             seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED]      = seeds.index[seeds["mask_mrg"] == True].tolist()
             seeds_dataset.attrs[mn_defs.Preview.Attribute.REFINED]     = seeds.index[(seeds["mask_ks"] == True) & (seeds["mask_pnr"] == True)].tolist()
 
