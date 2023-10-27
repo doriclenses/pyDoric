@@ -92,6 +92,7 @@ class Preview:
 
     class Dataset:
         SEEDS           = "Seeds"
+        SEED            = "Seed{idx}"
         MAX_PROJECTION  = "MaxProjection"
         SPATIAL_PENALTY = "SpatialPenalty"
 

@@ -165,8 +165,8 @@ def preview(minian_parameters):
             signal_group = noise_freq_group.create_group(mn_defs.Preview.Group.SIGNAL)
             noise_group  = noise_freq_group.create_group(mn_defs.Preview.Group.NOISE)
             for seed in range(trace_smth_high.shape[0]):
-                signal_group.create_dataset(mn_defs.Preview.Dataset.SEEDS+str(seed).zfill(4), data = trace_smth_low[seed], dtype='float64', chunks = True)
-                noise_group.create_dataset(mn_defs.Preview.Dataset.SEEDS+str(seed).zfill(4), data = trace_smth_high[seed], dtype='float64', chunks = True)
+                signal_group.create_dataset(mn_defs.Preview.Dataset.SEED.format(idx=str(seed).zfill(4)), data = trace_smth_low[seed], dtype='float64', chunks = True)
+                noise_group.create_dataset(mn_defs.Preview.Dataset.SEED.format(idx=str(seed).zfill(4)), data = trace_smth_high[seed], dtype='float64', chunks = True)
 
     except Exception as error:
         utils.print_error(error, mn_defs.Messages.SAVE_TO_HDF5)
