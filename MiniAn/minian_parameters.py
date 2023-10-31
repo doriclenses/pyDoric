@@ -35,7 +35,7 @@ class MinianParameters:
         os.environ["OPENBLAS_NUM_THREADS"]  = "1"
         os.environ["MINIAN_INTERMEDIATE"]   = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
-        self.fr = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH] + defs.DoricFile.Dataset.TIME)
+        self.freq = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH] + defs.DoricFile.Dataset.TIME)
 
         neuron_diameter = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
         neuron_diameter = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
@@ -93,9 +93,9 @@ class MinianParameters:
 
         wnd = 60 # time window of 60 seconds
         self.params_seeds_init = {
-            "wnd_size": self.fr*wnd,
+            "wnd_size": self.freq*wnd,
             "method": "rolling",
-            "stp_size": self.fr*wnd / 2,
+            "stp_size": self.freq*wnd / 2,
             "max_wnd": neuron_diameter[-1],
             "diff_thres": 3
         }
@@ -126,7 +126,7 @@ class MinianParameters:
         }
 
         self.params_get_noise_fft = {
-            "noise_range": (noise_freq, self.fr/2) # the range max has to be Nyquist frequency (sample rate / 2)
+            "noise_range": (noise_freq, self.freq/2) # the range max has to be Nyquist frequency (sample rate / 2)
         }
 
         self.params_update_spatial = {
