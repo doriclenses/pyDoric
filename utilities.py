@@ -123,7 +123,7 @@ def get_dims(
 
     return shape[:-1], shape[-1]
 
-
+#*************************************************************** SAVE FUNCTIONS ********************************************
 def save_images(
     images: np.ndarray,
     time_: np.array,
@@ -348,7 +348,7 @@ def footprint_to_coords(
 
     return coords
 
-
+#*************************************************************** PARAMETER FUNCTIONS ********************************************
 def merge_params(
     params_current,
     params_source = {},
@@ -417,7 +417,7 @@ def create_params_item(
 
     return {key_final: value_final}
 
-
+#*************************************************************** PRINT FUNCTIONS ********************************************
 def print_to_intercept(msg):
     if not isinstance(msg, str):
         msg = str(msg)
@@ -434,3 +434,5 @@ def print_group_path_for_DANSE(path):
 
 def print_error(error, position):
     print(defs.Messages.ERROR_IN.format(position = position, type_error_name = type(error).__name__, error = error), flush=True)
+
+#*************************************************************** OTHER FUNCTIONS ********************************************
