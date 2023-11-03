@@ -10,9 +10,10 @@ from PyInstaller.utils.hooks import collect_dynamic_libs
 
 block_cipher = None
 
-datas = []
-binaries = []
-hiddenimports = []
+datas           = []
+binaries        = []
+hiddenimports   = []
+excludes        = []
 
 tmp_ret = collect_all('minian')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
@@ -21,6 +22,8 @@ tmp_ret = collect_all('distributed')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
+
+excludes = ["IPython", "matplotlib", "PyQt5", "Markdown", "jupyter"]
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
@@ -31,7 +34,7 @@ a_minian = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
