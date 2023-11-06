@@ -3,7 +3,6 @@ import cv2
 import h5py
 import warnings
 import numpy as np
-import xarray as xr
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 import definitions as defs
