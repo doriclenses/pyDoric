@@ -61,7 +61,6 @@ class Parameters:
         PARAMETERS = "Parameters"
         PATHS      = "Paths"
         PREVIEW    = "Preview"
-        CROSS_REG  = "CrossReg"
 
 
     class Path:
