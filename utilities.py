@@ -203,7 +203,7 @@ def save_roi_signals(
     signals : np.ndarray
         2D array of signals, with shape (n_ROI, time).
     footprints:
-        3D array of spatial cell footprints with shape (n_ROI, height, width) 
+        3D array of spatial cell footprints with shape (n_ROI, height, width)
     time_ : np.array
         1D vector of timestamps
     f : h5py.File

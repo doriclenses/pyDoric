@@ -68,7 +68,6 @@ def main(minian_parameters):
     
     # Save final MiniAn results
     print(mn_defs.Messages.SAVING_FINAL, flush=True)
-
     A = save_minian(A.rename("A"), **minian_parameters.params_save_minian)
     C = save_minian(C.rename("C"), **minian_parameters.params_save_minian)
     AC = save_minian(AC.rename("AC"), **minian_parameters.params_save_minian)
@@ -686,9 +685,7 @@ def save_minian_to_doric(
 
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
         pathROIs = vpath+mn_defs.DoricFile.Group.ROISIGNALS+operationCount+'/'
-
         utils.save_roi_signals(C.values, A.values, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}, roi_ids=A.coords["unit_id"].values)
-
         utils.print_group_path_for_DANSE(pathROIs+vdataset)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
 
