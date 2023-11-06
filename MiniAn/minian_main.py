@@ -477,7 +477,7 @@ def cross_register(AC, A, minian_parameters):
     if not perform_cross_reg:
         return A
 
-    print(mn_defs.Messages.CROSS_REGISTRATION , flush=True)
+    print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
     param_dist = 5 # Defines the max dist between centroids on different sessions to consider them as same cell
     ref_filename = minian_parameters.params_cross_reg["fname"]
     ref_images   = minian_parameters.params_cross_reg["h5path_images"]
