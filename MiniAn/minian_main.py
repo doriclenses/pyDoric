@@ -474,7 +474,7 @@ def load_doric_to_xarray(
 
             
 def cross_register(AC, A, minian_parameters):
-    perform_cross_reg = minian_parameters.params_cross_reg["crossReg"]
+    perform_cross_reg = minian_parameters.params_cross_reg["cross_reg"]
     if not perform_cross_reg:
         return A
 
@@ -485,20 +485,16 @@ def cross_register(AC, A, minian_parameters):
     ref_ROIs     = minian_parameters.params_cross_reg["h5path_roi"]
 
     # Load base/reference file to xarray
-    ref, file_ref_ =  load_doric_to_xarray(ref_filename, ref_images, np.float64, None, "subset", None)
+    ref, file_ref =  load_doric_to_xarray(ref_filename, ref_images, np.float64, None, "subset", None)
 
     # max project of the miniAn images for base file and current file
     ref_max     = ref.max("frame")
     AC_max = AC.max("frame")
 
     concatenated_maxAC = xr.concat([ref_max, AC_max], pd.Index(["session1", "session2"], name = "session"))
-    # temps = result.rename('temps')
-    # chk, _ = get_optimal_chk(temps, **minian_parameters.params_get_optimal_chk)
-    # temps = temps.chunk({"frame": 1, "height": -1, "width": -1}).rename("temps")
 
-    # estimate shift 
+    # Estimate a translational shift along the session dimension using the max projection for each dataset.
     shifts = estimate_motion(concatenated_maxAC, dim = "session").compute().rename("shifts")
-
     # Apply Shifts
     transformed = apply_transform(concatenated_maxAC, shifts).compute().rename("temps_shifted")
     shiftds = xr.merge([concatenated_maxAC, shifts, transformed])
@@ -532,13 +528,15 @@ def cross_register(AC, A, minian_parameters):
         output_core_dims=[["height", "width"]],
         vectorize=True)
 
-    # Calculate centroids
+    # Calculate centroids of spatial footprints for cells inside a window.
     cents = calculate_centroids(A_shifted, window)
                 
-    # Calculate centroid distance
+    # Calculate pairwise distance between centroids across all pairs of sessions.
+    # To avoid calculating distance between centroids that are very far, a 2d rolling window is applied
+    # to spatial coordinates, & only pairs of centroids within the rolling windows are considered for calculation. default (50, 50).
     dist = calculate_centroid_distance(cents, "session", id_dims)
 
-    # Threshold centroid distances
+    # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 
@@ -557,11 +555,10 @@ def cross_register(AC, A, minian_parameters):
     # return currentFile footprints with updated unitIds
     return A
 
-def get_footprints(ref_filename, ref_ROIs, dimensions):
 
-    file_ = h5py.File(ref_filename, 'r')
+def get_footprints(filename, ref_ROIs, dimensions):
+    file_ = h5py.File(filename, 'r')
     reference_ROIs =  np.array(file_.get(ref_ROIs))
-
     unit_id = np.arange(1, len(reference_ROIs), 1)
 
     ref_footprints = np.zeros(((len(reference_ROIs)-1), dimensions["height"].size, dimensions["width"].size), np.float32)

@@ -249,13 +249,7 @@ def save_roi_signals(
         if bit_count > -1:
             attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
 
-        if names is not None:
-            attrs[defs.DoricFile.Attribute.Dataset.NAME] = names[i]
-
-        if usernames is not None:
-            attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i]
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str( roi_ids[i]+1).zfill(4))
 
         save_signal(signals[i], f, path+dataset_name, attrs)
 
