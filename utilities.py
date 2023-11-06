@@ -186,9 +186,6 @@ def save_roi_signals(
     time_: np.array,
     f: h5py.File,
     path: str,
-    names: Optional[List[str]] = None,
-    usernames: Optional[List[str]] = None,
-    bit_count: int = -1,
     attrs_add: Optional[dict] = None,
     roi_ids: List[int] = None
     ):
@@ -209,15 +206,6 @@ def save_roi_signals(
         Group path in the HDF file
     bit_count : int
         Bits depth of images
-    qt_format : int
-        QImage_Format, necessary to display images in DNS. For reference, please
-        see https://doc.qt.io/qt-6/qimage.html
-
-    Returns
-    -------
-
-    Raises
-    ------
 
     """
 
@@ -227,26 +215,23 @@ def save_roi_signals(
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
 
+        if roi_ids is not None:
+            id_ = roi_ids[i]
+        else:
+            id_ = i + 1
+
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+
         attrs = {
-            defs.DoricFile.Attribute.ROI.ID:           i+1,
-            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(i+1),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(i+1),
+            defs.DoricFile.Attribute.ROI.ID:           id_,
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
             defs.DoricFile.Attribute.ROI.COORDS:       coords
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_),
         }
-
-        if roi_ids is not None:
-            attrs.update({defs.DoricFile.Attribute.ROI.ID:           roi_ids[i] + 1,
-                          defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(roi_ids[i] + 1),
-                          defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(roi_ids[i] + 1)})
 
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
-
-        if bit_count > -1:
-            attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str( roi_ids[i]+1).zfill(4))
 
         save_signal(signals[i], f, path+dataset_name, attrs)
 
