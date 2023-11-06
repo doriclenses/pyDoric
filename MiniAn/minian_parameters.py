@@ -143,6 +143,13 @@ class MinianParameters:
             "jac_thres": 0.2
         }
 
+        self.params_cross_reg = {
+            "cross_reg"     : self.parameters[defs.Parameters.danse.CROSS_REG],
+            "fname"         : self.parameters[defs.Parameters.danse.CROSS_REG_FILEPATH],
+            "h5path_images" : self.parameters[defs.Parameters.danse.CROSS_REG_H5PATH_IMAGES],
+            "h5path_roi"    : self.parameters[defs.Parameters.danse.CROSS_REG_H5PATH_ROI]
+        }
+
         # Remove advanced_sesttings function keys that are not in the minian functions list
         self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
         self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings
@@ -152,12 +159,6 @@ class MinianParameters:
         self.update_all_func_params()
         self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
-        self.params_cross_reg = {
-            'crossReg'     : self.parameters[defs.Parameters.danse.CROSS_REG],
-            'fname'        : self.parameters[defs.Parameters.danse.CROSS_REG_FILEPATH],
-            'h5path_images': self.parameters[defs.Parameters.danse.CROSS_REG_H5PATH_IMAGES],
-            'h5path_roi'   : self.parameters[defs.Parameters.danse.CROSS_REG_H5PATH_ROI]
-        }
 
     def update_all_func_params(self):
         for func_name in self.advanced_settings:
