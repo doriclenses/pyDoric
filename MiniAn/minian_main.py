@@ -504,6 +504,7 @@ def cross_register(AC, A, minian_parameters):
 
     # get ROI footprints ('A') of the base (reference) file
     ref_footprints = get_footprints(ref_filename, ref_ROIs, ref.coords)
+    file_ref.close()
 
     # change the unitIds of the current file footprints to number starting from max UnitId in ref file
     updated_unit_ids = []
@@ -574,9 +575,10 @@ def get_footprints(filename, ref_ROIs, dimensions):
         ref_footprints[i, :, :] = gray
 
     data_xr = xr.DataArray(ref_footprints, 
-    coords = {"unit_id": unit_id, "height": dimensions["height"], "width": dimensions["width"]}, 
-    dims   = ["unit_id", "height", "width"])
+    coords  = {"unit_id": unit_id, "height": dimensions["height"], "width": dimensions["width"]}, 
+    dims    = ["unit_id", "height", "width"])
 
+    file_.close()
     return data_xr
 
 
