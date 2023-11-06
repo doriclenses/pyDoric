@@ -556,29 +556,30 @@ def cross_register(AC, A, minian_parameters):
     return A
 
 
-def get_footprints(filename, ref_ROIs, dimensions):
-    file_ = h5py.File(filename, 'r')
-    reference_ROIs =  np.array(file_.get(ref_ROIs))
-    unit_id = np.arange(1, len(reference_ROIs), 1)
+def get_footprints(filename, rois_h5path, dims):
+    
+    with h5py.File(filename, 'r') as file_:
 
-    ref_footprints = np.zeros(((len(reference_ROIs)-1), dimensions["height"].size, dimensions["width"].size), np.float32)
+        roi_names =  list(file_.get(rois_h5path))
 
-    for i in range(len(reference_ROIs) - 1):
-        attrs = utils.load_attributes(file_, f"{ref_ROIs}/{reference_ROIs[i]}")
-        contours = np.array((attrs["Coordinates"]))
+        roi_ids = np.zeros((len(roi_names) - 1))
+        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.float32)
 
-        current_frame = cv2.cvtColor(ref_footprints[i, :, :], cv2.COLOR_GRAY2BGR)
-        cv2.drawContours(current_frame, [contours], -1, 255, cv2.FILLED)
+        for i in range(len(roi_names) - 1):
+            attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
 
-        gray = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
-        ref_footprints[i, :, :] = gray
+            roi_ids[i] = int(attrs["ID"])
 
-    data_xr = xr.DataArray(ref_footprints, 
-    coords  = {"unit_id": unit_id, "height": dimensions["height"], "width": dimensions["width"]}, 
-    dims    = ["unit_id", "height", "width"])
+            coords = np.array(attrs["Coordinates"])
+            mask = np.zeros((dims["height"].size, dims["width"].size), np.float32)
+            cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
+            footprints[i, :, :] = mask
 
-    file_.close()
-    return data_xr
+        footprints_xr = xr.DataArray(footprints, 
+                                     coords = {"unit_id": roi_ids, "height": dims["height"], "width": dims["width"]}, 
+                                     dims   = ["unit_id", "height", "width"])
+
+    return footprints_xr
 
 
 def save_minian_to_doric(
