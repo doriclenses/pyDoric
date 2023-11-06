@@ -117,6 +117,7 @@ def main(minian_parameters):
     client.close()
     cluster.close()
 
+
 def preview(minian_parameters):
     """
     Saves max projection image and seeds in HDF5 file
@@ -316,7 +317,7 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
         print(mn_defs.Messages.CNMF_ESTIM_NOISE.format("1st"), flush=True)
         with except_type_error("get_noise_fft"):
             sn_spatial = get_noise_fft(Y_hw_chk, **minian_parameters.params_get_noise_fft)
-            
+
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
 
         # 2. First spatial update
@@ -342,7 +343,7 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
                         chunks={"unit_id": 1, "frame": -1})
         with except_type_error("update_temporal"):
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_parameters.params_update_temporal)
-                                
+
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]},)
         S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
@@ -364,7 +365,8 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
     return A, C, C_chk, sn_spatial
-    
+
+
 def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters):
 
     with except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("2nd")):
@@ -437,7 +439,7 @@ def load_doric_to_xarray(
                     },
             )
     varr = varr.transpose("frame", "height", "width")
-    
+
     if dtype != varr.dtype:
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
@@ -579,6 +581,8 @@ def get_footprints(ref_filename, ref_ROIs, dimensions):
     dims   = ["unit_id", "height", "width"])
 
     return data_xr
+
+
 def save_minian_to_doric(
     Y: xr.DataArray,
     A: xr.DataArray,
