@@ -32,6 +32,7 @@ from minian.cross_registration import calculate_centroids, calculate_centroid_di
 from multiprocessing import freeze_support
 freeze_support()
 
+
 def main(minian_parameters):
 
     """
@@ -473,70 +474,57 @@ def load_doric_to_xarray(
 
             
 def cross_register(AC, A, minian_parameters):
+    
     perform_cross_reg = minian_parameters.params_cross_reg["cross_reg"]
     if not perform_cross_reg:
         return A
 
     print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
-    param_dist = 5 # Defines the max dist between centroids on different sessions to consider them as same cell
-    ref_filename = minian_parameters.params_cross_reg["fname"]
+
+    # Load AC componenets from the reference file
+    ref_filepath = minian_parameters.params_cross_reg["fname"]
     ref_images   = minian_parameters.params_cross_reg["h5path_images"]
-    ref_ROIs     = minian_parameters.params_cross_reg["h5path_roi"]
+    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, ref_images, np.float64, None, "subset", None)
 
-    # Load base/reference file to xarray
-    ref, file_ref =  load_doric_to_xarray(ref_filename, ref_images, np.float64, None, "subset", None)
+    # Concatenate max proj of both results
+    AC_ref_max = AC_ref.max("frame")
+    AC_max  = AC.max("frame")
+    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["session1", "session2"], name = "session"))
 
-    # max project of the miniAn images for base file and current file
-    ref_max     = ref.max("frame")
-    AC_max = AC.max("frame")
-
-    concatenated_maxAC = xr.concat([ref_max, AC_max], pd.Index(["session1", "session2"], name = "session"))
-
-    # Estimate a translational shift along the session dimension using the max projection for each dataset.
+    # Estimate a translational shift along the session dimension using the max projection for each dataset. 
+    # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
     shifts = estimate_motion(concatenated_maxAC, dim = "session").compute().rename("shifts")
-    # Apply Shifts
-    transformed = apply_transform(concatenated_maxAC, shifts).compute().rename("temps_shifted")
-    shiftds = xr.merge([concatenated_maxAC, shifts, transformed])
-
-    window    = shiftds["temps_shifted"].isnull().sum("session")
-    window, _ = xr.broadcast(window, shiftds["temps_shifted"])
-
-    # get ROI footprints ('A') of the base (reference) file
-    ref_footprints = get_footprints(ref_filename, ref_ROIs, ref.coords)
+    temps_sh = apply_transform(concatenated_maxAC, shifts).compute().rename("temps_shifted")
+    shiftds = xr.merge([concatenated_maxAC, shifts, temps_sh])
     file_ref.close()
 
-    # change the unitIds of the current file footprints to number starting from max UnitId in ref file
-    updated_unit_ids = []
-    ref_unit_id_max = (ref_footprints.coords["unit_id"].values).max() + 1
-    for idx, a in enumerate(A.coords["unit_id"]):
-        updated_unit_ids.append(ref_unit_id_max)
-        ref_unit_id_max = ref_unit_id_max + 1
-    A["unit_id"] = updated_unit_ids
+    # Load A componenets from the reference file
+    ref_rois_path  = minian_parameters.params_cross_reg["h5path_roi"]
+    A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
+    A_concat = xr.concat([A_ref, A], pd.Index(["session1", "session2"], name="session"))
 
-    id_dims =  []
-    merged_footprints  = xr.concat([ref_footprints, A], pd.Index(["session1", "session2"], name="session"))
-
-    # Apply shifts to spatial footprint of each session
+    # Change the current unit ids to be higher than in the reference file
+    ref_unit_id_max = A_ref.coords["unit_id"].values.max() + 1
+    A["unit_id"] = [ref_unit_id_max + i for i in range(A.coords["unit_id"].values.max())]
+    
+    # Apply shifts to spatial footprints of each session
     A_shifted = apply_transform(merged_footprints.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
-
     def set_window(wnd):
         return wnd == wnd.min()
-    window = xr.apply_ufunc(
-        set_window,
-        window,
-        input_core_dims=[["height", "width"]],
-        output_core_dims=[["height", "width"]],
-        vectorize=True)
+    window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]], 
+                            output_core_dims=[["height", "width"]], vectorize=True)
 
     # Calculate centroids of spatial footprints for cells inside a window.
     cents = calculate_centroids(A_shifted, window)
                 
-    # Calculate pairwise distance between centroids across all pairs of sessions.
-    # To avoid calculating distance between centroids that are very far, a 2d rolling window is applied
-    # to spatial coordinates, & only pairs of centroids within the rolling windows are considered for calculation. default (50, 50).
+    # Calculate pairwise distance between cells in all pairs of sessions. 
+    # Note that at this stage, since we are computing something along the session dimension, 
+    # it is no longer considered as a metadata dimension, so we remove it    
+    id_dims =  []
     dist = calculate_centroid_distance(cents, "session", id_dims)
 
     # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
+    param_dist = 5
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 
@@ -546,13 +534,12 @@ def cross_register(AC, A, minian_parameters):
     mappings_meta_fill = fill_mapping(mappings_meta, cents)
     mappings_meta_fill.head()
 
-    # update unitIds of the current file footprints if they have a mapped unitID in ref file
+    # Update unit ids of the current file if they have a mapped unit id in ref file
     for i in range(len(mappings_meta_fill)):
         if mappings_meta_fill.iloc[i]["group"][0] == ("session1", "session2"):
             updated_unit_ids = [mappings_meta_fill.iloc[i]["session"]["session1"] if x==mappings_meta_fill.iloc[i]["session"]["session2"] else x for x in updated_unit_ids]
     A["unit_id"] = updated_unit_ids
         
-    # return currentFile footprints with updated unitIds
     return A
 
 
