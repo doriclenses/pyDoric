@@ -48,9 +48,7 @@ class Messages:
     ADVANCED_BAD_TYPE           = "One of the advanced parameters is not of a python type"
     LOADING_ARGUMENTS           = "Loading parameters"
 
-    """
-    Cross Registration
-    """
+    CROSS_REGISTRATION          = "Cross Registering detected cells to cells in reference session."
 
     _ = ""
 
