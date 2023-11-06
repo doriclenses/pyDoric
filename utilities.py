@@ -193,20 +193,17 @@ def save_roi_signals(
     usernames: Optional[List[str]] = None,
     bit_count: int = -1,
     attrs_add: Optional[dict] = None,
-    unitIds: np.ndarray = None
+    roi_ids: List[int] = None
     ):
 
     """
-    A_unit_id: np.array = None
-
     Saves ROI signals, time vector, and ROI coordinates.
     Parameters
     ----------
     signals : np.ndarray
         2D array of signals, with shape (n_ROI, time).
     footprints:
-        3D array of spatial cell footprints with shape (n_ROI, height, width)  instead of A.values (footprints: np.ndarray) 
-        now the input has been changed to A (xr.DataArray),
+        3D array of spatial cell footprints with shape (n_ROI, height, width) 
     time_ : np.array
         1D vector of timestamps
     f : h5py.File
@@ -241,10 +238,10 @@ def save_roi_signals(
             defs.DoricFile.Attribute.ROI.COORDS:       coords
         }
 
-        if unitIds is not None:
-            attrs.update({defs.DoricFile.Attribute.ROI.ID:           unitIds[i] + 1,
-                          defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(unitIds[i] + 1),
-                          defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(unitIds[i] + 1)})
+        if roi_ids is not None:
+            attrs.update({defs.DoricFile.Attribute.ROI.ID:           roi_ids[i] + 1,
+                          defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(roi_ids[i] + 1),
+                          defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(roi_ids[i] + 1)})
 
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
