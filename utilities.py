@@ -122,7 +122,7 @@ def get_dims(
 
     return shape[:-1], shape[-1]
 
-
+#*************************************************************** SAVE FUNCTIONS ********************************************
 def save_images(
     images: np.ndarray,
     time_: np.array,
@@ -159,22 +159,19 @@ def save_images(
     height = images.shape[1]
     width = images.shape[2]
 
-    try:
-        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
-                                  chunks=(height,width,1), maxshape=(height,width,None))
-    except:
+    if path+defs.DoricFile.Dataset.IMAGE_STACK in f:
         del f[path+defs.DoricFile.Dataset.IMAGE_STACK]
-        dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
+
+    dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
                                   chunks=(height,width,1), maxshape=(height,width,None))
 
     for i, image in enumerate(images):
         dataset[:,:,i] = image
 
-    try:
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
-    except:
+    if path+defs.DoricFile.Dataset.TIME in f:
         del f[path+defs.DoricFile.Dataset.TIME]
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
+
+    f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
 
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = username
     f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]  = bit_count
@@ -263,11 +260,10 @@ def save_signal(
     attrs: Optional[dict] = None
     ):
 
-    try:
-        f.create_dataset(path, data=signal, dtype="float64", chunks=True, maxshape=None)
-    except:
+    if path in f:
         del f[path]
-        f.create_dataset(path, data=signal, dtype="float64", chunks=True, maxshape=None)
+
+    f.create_dataset(path, data=signal, dtype="float64", chunks=def_chunk_size(signal.shape), maxshape=None)
 
 
     if attrs is not None:
@@ -294,16 +290,16 @@ def save_signals(
         path += '/'
 
     try:
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=True, maxshape=None)
+        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
     except:
         pass
 
     for i,name in enumerate(names):
-        try:
-            f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=True, maxshape=None)
-        except:
+
+        if path+name in f:
             del f[path+name]
-            f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=True, maxshape=None)
+
+        f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=def_chunk_size(signals[i].shape), maxshape=None)
 
         attrs = {}
 
@@ -351,7 +347,7 @@ def footprint_to_coords(
 
     return coords
 
-
+#*************************************************************** PARAMETER FUNCTIONS ********************************************
 def merge_params(
     params_current,
     params_source = {},
@@ -420,7 +416,7 @@ def create_params_item(
 
     return {key_final: value_final}
 
-
+#*************************************************************** PRINT FUNCTIONS ********************************************
 def print_to_intercept(msg):
     if not isinstance(msg, str):
         msg = str(msg)
@@ -437,3 +433,21 @@ def print_group_path_for_DANSE(path):
 
 def print_error(error, position):
     print(defs.Messages.ERROR_IN.format(position = position, type_error_name = type(error).__name__, error = error), flush=True)
+
+#*************************************************************** OTHER FUNCTIONS ********************************************
+def def_chunk_size(data_shape):
+
+    if len(data_shape) == 3:
+        height   = data_shape[1]
+        width    = data_shape[2]
+
+        return (height,width,1)
+
+    if len(data_shape) == 1:
+        chunk_size = 65536
+        durantion = data_shape[0]
+
+        if durantion < chunk_size:
+            chunk_size = durantion
+
+        return  chunk_size
