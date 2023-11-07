@@ -143,12 +143,14 @@ class MinianParameters:
             "jac_thres": 0.2
         }
 
-        self.params_cross_reg = {
-            "cross_reg"     : self.parameters[defs.Parameters.danse.CROSS_REG],
-            "fname"         : self.parameters[defs.Parameters.danse.REF_FILEPATH],
-            "h5path_images" : self.parameters[defs.Parameters.danse.REF_IMAGES_PATH],
-            "h5path_roi"    : self.parameters[defs.Parameters.danse.REF_ROIS_PATH]
-        }
+        self.params_cross_reg = {}
+        if self.parameters[defs.Parameters.danse.CROSS_REG]:
+            self.params_cross_reg = {
+                "cross_reg"     : self.parameters[defs.Parameters.danse.CROSS_REG],
+                "fname"         : self.parameters[defs.Parameters.danse.REF_FILEPATH],
+                "h5path_images" : self.parameters[defs.Parameters.danse.REF_IMAGES_PATH],
+                "h5path_roi"    : self.parameters[defs.Parameters.danse.REF_ROIS_PATH]
+            }
 
         # Remove advanced_sesttings function keys that are not in the minian functions list
         self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
