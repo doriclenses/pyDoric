@@ -493,9 +493,9 @@ def cross_register(AC, A, minian_parameters):
 
     # Estimate a translational shift along the session dimension using the max projection for each dataset. 
     # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
-    shifts = estimate_motion(concatenated_maxAC, dim = "session").compute().rename("shifts")
-    temps_sh = apply_transform(concatenated_maxAC, shifts).compute().rename("temps_shifted")
-    shiftds = xr.merge([concatenated_maxAC, shifts, temps_sh])
+    shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
+    temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
+    shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
     file_ref.close()
 
     # Load A componenets from the reference file

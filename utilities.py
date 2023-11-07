@@ -224,9 +224,9 @@ def save_roi_signals(
         attrs = {
             defs.DoricFile.Attribute.ROI.ID:           id_,
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
-            defs.DoricFile.Attribute.ROI.COORDS:       coords
+            defs.DoricFile.Attribute.ROI.COORDS:       coords,
             defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_)
         }
 
         if attrs_add is not None:
