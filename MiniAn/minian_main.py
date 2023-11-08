@@ -496,6 +496,9 @@ def cross_register(AC, A, minian_parameters):
     shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
     temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
     shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
+
+    window = shiftds['temps_shifted'].isnull().sum('session')
+    window, _ = xr.broadcast(window, shiftds['temps_shifted'])
     file_ref.close()
 
     # Load A componenets from the reference file
