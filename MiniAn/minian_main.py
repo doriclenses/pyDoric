@@ -511,7 +511,7 @@ def cross_register(AC, A, minian_parameters):
     A["unit_id"] = [ref_unit_id_max + i for i in range(A.coords["unit_id"].values.max())]
     
     # Apply shifts to spatial footprints of each session
-    A_shifted = apply_transform(merged_footprints.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
+    A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
     def set_window(wnd):
         return wnd == wnd.min()
     window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]], 
