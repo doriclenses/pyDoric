@@ -474,8 +474,7 @@ def load_doric_to_xarray(
 
             
 def cross_register(AC, A, minian_parameters):
-    
-    # perform_cross_reg = minian_parameters.params_cross_reg["cross_reg"]   minian_parameters.params_cross_reg
+
     if not minian_parameters.params_cross_reg:
         return A
 
@@ -515,7 +514,7 @@ def cross_register(AC, A, minian_parameters):
 
     # Calculate centroids of spatial footprints for cells inside a window.
     cents = calculate_centroids(A_shifted, window)
-                
+
     # Calculate pairwise distance between cells in all pairs of sessions. 
     # Note that at this stage, since we are computing something along the session dimension, 
     # it is no longer considered as a metadata dimension, so we remove it    
