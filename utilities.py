@@ -215,7 +215,7 @@ def save_roi_signals(
         coords = footprint_to_coords(footprints[i])
 
         if roi_ids is not None:
-            id_ = roi_ids[i]
+            id_ = roi_ids[i] + 1
         else:
             id_ = i + 1
 
