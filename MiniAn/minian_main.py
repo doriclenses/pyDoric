@@ -177,6 +177,8 @@ def preview(minian_parameters):
     client.close()
     cluster.close()
 
+    print(mn_defs.Messages.PROCESS_DONE, flush=True)
+
 
 def load_chunk(intpath, subset, minian_parameters):
 

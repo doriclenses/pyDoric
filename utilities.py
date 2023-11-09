@@ -462,6 +462,7 @@ def clean_path(path):
 
     if path[0] == '/':
         path = path[1:]
+
     if path[-1] == '/':
         path = path[:-1]
 
