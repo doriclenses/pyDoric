@@ -488,7 +488,7 @@ def cross_register(AC, A, minian_parameters):
     # Concatenate max proj of both results
     AC_ref_max = AC_ref.max("frame")
     AC_max  = AC.max("frame")
-    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["session1", "session2"], name = "session"))
+    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["reference", "current"], name = "session"))
 
     # Estimate a translational shift along the session dimension using the max projection for each dataset. 
     # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
@@ -500,7 +500,7 @@ def cross_register(AC, A, minian_parameters):
     # Load A componenets from the reference file
     ref_rois_path  = minian_parameters.params_cross_reg["h5path_roi"]
     A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
-    A_concat = xr.concat([A_ref, A], pd.Index(["session1", "session2"], name="session"))
+    A_concat = xr.concat([A_ref, A], pd.Index(["reference", "current"], name="session"))
     
     # Apply shifts to spatial footprints of each session
     A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
