@@ -475,8 +475,8 @@ def load_doric_to_xarray(
             
 def cross_register(AC, A, minian_parameters):
     
-    perform_cross_reg = minian_parameters.params_cross_reg["cross_reg"]
-    if not perform_cross_reg:
+    # perform_cross_reg = minian_parameters.params_cross_reg["cross_reg"]   minian_parameters.params_cross_reg
+    if not minian_parameters.params_cross_reg:
         return A
 
     print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
@@ -496,22 +496,18 @@ def cross_register(AC, A, minian_parameters):
     shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
     temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
     shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
-
-    window = shiftds['temps_shifted'].isnull().sum('session')
-    window, _ = xr.broadcast(window, shiftds['temps_shifted'])
     file_ref.close()
 
     # Load A componenets from the reference file
     ref_rois_path  = minian_parameters.params_cross_reg["h5path_roi"]
     A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
     A_concat = xr.concat([A_ref, A], pd.Index(["session1", "session2"], name="session"))
-
-    # Change the current unit ids to be higher than in the reference file
-    ref_unit_id_max = A_ref.coords["unit_id"].values.max() + 1
-    A["unit_id"] = [ref_unit_id_max + i for i in range(A.coords["unit_id"].values.max())]
     
     # Apply shifts to spatial footprints of each session
     A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
+
+    window = shiftds['temps_shifted'].isnull().sum('session')
+    window, _ = xr.broadcast(window, shiftds['temps_shifted'])
     def set_window(wnd):
         return wnd == wnd.min()
     window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]], 
