@@ -28,6 +28,8 @@ def load_attributes(
         KeyError: If path does not exist in the file
     """
 
+    path = clean_path(path)
+
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
             raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
@@ -99,6 +101,8 @@ def get_dims(
     file_: Union[h5py.File, str],
     path: str
     ) -> Tuple[Tuple[int, int], int]:
+
+    path = clean_path(path)
 
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
@@ -320,6 +324,7 @@ def save_attributes(
     f: h5py.File,
     path: str
     ):
+    path = clean_path(path)
 
     for key in attributes.keys():
         try:
