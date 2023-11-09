@@ -223,8 +223,7 @@ def save_roi_signals(
 
     """
 
-    if path[-1] != '/':
-        path += '/'
+    path = clean_path(path)
 
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
@@ -251,9 +250,9 @@ def save_roi_signals(
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
 
-        save_signal(signals[i], f, path+dataset_name, attrs)
+        save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
 
-    save_signal(time_, f, path+defs.DoricFile.Dataset.TIME)
+    save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
 
 def save_signal(
@@ -289,20 +288,20 @@ def save_signals(
     if bit_count is None and (range_min is None or range_max is None or unit is None):
         raise ValueError("Set either bits count attribute, or range min, range max, and unit attributes.")
 
-    if path[-1] != '/':
-        path += '/'
+    path = clean_path(path)
 
     try:
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
+        f.create_dataset(f"{path}/{defs.DoricFile.Dataset.TIME}", data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
     except:
         pass
 
     for i,name in enumerate(names):
+        path_name = f"{path}/{name}"
 
-        if path+name in f:
-            del f[path+name]
+        if path_name in f:
+            del f[path_name]
 
-        f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=def_chunk_size(signals[i].shape), maxshape=None)
+        f.create_dataset(path_name, data=signals[i], dtype="float64", chunks=def_chunk_size(signals[i].shape), maxshape=None)
 
         attrs = {}
 
@@ -316,7 +315,7 @@ def save_signals(
             attrs[defs.DoricFile.Attribute.Signal.UNIT]      = unit
 
         if attrs is not None:
-            save_attributes(attrs, f, path+name)
+            save_attributes(attrs, f, path_name)
 
 
 def save_attributes(
@@ -429,8 +428,7 @@ def print_to_intercept(msg):
 
 
 def print_group_path_for_DANSE(path):
-    if(path[-1] == "/"):
-        path = path[:-1]
+    path = clean_path(path)
 
     print_to_intercept(defs.Messages.PATHGROUP.format(path = f"/{path}"))
 
