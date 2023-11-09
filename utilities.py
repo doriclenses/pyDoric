@@ -450,3 +450,13 @@ def def_chunk_size(data_shape):
             chunk_size = durantion
 
         return  chunk_size
+
+
+def clean_path(path):
+
+    if path[0] == '/':
+        path = path[1:]
+    if path[-1] == '/':
+        path = path[:-1]
+
+    return path
