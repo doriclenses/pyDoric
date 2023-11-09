@@ -173,11 +173,11 @@ def save_images(
     for i, image in enumerate(images):
         image_stack_dataset[:,:,i] = image
 
-    image_stack_dataset[defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = username
-    image_stack_dataset[defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]  = bit_count
-    image_stack_dataset[defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.FORMAT]     = qt_format
-    image_stack_dataset[defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
-    image_stack_dataset[defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = username
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]  = bit_count
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.FORMAT]     = qt_format
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
 
     path_time        = f"{path}/{defs.DoricFile.Dataset.TIME}"
     if path_time in f:
