@@ -518,11 +518,11 @@ def cross_register(AC, A, minian_parameters):
     # Calculate pairwise distance between cells in all pairs of sessions. 
     # Note that at this stage, since we are computing something along the session dimension, 
     # it is no longer considered as a metadata dimension, so we remove it    
-    id_dims =  []
-    dist = calculate_centroid_distance(cents, "session", id_dims)
+    dist = calculate_centroid_distance(cents, "session", [])
 
     # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
-    param_dist = 5
+    param_dist = minian_parameters.params_cross_reg["param_dist"]
+
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 

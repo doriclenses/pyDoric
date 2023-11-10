@@ -149,7 +149,8 @@ class MinianParameters:
                 "cross_reg"     : self.parameters[defs.Parameters.danse.CROSS_REG],
                 "fname"         : self.parameters[defs.Parameters.danse.REF_FILEPATH],
                 "h5path_images" : self.parameters[defs.Parameters.danse.REF_IMAGES_PATH],
-                "h5path_roi"    : self.parameters[defs.Parameters.danse.REF_ROIS_PATH]
+                "h5path_roi"    : self.parameters[defs.Parameters.danse.REF_ROIS_PATH],
+                "param_dist"    : neuron_diameter[0]
             }
 
         # Remove advanced_sesttings function keys that are not in the minian functions list
