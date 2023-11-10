@@ -538,7 +538,7 @@ def cross_register(AC, A, minian_parameters):
 
     for i in range(len(mappings_meta_fill)):
         # Matching ids between the sessions
-        if mappings_meta_fill.iloc[i]["group"][0] == ("reference", "current"):
+        if mappings_meta_fill.iloc[i]["group"][0] == ("current", "reference"):
             index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
             new_ids[index] = int(mappings_meta_fill.iloc[i]["session"]["reference"])
         # Unique ids for the current session
