@@ -567,15 +567,14 @@ def get_footprints(filename, rois_h5path, dims):
         roi_names =  list(file_.get(rois_h5path))
 
         roi_ids = np.zeros((len(roi_names) - 1))
-        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.float32)
-
+        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.float64)
         for i in range(len(roi_names) - 1):
             attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
 
             roi_ids[i] = int(attrs["ID"])
 
             coords = np.array(attrs["Coordinates"])
-            mask = np.zeros((dims["height"].size, dims["width"].size), np.float32)
+            mask = np.zeros((dims["height"].size, dims["width"].size), np.float64)
             cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
             footprints[i, :, :] = mask
 
