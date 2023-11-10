@@ -495,12 +495,12 @@ def cross_register(AC, A, minian_parameters):
     shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
     temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
     shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
-    file_ref.close()
 
     # Load A componenets from the reference file
     ref_rois_path  = minian_parameters.params_cross_reg["h5path_roi"]
     A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
     A_concat = xr.concat([A_ref, A], pd.Index(["session1", "session2"], name="session"))
+    file_ref.close()
     
     # Apply shifts to spatial footprints of each session
     A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
