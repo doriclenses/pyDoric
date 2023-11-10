@@ -488,7 +488,7 @@ def cross_register(AC, A, minian_parameters):
     # Concatenate max proj of both results
     AC_ref_max = AC_ref.max("frame")
     AC_max  = AC.max("frame")
-    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["session1", "session2"], name = "session"))
+    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["reference", "current"], name = "session"))
 
     # Estimate a translational shift along the session dimension using the max projection for each dataset. 
     # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
@@ -499,7 +499,7 @@ def cross_register(AC, A, minian_parameters):
     # Load A componenets from the reference file
     ref_rois_path  = minian_parameters.params_cross_reg["h5path_roi"]
     A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
-    A_concat = xr.concat([A_ref, A], pd.Index(["session1", "session2"], name="session"))
+    A_concat = xr.concat([A_ref, A], pd.Index(["reference", "current"], name="session"))
     file_ref.close()
     
     # Apply shifts to spatial footprints of each session
@@ -526,37 +526,29 @@ def cross_register(AC, A, minian_parameters):
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 
-    # Generate mappings
+    # Generate mappings for ids of the current and reference sessions
     mappings = calculate_mapping(dist_ft)
     mappings_meta = resolve_mapping(mappings)
     mappings_meta_fill = fill_mapping(mappings_meta, cents)
-    mappings_meta_fill.head()
 
-    # Update unit ids of the current file if they have a mapped unit id in ref file
-    """
-    Psedocode:
-    1. Create an empty list (with zeros) of the same size as A['unit_ids']
-       This list will be modifiled/updated according to the mapping in 2 sessions.
-    2. Create another list (copy of A[unit_ids]) to be used as a reference to check the index of the values (list_unit_ids)
-    3. Loop through the mapping output (mapping_meta_fill) 
-        a. If a cell is in both sessions-
-           Get index of that cell from list_unit_ids and update the value  in updated_list to id in ref session
-        b. If a cell is only in current session- Update the value to unitId_max 
-    """
-    unitId_max       = A_ref.coords["unit_id"].values.max() + 1
-    list_unit_ids    = list(A["unit_id"].values)
-    updated_unit_ids = [0]*len(list_unit_ids)
+    # Update unit ids of the current spatial componenets A
+    ids        = list(A["unit_id"].values)
+    new_ids    = [0]*len(list_unit_ids)
+    ref_id_max = int(A_ref.coords["unit_id"].values.max()) + 1
 
     for i in range(len(mappings_meta_fill)):
-        if mappings_meta_fill.iloc[i]["group"][0] == ("session1", "session2"):
-            index = list_unit_ids.index(mappings_meta_fill.iloc[i]["session"]["session2"])
-            updated_unit_ids[index] = int(mappings_meta_fill.iloc[i]["session"]["session1"])
-        elif mappings_meta_fill.iloc[i]["group"][0] == ("session2",):
-            index = list_unit_ids.index(mappings_meta_fill.iloc[i]["session"]["session2"])
-            updated_unit_ids[index] = int(unitId_max)
-            unitId_max += 1
+        # Matching ids between the sessions
+        if mappings_meta_fill.iloc[i]["group"][0] == ("reference", "current"):
+            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
+            new_ids[index] = int(mappings_meta_fill.iloc[i]["session"]["reference"])
+        # Unique ids for the current session
+        elif mappings_meta_fill.iloc[i]["group"][0] == ("current",):
+            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
+            new_ids[index] = ref_id_max
+            ref_id_max += 1
 
-    A["unit_id"] = updated_unit_ids
+    A["unit_id"] = new_ids
+
     return A
 
 
