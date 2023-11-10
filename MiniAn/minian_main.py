@@ -533,7 +533,7 @@ def cross_register(AC, A, minian_parameters):
 
     # Update unit ids of the current spatial componenets A
     ids        = list(A["unit_id"].values)
-    new_ids    = [0]*len(list_unit_ids)
+    new_ids    = [0]*len(ids)
     ref_id_max = int(A_ref.coords["unit_id"].values.max()) + 1
 
     for i in range(len(mappings_meta_fill)):
