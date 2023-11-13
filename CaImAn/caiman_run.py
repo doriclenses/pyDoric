@@ -41,4 +41,4 @@ if __name__ == "__main__":
 
     cm_main.main(caiman_params)
 
-    print(cm_main.Messages.PROCESS_DONE, flush=True)
+    print(cm_defs.Messages.PROCESS_DONE, flush=True)
