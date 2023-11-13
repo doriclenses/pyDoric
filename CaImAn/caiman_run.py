@@ -135,7 +135,7 @@ if __name__ == "__main__":
     images = images.transpose(2, 0, 1)
     h5path_list = paths['h5path'].split('/')
     fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
-    print(WRITE_IMAGE_TIFF, flush=True)
+    print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
     imwrite(fname_tif, images)
     del images
 
