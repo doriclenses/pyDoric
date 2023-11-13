@@ -35,19 +35,22 @@ logging.basicConfig(level=logging.DEBUG)
 freeze_support()
 
 # Text definitions
-kwargs = {}
-params_doric = {}
+
+
 danse_parameters = {}
 
 try:
     for arg in sys.argv[1:]:
-        exec(arg)
+        danse_parameters = eval(arg)
+
 except SyntaxError:
     utils.print_to_intercept(cm_defs.Messages.ADVANCED_BAD_TYPE)
     sys.exit()
 
-if not danse_parameters: # for backwards compatibility
-    danse_parameters = {"paths": kwargs , "parameters": params_doric}
+except Exception as error:
+    utils.print_error(error, cm_defs.Messages.LOADING_ARGUMENTS)
+    sys.exit()
+
 
 paths   = danse_parameters.get("paths", {})
 parameters  = danse_parameters.get("parameters", {})
