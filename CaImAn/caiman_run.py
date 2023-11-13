@@ -16,7 +16,8 @@ from caiman.motion_correction import MotionCorrect
 
 # Import CaimAn related utilities libraries
 import utilities as utils
-import caiman_utilities as cm_utils
+import caiman_utilities   as cm_utils
+import caiman_definitions as cm_defs
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
