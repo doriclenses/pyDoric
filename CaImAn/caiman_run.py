@@ -37,6 +37,6 @@ except Exception as error:
 
 
 if __name__ == "__main__":
-    caiman_params = cm_params.CaimanParametersParameters(danse_parameters)
+    caiman_params = cm_params.CaimanParameters(danse_parameters)
 
     cm_main.main(caiman_params)
