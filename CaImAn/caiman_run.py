@@ -35,16 +35,6 @@ logging.basicConfig(level=logging.DEBUG)
 freeze_support()
 
 # Text definitions
-ADVANCED_BAD_TYPE   = "One of the advanced settings is not of a python type"
-WRITE_IMAGE_TIFF    = "Write image in tiff..."
-MOTION_CORREC       = "Motion correction"
-PARAM_WRONG_TYPE    = "One parameter is of the wrong type"
-START_CNMF          = "Starting CNMF..."
-FITTING             = "Fitting..."
-EVA_COMPO           = "evaluate_components..."
-SAVING_DATA         = "Saving data to doric file..."
-NO_CELLS            = "No cells where found"
-
 kwargs = {}
 params_doric = {}
 danse_parameters = {}
@@ -53,7 +43,7 @@ try:
     for arg in sys.argv[1:]:
         exec(arg)
 except SyntaxError:
-    utils.print_to_intercept(ADVANCED_BAD_TYPE)
+    utils.print_to_intercept(cm_defs.Messages.ADVANCED_BAD_TYPE)
     sys.exit()
 
 if not danse_parameters: # for backwards compatibility
@@ -155,15 +145,15 @@ if __name__ == "__main__":
 
     if bool(parameters["CorrectMotion"]):
         # MOTION CORRECTION
-        print(MOTION_CORREC,  flush=True)
+        print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
             mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
         except TypeError:
-            utils.print_to_intercept(PARAM_WRONG_TYPE)
+            utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
         except Exception as error:
-            utils.print_error(error, MOTION_CORREC)
+            utils.print_error(error, cm_defs.Messages.MOTION_CORREC)
             sys.exit()
 
         mc.motion_correct(save_movie=True)
@@ -181,22 +171,22 @@ if __name__ == "__main__":
     images = Yr.T.reshape((T,) + dims, order='F')
 
     try:
-        print(START_CNMF, flush=True)
+        print(cm_defs.Messages.START_CNMF, flush=True)
         cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
-        print(FITTING, flush=True)
+        print(cm_defs.Messages.FITTING, flush=True)
         cnm.fit(images)
 
-        print(EVA_COMPO, flush=True)
+        print(cm_defs.Messages.EVA_COMPO, flush=True)
         cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
     except TypeError:
-        utils.print_to_intercept(PARAM_WRONG_TYPE)
+        utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
         sys.exit()
     except Exception as error:
-        utils.print_error(error, START_CNMF)
+        utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
 
     ### Save results to doric file ###
-    print(SAVING_DATA, flush=True)
+    print(cm_defs.Messages.SAVING_DATA, flush=True)
     # Get the path from the source data
     h5path = paths['h5path']
     if h5path[0] == '/':
@@ -227,7 +217,7 @@ if __name__ == "__main__":
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
 
     if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
-        utils.print_to_intercept(NO_CELLS)
+        utils.print_to_intercept(cm_defs.Messages.NO_CELLS_FOUND)
     else :
         cm_utils.save_caiman_to_doric(
             Yr,
