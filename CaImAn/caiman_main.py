@@ -24,6 +24,7 @@ import caiman_parameters  as cm_params
 # Import miscellaneous libraries
 import tempfile
 from tifffile import imwrite
+import logging
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
