@@ -19,6 +19,7 @@ from caiman.motion_correction import MotionCorrect
 sys.path.append("..")
 # Import CaimAn related utilities libraries
 import utilities as utils
+import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
 
@@ -172,6 +173,13 @@ def main(caiman_params):
     cm.stop_server(dview=dview)
 
 
+def preview(caiman_params: cm_params.CaimanParameters):
+    """
+    in HDF5 file
+    """
+
+    # Import for CaimAn lib
+    from summary_images import correlation_pnr
 def save_caiman_to_doric(
     Y: np.ndarray,
     A: np.ndarray,
