@@ -1,8 +1,12 @@
 
 import h5py
+import sys
 import numpy as np
-import utilities as utils
 
+sys.path.append("..")
+import utilities as utils
+import definitions as defs
+import caiman_definitions as cm_defs
 
 class CaimanParameters:
 
@@ -12,11 +16,16 @@ class CaimanParameters:
 
     def __init__(self, danse_parameters):
 
-        self.danse_parameters = danse_parameters
-
         self.paths   = danse_parameters.get("paths", {})
         self.parameters  = danse_parameters.get("parameters", {})
 
+        self.preview = False
+        if defs.Parameters.Main.PREVIEW in danse_parameters:
+            self.preview = True
+            self.preview_parameters = danse_parameters[defs.Parameters.Main.PREVIEW]
+
+        # To be deprecated
+        self.danse_parameters = danse_parameters
         paths = self.paths
         parameters = self.parameters
 
