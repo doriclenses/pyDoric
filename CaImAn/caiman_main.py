@@ -180,6 +180,37 @@ def preview(caiman_params: cm_params.CaimanParameters):
 
     # Import for CaimAn lib
     from summary_images import correlation_pnr
+
+    print(" Danse parameters", caiman_params.danse_parameters)
+    print("Preview", caiman_params.preview_parameters)
+
+    #To be deprecated
+    kwargs       = caiman_params.paths
+    params_doric = caiman_params.parameters
+
+    #********************
+
+    video_start_frame   = caiman_params.preview_parameters[defs.Parameters.Preview.RANGE][0]
+    video_stop_frame    = caiman_params.preview_parameters[defs.Parameters.Preview.RANGE][1]
+
+
+    with h5py.File(kwargs["fname"], 'r') as f:
+        try:
+            images = np.array(f[kwargs['h5path']+'ImageStack'])
+        except:
+            images = np.array(f[kwargs['h5path']+'ImagesStack'])
+
+    images = images[:, :, (video_start_frame-1):video_stop_frame]
+    images = images[:, :, ::params_doric['TemporalDownsample']]
+
+    images = images.transpose(2, 0, 1)
+
+    cr, pnr = correlation_pnr(images, swap_dim = False)
+
+    cr[np.isnan(cr)] = 0
+    pnr[np.isnan(pnr)] = 0
+
+
 def save_caiman_to_doric(
     Y: np.ndarray,
     A: np.ndarray,
