@@ -9,13 +9,6 @@ from tifffile import imwrite
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
-# Import for CaimAn lib
-import caiman as cm
-from caiman.cluster import setup_cluster
-from caiman.source_extraction import cnmf
-from caiman.source_extraction.cnmf import params
-from caiman.motion_correction import MotionCorrect
-
 sys.path.append("..")
 # Import CaimAn related utilities libraries
 import utilities as utils
@@ -29,6 +22,13 @@ freeze_support()
 
 
 def main(caiman_params):
+
+        # Import for CaimAn lib
+    import caiman as cm
+    from caiman.cluster import setup_cluster
+    from caiman.source_extraction import cnmf
+    from caiman.source_extraction.cnmf import params
+    from caiman.motion_correction import MotionCorrect
 
     """
     MiniAn CNMF algorithm
