@@ -207,6 +207,14 @@ def preview(caiman_params: cm_params.CaimanParameters):
     cr[np.isnan(cr)] = 0
     pnr[np.isnan(pnr)] = 0
 
+    try:
+        with h5py.File(caiman_params.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
+            hdf5_file.create_dataset("LocalCorr", data = cr, dtype = "float64", chunks = True)
+            hdf5_file.create_dataset("PN", data = pnr, dtype = "float64", chunks = True)
+
+    except Exception as error:
+        utils.print_error(error, cm_defs.Messages.SAVE_TO_HDF5)
+
 
 def save_caiman_to_doric(
     Y: np.ndarray,

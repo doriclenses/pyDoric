@@ -17,6 +17,8 @@ class Messages:
 
     PROCESS_DONE                = "The process is done"
 
+    SAVE_TO_HDF5                = "Saving to hdf5"
+
 class Folder:
     """
     Folder Name
