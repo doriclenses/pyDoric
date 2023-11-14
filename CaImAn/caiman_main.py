@@ -181,9 +181,6 @@ def preview(caiman_params: cm_params.CaimanParameters):
     # Import for CaimAn lib
     from summary_images import correlation_pnr
 
-    print(" Danse parameters", caiman_params.danse_parameters)
-    print("Preview", caiman_params.preview_parameters)
-
     #To be deprecated
     kwargs       = caiman_params.paths
     params_doric = caiman_params.parameters
