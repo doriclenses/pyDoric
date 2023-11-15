@@ -53,7 +53,7 @@ def main(caiman_parameters):
 
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
-    file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Preview.FILEPATH], 'r')
+    file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
     if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
         images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
     else:
@@ -146,7 +146,7 @@ def main(caiman_parameters):
             bit_count=attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
             qt_format=attrs[defs.DoricFile.Attribute.Image.FORMAT],
             imagesStackUsername=attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-            vname=caiman_parameters.paths[defs.Parameters.Preview.FILEPATH],
+            vname=caiman_parameters.paths[defs.Parameters.Path.FILEPATH],
             vpath=f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
             vdataset=f"{series}/{sensor}/",
             params_doric = parameters,
@@ -177,7 +177,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     video_stop_frame    = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE][1]
 
 
-    with h5py.File(kwargs[defs.Parameters.Preview.FILEPATH], 'r') as file_:
+    with h5py.File(kwargs[defs.Parameters.Path.FILEPATH], 'r') as file_:
         if defs.DoricFile.Dataset.IMAGE_STACK in file_[kwargs[defs.Parameters.Path.H5PATH]]:
             images = np.array(file_[f"{kwargs[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
         else:
