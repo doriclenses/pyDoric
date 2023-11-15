@@ -21,7 +21,7 @@ from multiprocessing import freeze_support
 freeze_support()
 
 
-def main(caiman_params):
+def main(caiman_parameters):
 
         # Import for CaimAn lib
     import caiman as cm
@@ -33,10 +33,10 @@ def main(caiman_params):
     """
     MiniAn CNMF algorithm
     """
-    parameters        = caiman_params.parameters
-    params_caiman     = caiman_params.params_caiman
-    advanced_settings = caiman_params.advanced_settings
-    fr                = caiman_params.fr
+    parameters        = caiman_parameters.parameters
+    params_caiman     = caiman_parameters.params_caiman
+    advanced_settings = caiman_parameters.advanced_settings
+    fr                = caiman_parameters.fr
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -53,17 +53,17 @@ def main(caiman_params):
 
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
-    file_ = h5py.File(caiman_params.paths[defs.Parameters.Preview.FILEPATH], 'r')
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_params.paths[defs.Parameters.Path.H5PATH]]:
-        images = np.array(file_[f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
+    file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Preview.FILEPATH], 'r')
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
+        images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
     else:
-        images = np.array(file_[f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
+        images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
 
     logging.debug(images.shape)
 
     images = images.transpose(2, 0, 1)
-    h5path_list = caiman_params.paths[defs.Parameters.Path.H5PATH].split('/')
-    fname_tif = os.path.join(caiman_params.paths[defs.Parameters.Path.TMP_DIR], f"tiff_{'_'.join(caiman_params.get_h5path_names()[2:4])}.tif")
+    h5path_list = caiman_parameters.paths[defs.Parameters.Path.H5PATH].split('/')
+    fname_tif = os.path.join(caiman_parameters.paths[defs.Parameters.Path.TMP_DIR], f"tiff_{'_'.join(caiman_parameters.get_h5path_names()[2:4])}.tif")
     print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
     imwrite(fname_tif, images)
     del images
@@ -120,13 +120,13 @@ def main(caiman_params):
     ### Save results to doric file ###
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     # Get paramaters of the operation on source data
-    data, driver, operation, series, sensor = caiman_params.get_h5path_names()
+    data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_params.paths[defs.Parameters.Path.H5PATH]]:
-        attrs = utils.load_attributes(file_, f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
+        attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
     else:
-        attrs = utils.load_attributes(file_, f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
+        attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
     file_.close()
 
@@ -146,7 +146,7 @@ def main(caiman_params):
             bit_count=attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
             qt_format=attrs[defs.DoricFile.Attribute.Image.FORMAT],
             imagesStackUsername=attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-            vname=caiman_params.paths[defs.Parameters.Preview.FILEPATH],
+            vname=caiman_parameters.paths[defs.Parameters.Preview.FILEPATH],
             vpath=f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
             vdataset=f"{series}/{sensor}/",
             params_doric = parameters,
@@ -159,7 +159,7 @@ def main(caiman_params):
 
 
 
-def preview(caiman_params: cm_params.CaimanParameters):
+def preview(caiman_parameters: cm_params.CaimanParameters):
     """
     in HDF5 file
     """
@@ -168,13 +168,13 @@ def preview(caiman_params: cm_params.CaimanParameters):
     from summary_images import correlation_pnr
 
     #To be deprecated
-    kwargs       = caiman_params.paths
-    params_doric = caiman_params.parameters
+    kwargs       = caiman_parameters.paths
+    params_doric = caiman_parameters.parameters
 
     #********************
 
-    video_start_frame   = caiman_params.preview_parameters[defs.Parameters.Preview.RANGE][0]
-    video_stop_frame    = caiman_params.preview_parameters[defs.Parameters.Preview.RANGE][1]
+    video_start_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE][0]
+    video_stop_frame    = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE][1]
 
 
     with h5py.File(kwargs[defs.Parameters.Preview.FILEPATH], 'r') as file_:
@@ -194,7 +194,7 @@ def preview(caiman_params: cm_params.CaimanParameters):
     pnr[np.isnan(pnr)] = 0
 
     try:
-        with h5py.File(caiman_params.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
+        with h5py.File(caiman_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = cr, dtype = "float64", chunks = True)
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.PN, data = pnr, dtype = "float64", chunks = True)
 
