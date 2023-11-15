@@ -167,21 +167,13 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     # Import for CaimAn lib
     from summary_images import correlation_pnr
 
-    #To be deprecated
-    kwargs       = caiman_parameters.paths
-    params_doric = caiman_parameters.parameters
+    video_start_frame, video_stop_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE]
 
-    #********************
-
-    video_start_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE][0]
-    video_stop_frame    = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE][1]
-
-
-    with h5py.File(kwargs[defs.Parameters.Path.FILEPATH], 'r') as file_:
-        if defs.DoricFile.Dataset.IMAGE_STACK in file_[kwargs[defs.Parameters.Path.H5PATH]]:
-            images = np.array(file_[f"{kwargs[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
+    with h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
+        if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
+            images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
         else:
-            images = np.array(file_[f"{kwargs[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
+            images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::caiman_parameters.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
