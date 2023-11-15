@@ -73,9 +73,9 @@ def main(caiman_parameters):
     opts = params.CNMFParams(params_dict=params_caiman)
     opts, advanced_settings = set_advanced_parameters(opts, advanced_settings)
     #Update AdvancedSettings
-    parameters["AdvancedSettings"] = advanced_settings.copy()
+    parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
-    if bool(parameters["CorrectMotion"]):
+    if bool(parameters[defs.Parameters.danse.CORRECT_MOTION]):
         # MOTION CORRECTION
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
@@ -184,7 +184,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
             images = np.array(file_[f"{kwargs[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
-    images = images[:, :, ::params_doric['TemporalDownsample']]
+    images = images[:, :, ::caiman_parameters.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
 
     images = images.transpose(2, 0, 1)
 
