@@ -19,6 +19,15 @@ class CaimanParameters:
         self.paths   = danse_parameters.get("paths", {})
         self.parameters  = danse_parameters.get("parameters", {})
 
+        # to deprecated use function in utils when there
+        h5path = self.paths['h5path']
+        if h5path[0] == '/':
+            h5path = h5path[1:]
+        if h5path[-1] == '/':
+            h5path = h5path[:-1]
+        #*****************
+        self.paths['h5path'] = h5path
+
         self.preview = False
         if defs.Parameters.Main.PREVIEW in danse_parameters:
             self.preview = True
@@ -80,4 +89,22 @@ class CaimanParameters:
             }
 
         self.advanced_settings = parameters.get("AdvancedSettings", {})
+
+
+
+        def get_h5path_names(self):
+
+            """
+            Split the path to dataset into relevant names
+            """
+
+            h5path_names = self.path["h5path"]
+
+            data = h5path_names[0]
+            driver = h5path_names[1]
+            operation = h5path_names[2]
+            series = h5path_names[-2]
+            sensor = h5path_names[-1]
+
+            return [data, driver, operation, series, sensor]
 

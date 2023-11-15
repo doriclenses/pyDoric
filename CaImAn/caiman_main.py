@@ -57,9 +57,9 @@ def main(caiman_params):
 
     file_ = h5py.File(paths["fname"], 'r')
     if defs.DoricFile.Dataset.IMAGE_STACK in file_[paths["h5path"]]:
-        images = np.array(file_[paths['h5path']+defs.DoricFile.Dataset.IMAGE_STACK])
+        images = np.array(file_[f"{paths['h5path']}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
     else:
-        images = np.array(file_[paths['h5path']+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
+        images = np.array(file_[f"{paths['h5path']}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
 
     logging.debug(images.shape)
 
@@ -121,19 +121,8 @@ def main(caiman_params):
 
     ### Save results to doric file ###
     print(cm_defs.Messages.SAVING_DATA, flush=True)
-    # Get the path from the source data
-    h5path = paths['h5path']
-    if h5path[0] == '/':
-        h5path = h5path[1:]
-    if h5path[-1] == '/':
-        h5path = h5path[:-1]
-    h5path_names = h5path.split('/')
-    data = h5path_names[0]
-    driver = h5path_names[1]
-    operation = h5path_names[2]
-    series = h5path_names[-2]
-    sensor = h5path_names[-1]
     # Get paramaters of the operation on source data
+    data, driver, operation, series, sensor = caiman_params_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
     if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_params.paths["h5path"]]:
