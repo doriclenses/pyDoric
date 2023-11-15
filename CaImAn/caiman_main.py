@@ -57,7 +57,10 @@ def main(caiman_params):
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
     with h5py.File(paths["fname"], 'r') as f:
-        images = np.array(f[paths['h5path']+IMAGE_STACK])
+        if defs.DoricFile.Dataset.IMAGE_STACK in f[paths["h5path"]]:
+            images = np.array(f[paths['h5path']+defs.DoricFile.Dataset.IMAGE_STACK])
+        else:
+            images = np.array(f[paths['h5path']+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
 
     logging.debug(images.shape)
 
@@ -192,10 +195,10 @@ def preview(caiman_params: cm_params.CaimanParameters):
 
 
     with h5py.File(kwargs["fname"], 'r') as f:
-        try:
-            images = np.array(f[kwargs['h5path']+'ImageStack'])
-        except:
-            images = np.array(f[kwargs['h5path']+'ImagesStack'])
+        if defs.DoricFile.Dataset.IMAGE_STACK in f[kwargs["h5path"]]:
+            images = np.array(f[kwargs['h5path']+defs.DoricFile.Dataset.IMAGE_STACK])
+        else:
+            images = np.array(f[kwargs['h5path']+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::params_doric['TemporalDownsample']]
