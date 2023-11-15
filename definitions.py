@@ -81,16 +81,18 @@ class Parameters:
         Parameters of danse Find Cells operation
         """
 
-        NEURO_DIAM_MIN      = "NeuronDiameterMin"
-        NEURO_DIAM_MAX      = "NeuronDiameterMax"
-        TEMPORAL_DOWNSAMPLE = "TemporalDownsample"
-        SPATIAL_DOWNSAMPLE  = "SpatialDownsample"
-        NOISE_FREQ          = "NoiseFreq"
-        THRES_CORR          = "ThresCorr"
-        SPATIAL_PENALTY     = "SpatialPenalty"
-        TEMPORAL_PENALTY    = "TemporalPenalty"
-        CORRECT_MOTION      = "CorrectMotion"
-        ADVANCED_SETTINGS   = "AdvancedSettings"
+        NEURO_DIAM_MIN       = "NeuronDiameterMin"
+        NEURO_DIAM_MAX       = "NeuronDiameterMax"
+        TEMPORAL_DOWNSAMPLE  = "TemporalDownsample"
+        SPATIAL_DOWNSAMPLE   = "SpatialDownsample"
+        NOISE_FREQ           = "NoiseFreq"
+        THRES_CORR           = "ThresCorr"
+        SPATIAL_PENALTY      = "SpatialPenalty"
+        TEMPORAL_PENALTY     = "TemporalPenalty"
+        CORRECT_MOTION       = "CorrectMotion"
+        ADVANCED_SETTINGS    = "AdvancedSettings"
+        LOCAL_CORR_THRESHOLD = "CorrelationThreshold";
+        PNR_THRESHOLD        = "PNRThreshold";
         # CrossReg parameters HERE
 
 

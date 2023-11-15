@@ -47,7 +47,7 @@ class CaimanParameters:
         dims, T = utils.get_dims(self.paths[defs.Parameters.Path.FILEPATH], f"{self.paths[defs.Parameters.Path.H5PATH]}/{IMAGE_STACK}")
 
 
-        neuron_diameter = tuple([self.parameters["NeuronDiameterMin"], self.parameters["NeuronDiameterMax"]])
+        neuron_diameter = tuple([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
 
         self.params_caiman = {
             'fr': fr,
@@ -65,8 +65,8 @@ class CaimanParameters:
             'gSig': (neuron_diameter[0], neuron_diameter[0]),
             'merge_thr': 0.8,
             'p': 1,
-            'tsub': self.parameters["TemporalDownsample"],
-            'ssub': self.parameters["SpatialDownsample"],
+            'tsub': self.parameters[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE],
+            'ssub': self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
             'rf': neuron_diameter[-1]*4,
             'stride': neuron_diameter[-1]*2,
             'only_init': True,    # set it to True to run CNMF-E
@@ -75,8 +75,8 @@ class CaimanParameters:
             'method_deconvolution': 'oasis',       # could use 'cvxpy' alternatively
             'low_rank_background': None,
             'update_background_components': True,  # sometimes setting to False improve the results
-            'min_corr': self.parameters["CorrelationThreshold"],
-            'min_pnr': self.parameters["PNRThreshold"],
+            'min_corr': self.parameters[defs.Parameters.danse.LOCAL_CORR_THRESHOLD],
+            'min_pnr': self.parameters[defs.Parameters.danse.PNR_THRESHOLD],
             'normalize_init': False,               # just leave as is
             'center_psf': True,                    # leave as is for 1 photon
             'ssub_B': 2,
@@ -85,7 +85,7 @@ class CaimanParameters:
             'use_cnn': False
             }
 
-        self.advanced_settings = self.parameters.get("AdvancedSettings", {})
+        self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
 
 
 
