@@ -92,19 +92,19 @@ class CaimanParameters:
 
 
 
-        def get_h5path_names(self):
+    def get_h5path_names(self):
 
-            """
-            Split the path to dataset into relevant names
-            """
+        """
+        Split the path to dataset into relevant names
+        """
 
-            h5path_names = self.path[defs.Parameters.Path.H5PATH]
+        h5path_names = self.paths[defs.Parameters.Path.H5PATH]
 
-            data = h5path_names[0]
-            driver = h5path_names[1]
-            operation = h5path_names[2]
-            series = h5path_names[-2]
-            sensor = h5path_names[-1]
+        data = h5path_names[0]
+        driver = h5path_names[1]
+        operation = h5path_names[2]
+        series = h5path_names[-2]
+        sensor = h5path_names[-1]
 
-            return [data, driver, operation, series, sensor]
+        return [data, driver, operation, series, sensor]
 
