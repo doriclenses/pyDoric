@@ -31,8 +31,8 @@ class DoricFile:
     """
     Names of the .doric file structue
     """
-
-    _ = ""
+    class Group:
+        _ = ""
 
 
 class Preview:
@@ -40,6 +40,13 @@ class Preview:
     """
     Names of the HDF5 preview file structue
     """
+    class Group:
+        _ = ""
 
-    _ = ""
+    class Dataset:
+        LOCALCORR = "LocalCorr"
+        PN        = "PN"
+
+    class Attribute:
+        _ = ""
 
