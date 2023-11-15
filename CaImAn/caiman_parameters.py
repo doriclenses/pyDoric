@@ -33,11 +33,8 @@ class CaimanParameters:
             self.preview = True
             self.preview_parameters = danse_parameters[defs.Parameters.Main.PREVIEW]
 
-        # To be deprecated
-        self.danse_parameters = danse_parameters
 
-        self.IMAGE_STACK = 'ImageStack'
-        IMAGE_STACK = self.IMAGE_STACK
+        IMAGE_STACK = 'ImageStack'
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as f:
             if IMAGE_STACK not in f[self.paths[defs.Parameters.Path.H5PATH]]:
                 IMAGE_STACK = "ImagesStack"
