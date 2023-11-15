@@ -45,9 +45,9 @@ class CaimanParameters:
             if IMAGE_STACK not in f[self.paths[defs.Parameters.Path.H5PATH]]:
                 IMAGE_STACK = "ImagesStack"
 
-        self.fr = utils.get_frequency(self.paths['fname'], self.paths[defs.Parameters.Path.H5PATH]+'Time')
+        self.fr = utils.get_frequency(self.paths['fname'], f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}")
         fr = self.fr
-        dims, T = utils.get_dims(self.paths['fname'], self.paths[defs.Parameters.Path.H5PATH]+IMAGE_STACK)
+        dims, T = utils.get_dims(self.paths['fname'], f"{self.paths[defs.Parameters.Path.H5PATH]}/{IMAGE_STACK}")
 
 
         neuron_diameter = tuple([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])

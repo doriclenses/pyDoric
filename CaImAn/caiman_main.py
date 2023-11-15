@@ -177,11 +177,11 @@ def preview(caiman_params: cm_params.CaimanParameters):
     video_stop_frame    = caiman_params.preview_parameters[defs.Parameters.Preview.RANGE][1]
 
 
-    with h5py.File(kwargs["fname"], 'r') as f:
-        if defs.DoricFile.Dataset.IMAGE_STACK in f[kwargs[defs.Parameters.Path.H5PATH]]:
-            images = np.array(f[kwargs[defs.Parameters.Path.H5PATH]+defs.DoricFile.Dataset.IMAGE_STACK])
+    with h5py.File(kwargs["fname"], 'r') as file_:
+        if defs.DoricFile.Dataset.IMAGE_STACK in file_[kwargs[defs.Parameters.Path.H5PATH]]:
+            images = np.array(file_[f"{kwargs[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
         else:
-            images = np.array(f[kwargs[defs.Parameters.Path.H5PATH]+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
+            images = np.array(file_[f"{kwargs[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::params_doric['TemporalDownsample']]
