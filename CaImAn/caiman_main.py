@@ -36,7 +36,6 @@ def main(caiman_parameters):
     parameters        = caiman_parameters.parameters
     params_caiman     = caiman_parameters.params_caiman
     advanced_settings = caiman_parameters.advanced_settings
-    fr                = caiman_parameters.fr
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -128,6 +127,8 @@ def main(caiman_parameters):
     else:
         attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
+    time_ = np.array(file_[f"{caiman_parameters.clean_h5path()}/{defs.DoricFile.Dataset.TIME}"])
+
     file_.close()
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
@@ -141,19 +142,19 @@ def main(caiman_parameters):
             cnm.estimates.A[:,cnm.estimates.idx_components],
             cnm.estimates.C[cnm.estimates.idx_components,:],
             cnm.estimates.S[cnm.estimates.idx_components,:],
-            fr=fr,
-            shape=(dims[0],dims[1],T),
-            bit_count=attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
-            qt_format=attrs[defs.DoricFile.Attribute.Image.FORMAT],
-            imagesStackUsername=attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-            vname=caiman_parameters.paths[defs.Parameters.Path.FILEPATH],
-            vpath=f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
-            vdataset=f"{series}/{sensor}/",
+            time_= time_,
+            shape = (dims[0],dims[1],T),
+            bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
+            qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
+            imagesStackUsername = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
+            vname = caiman_parameters.paths[defs.Parameters.Path.FILEPATH],
+            vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
+            vdataset = f"{series}/{sensor}/",
             params_doric = parameters,
             params_source = params_source_data,
-            saveimages=True,
-            saveresiduals=True,
-            savespikes=True)
+            saveimages = True,
+            saveresiduals = True,
+            savespikes = True)
 
     cm.stop_server(dview=dview)
 
@@ -200,7 +201,7 @@ def save_caiman_to_doric(
     C: np.ndarray,
     S: np.ndarray,
     shape,
-    fr: int,
+    time_: np.array,
     bit_count: int,
     qt_format: int,
     imagesStackUsername: str,
@@ -233,8 +234,6 @@ def save_caiman_to_doric(
     res = res.reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
     A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1))
-
-    time_ = np.arange(0, shape[2]/fr, 1/fr, dtype='float64')
 
     print(cm_defs.Messages.GEN_ROI_NAMES)
     names = []
