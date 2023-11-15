@@ -98,7 +98,7 @@ class CaimanParameters:
         Split the path to dataset into relevant names
         """
 
-        h5path_names = self.paths[defs.Parameters.Path.H5PATH]
+        h5path_names = self.paths[defs.Parameters.Path.H5PATH].split('/')
 
         data = h5path_names[0]
         driver = h5path_names[1]
