@@ -122,7 +122,7 @@ def main(caiman_params):
     ### Save results to doric file ###
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     # Get paramaters of the operation on source data
-    data, driver, operation, series, sensor = caiman_params_parameters.get_h5path_names()
+    data, driver, operation, series, sensor = caiman_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
     if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_params.paths[defs.Parameters.Path.H5PATH]]:
