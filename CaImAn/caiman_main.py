@@ -38,7 +38,6 @@ def main(caiman_params):
     tmpDirName        = caiman_params.tmpDirName
     params_caiman     = caiman_params.params_caiman
     advanced_settings = caiman_params.advanced_settings
-    IMAGE_STACK       = caiman_params.IMAGE_STACK
     fr                = caiman_params.fr
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -56,11 +55,11 @@ def main(caiman_params):
 
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
-    with h5py.File(paths["fname"], 'r') as f:
-        if defs.DoricFile.Dataset.IMAGE_STACK in f[paths["h5path"]]:
-            images = np.array(f[paths['h5path']+defs.DoricFile.Dataset.IMAGE_STACK])
-        else:
-            images = np.array(f[paths['h5path']+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
+    file_ = h5py.File(paths["fname"], 'r')
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[paths["h5path"]]:
+        images = np.array(file_[paths['h5path']+defs.DoricFile.Dataset.IMAGE_STACK])
+    else:
+        images = np.array(file_[paths['h5path']+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
 
     logging.debug(images.shape)
 
@@ -135,18 +134,12 @@ def main(caiman_params):
     series = h5path_names[-2]
     sensor = h5path_names[-1]
     # Get paramaters of the operation on source data
-    params_source_data = utils.load_attributes(paths['fname'], data+'/'+driver+'/'+operation)
+    params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(paths['fname'], paths['h5path']+'/'+IMAGE_STACK)
-
-    # Parameters
-    # Set only "Operations" for params_srouce_data
-    if "OperationName" in params_source_data:
-        if "Operations" not in params_source_data:
-            params_source_data["Operations"] = params_source_data["OperationName"]
-
-        del params_source_data["OperationName"]
-
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_params.paths["h5path"]]:
+        attrs = utils.load_attributes(file_, f"{caiman_params.paths["h5path"]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
+    else:
+        attrs = utils.load_attributes(file_, f"{caiman_params.paths["h5path"]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
@@ -174,6 +167,7 @@ def main(caiman_params):
             savespikes=True)
 
     cm.stop_server(dview=dview)
+    file_.close()
 
 
 def preview(caiman_params: cm_params.CaimanParameters):

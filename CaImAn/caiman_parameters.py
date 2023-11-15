@@ -26,20 +26,19 @@ class CaimanParameters:
 
         # To be deprecated
         self.danse_parameters = danse_parameters
-        paths = self.paths
         parameters = self.parameters
 
-        self.tmpDirName   = paths["tmpDir"]
+        self.tmpDirName   = self.paths["tmpDir"]
 
         self.IMAGE_STACK = 'ImageStack'
         IMAGE_STACK = self.IMAGE_STACK
-        with h5py.File(paths["fname"], 'r') as f:
-            if IMAGE_STACK not in f[paths['h5path']]:
+        with h5py.File(self.paths["fname"], 'r') as f:
+            if IMAGE_STACK not in f[self.paths['h5path']]:
                 IMAGE_STACK = "ImagesStack"
 
-        self.fr = utils.get_frequency(paths['fname'], paths['h5path']+'Time')
+        self.fr = utils.get_frequency(self.paths['fname'], self.paths['h5path']+'Time')
         fr = self.fr
-        dims, T = utils.get_dims(paths['fname'], paths['h5path']+IMAGE_STACK)
+        dims, T = utils.get_dims(self.paths['fname'], self.paths['h5path']+IMAGE_STACK)
 
 
         neuron_diameter = tuple([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])
