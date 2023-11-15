@@ -127,7 +127,7 @@ def main(caiman_parameters):
     else:
         attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
-    time_ = np.array(file_[f"{caiman_parameters.clean_h5path()}/{defs.DoricFile.Dataset.TIME}"])
+    time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
