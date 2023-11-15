@@ -56,15 +56,15 @@ def main(caiman_params):
     c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
 
     file_ = h5py.File(paths["fname"], 'r')
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[paths["h5path"]]:
-        images = np.array(file_[f"{paths['h5path']}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[paths[defs.Parameters.Path.H5PATH]]:
+        images = np.array(file_[f"{paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
     else:
-        images = np.array(file_[f"{paths['h5path']}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
+        images = np.array(file_[f"{paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
 
     logging.debug(images.shape)
 
     images = images.transpose(2, 0, 1)
-    h5path_list = paths['h5path'].split('/')
+    h5path_list = paths[defs.Parameters.Path.H5PATH].split('/')
     fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
     print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
     imwrite(fname_tif, images)
@@ -125,10 +125,10 @@ def main(caiman_params):
     data, driver, operation, series, sensor = caiman_params_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_params.paths["h5path"]]:
-        attrs = utils.load_attributes(file_, f"{caiman_params.paths["h5path"]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_params.paths[defs.Parameters.Path.H5PATH]]:
+        attrs = utils.load_attributes(file_, f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
     else:
-        attrs = utils.load_attributes(file_, f"{caiman_params.paths["h5path"]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
+        attrs = utils.load_attributes(file_, f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
@@ -178,10 +178,10 @@ def preview(caiman_params: cm_params.CaimanParameters):
 
 
     with h5py.File(kwargs["fname"], 'r') as f:
-        if defs.DoricFile.Dataset.IMAGE_STACK in f[kwargs["h5path"]]:
-            images = np.array(f[kwargs['h5path']+defs.DoricFile.Dataset.IMAGE_STACK])
+        if defs.DoricFile.Dataset.IMAGE_STACK in f[kwargs[defs.Parameters.Path.H5PATH]]:
+            images = np.array(f[kwargs[defs.Parameters.Path.H5PATH]+defs.DoricFile.Dataset.IMAGE_STACK])
         else:
-            images = np.array(f[kwargs['h5path']+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
+            images = np.array(f[kwargs[defs.Parameters.Path.H5PATH]+defs.DoricFile.Deprecated.Dataset.IMAGES_STACK])
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::params_doric['TemporalDownsample']]

@@ -20,13 +20,13 @@ class CaimanParameters:
         self.parameters  = danse_parameters.get("parameters", {})
 
         # to deprecated use function in utils when there
-        h5path = self.paths['h5path']
+        h5path = self.paths[defs.Parameters.Path.H5PATH]
         if h5path[0] == '/':
             h5path = h5path[1:]
         if h5path[-1] == '/':
             h5path = h5path[:-1]
         #*****************
-        self.paths['h5path'] = h5path
+        self.paths[defs.Parameters.Path.H5PATH] = h5path
 
         self.preview = False
         if defs.Parameters.Main.PREVIEW in danse_parameters:
@@ -42,12 +42,12 @@ class CaimanParameters:
         self.IMAGE_STACK = 'ImageStack'
         IMAGE_STACK = self.IMAGE_STACK
         with h5py.File(self.paths["fname"], 'r') as f:
-            if IMAGE_STACK not in f[self.paths['h5path']]:
+            if IMAGE_STACK not in f[self.paths[defs.Parameters.Path.H5PATH]]:
                 IMAGE_STACK = "ImagesStack"
 
-        self.fr = utils.get_frequency(self.paths['fname'], self.paths['h5path']+'Time')
+        self.fr = utils.get_frequency(self.paths['fname'], self.paths[defs.Parameters.Path.H5PATH]+'Time')
         fr = self.fr
-        dims, T = utils.get_dims(self.paths['fname'], self.paths['h5path']+IMAGE_STACK)
+        dims, T = utils.get_dims(self.paths['fname'], self.paths[defs.Parameters.Path.H5PATH]+IMAGE_STACK)
 
 
         neuron_diameter = tuple([parameters["NeuronDiameterMin"], parameters["NeuronDiameterMax"]])
@@ -98,7 +98,7 @@ class CaimanParameters:
             Split the path to dataset into relevant names
             """
 
-            h5path_names = self.path["h5path"]
+            h5path_names = self.path[defs.Parameters.Path.H5PATH]
 
             data = h5path_names[0]
             driver = h5path_names[1]
