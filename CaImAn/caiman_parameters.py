@@ -37,8 +37,6 @@ class CaimanParameters:
         self.danse_parameters = danse_parameters
         parameters = self.parameters
 
-        self.tmpDirName   = self.paths["tmpDir"]
-
         self.IMAGE_STACK = 'ImageStack'
         IMAGE_STACK = self.IMAGE_STACK
         with h5py.File(self.paths["fname"], 'r') as f:
