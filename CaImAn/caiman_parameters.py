@@ -16,8 +16,8 @@ class CaimanParameters:
 
     def __init__(self, danse_parameters):
 
-        self.paths   = danse_parameters.get("paths", {})
-        self.parameters  = danse_parameters.get("parameters", {})
+        self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
+        self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
 
         # to deprecated use function in utils when there
         h5path = self.paths[defs.Parameters.Path.H5PATH]
