@@ -65,7 +65,7 @@ def main(caiman_params):
 
     images = images.transpose(2, 0, 1)
     h5path_list = paths[defs.Parameters.Path.H5PATH].split('/')
-    fname_tif = os.path.join(tmpDirName, 'tiff' + '_' + h5path_list[3] + h5path_list[4] + h5path_list[5] + '.tif')
+    fname_tif = os.path.join(tmpDirName, f"tiff_{'_'.join(caiman_params.get_h5path_names()[2:4])}.tif")
     print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
     imwrite(fname_tif, images)
     del images
@@ -130,6 +130,8 @@ def main(caiman_params):
     else:
         attrs = utils.load_attributes(file_, f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
+    file_.close()
+
     Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
     Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
 
@@ -156,7 +158,7 @@ def main(caiman_params):
             savespikes=True)
 
     cm.stop_server(dview=dview)
-    file_.close()
+
 
 
 def preview(caiman_params: cm_params.CaimanParameters):
