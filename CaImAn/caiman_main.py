@@ -146,7 +146,7 @@ def main(caiman_parameters):
             shape = (dims[0],dims[1],T),
             bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
             qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
-            imagesStackUsername = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
+            username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
             vname = caiman_parameters.paths[defs.Parameters.Path.FILEPATH],
             vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
             vdataset = f"{series}/{sensor}/",
@@ -204,7 +204,7 @@ def save_caiman_to_doric(
     time_: np.array,
     bit_count: int,
     qt_format: int,
-    imagesStackUsername: str,
+    username: str,
     vname: str = "caiman.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
     vdataset: str = 'Series1/Sensor1/',
@@ -239,13 +239,13 @@ def save_caiman_to_doric(
     names = []
     roiUsernames = []
     for i in range(len(C)):
-        names.append('ROI'+str(i+1).zfill(4))
-        roiUsernames.append('ROI {}'.format(i+1))
+        names.append("ROI"+str(i+1).zfill(4))
+        roiUsernames.append(f"ROI {i+1}")
 
     with h5py.File(vname, 'a') as f:
 
         # Check if CaImAn results already exist
-        operationCount = ''
+        operationCount = ""
         if vpath in f:
             operations = [ name for name in f[vpath] if cm_defs.DoricFile.Group.ROISIGNALS in name ]
             if len(operations) > 0:
@@ -254,7 +254,7 @@ def save_caiman_to_doric(
                     operationAttrs = utils.load_attributes(f, vpath+operation)
                     if utils.merge_params(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(cm_defs.DoricFile.Group.ROISIGNALS)):
-                            operationCount = ''
+                            operationCount = ""
                         else:
                             operationCount = operation[-1]
 
@@ -278,14 +278,14 @@ def save_caiman_to_doric(
         if saveimages:
             print(cm_defs.Messages.SAVE_IMAGES)
             pathImages = vpath+cm_defs.DoricFile.Group.IMAGES+operationCount+'/'
-            utils.save_images(AC, time_, f, pathImages+vdataset, bit_count=bit_count, qt_format=qt_format, username=imagesStackUsername)
+            utils.save_images(AC, time_, f, pathImages+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathImages+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print(cm_defs.Messages.SAVE_RES_IMAGES)
             pathResiduals = vpath+cm_defs.DoricFile.Group.RESIDUALS+operationCount+'/'
-            utils.save_images(res, time_, f, pathResiduals+vdataset, bit_count=bit_count, qt_format=qt_format, username=imagesStackUsername)
+            utils.save_images(res, time_, f, pathResiduals+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathResiduals+vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
