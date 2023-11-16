@@ -79,8 +79,6 @@ class CaimanParameters:
             'use_cnn': False
             }
 
-        self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
-
 
 
     def get_h5path_names(self):

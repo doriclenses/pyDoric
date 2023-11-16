@@ -33,9 +33,6 @@ def main(caiman_parameters):
     """
     MiniAn CNMF algorithm
     """
-    parameters        = caiman_parameters.parameters
-    params_caiman     = caiman_parameters.params_caiman
-    advanced_settings = caiman_parameters.advanced_settings
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -67,19 +64,19 @@ def main(caiman_parameters):
     imwrite(fname_tif, images)
     del images
 
-    params_caiman['fnames'] = [fname_tif]
+    caiman_parameters.params_caiman['fnames'] = [fname_tif]
 
-    opts = params.CNMFParams(params_dict=params_caiman)
-    opts, advanced_settings = set_advanced_parameters(opts, advanced_settings)
+    opts = params.CNMFParams(params_dict=caiman_parameters.params_caiman)
+    opts, advanced_settings = set_advanced_parameters(opts, caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS])
     #Update AdvancedSettings
-    parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
+    caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
-    if bool(parameters[defs.Parameters.danse.CORRECT_MOTION]):
+    if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
         # MOTION CORRECTION
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = MotionCorrect(params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
+            mc = MotionCorrect(caiman_parameters.params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
@@ -88,13 +85,13 @@ def main(caiman_parameters):
             sys.exit()
 
         mc.motion_correct(save_movie=True)
-        fname_mc = mc.fname_tot_els if params_caiman['pw_rigid'] else mc.fname_tot_rig
+        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman['pw_rigid'] else mc.fname_tot_rig
 
-        bord_px = 0 if params_caiman['border_nan'] == 'copy' else params_caiman['bord_px']
+        bord_px = 0 if caiman_parameters.params_caiman['border_nan'] == 'copy' else caiman_parameters.params_caiman['bord_px']
         fname_new = cm.save_memmap(fname_mc, base_name='memmap_', order='C', border_to_0=bord_px)
 
     else:  # if no motion correction just memory map the file
-        fname_new = cm.save_memmap(params_caiman['fnames'], base_name='memmap_', order='C', border_to_0=0)
+        fname_new = cm.save_memmap(caiman_parameters.params_caiman['fnames'], base_name='memmap_', order='C', border_to_0=0)
 
 
     # load memory mappable file
@@ -150,7 +147,7 @@ def main(caiman_parameters):
             vname = caiman_parameters.paths[defs.Parameters.Path.FILEPATH],
             vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
             vdataset = f"{series}/{sensor}/",
-            params_doric = parameters,
+            params_doric = caiman_parameters.parameters,
             params_source = params_source_data,
             saveimages = True,
             saveresiduals = True,
