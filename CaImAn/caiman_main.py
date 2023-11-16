@@ -57,14 +57,9 @@ def main(caiman_parameters):
 
     logging.debug(images.shape)
 
-    images = images.transpose(2, 0, 1)
-    h5path_list = caiman_parameters.paths[defs.Parameters.Path.H5PATH].split('/')
-    fname_tif = os.path.join(caiman_parameters.paths[defs.Parameters.Path.TMP_DIR], f"tiff_{'_'.join(caiman_parameters.get_h5path_names()[2:4])}.tif")
     print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
-    imwrite(fname_tif, images)
+    imwrite(caiman_parameters.params_caiman["fnames"], images.transpose(2, 0, 1))
     del images
-
-    caiman_parameters.params_caiman['fnames'] = [fname_tif]
 
     opts_dict, advanced_settings = set_advanced_parameters(params.CNMFParams(params_dict=caiman_parameters.params_caiman),
                                                             caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS])

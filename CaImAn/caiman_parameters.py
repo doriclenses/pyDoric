@@ -1,4 +1,4 @@
-
+import os
 import h5py
 import sys
 import numpy as np
@@ -77,6 +77,7 @@ class CaimanParameters:
             "ring_size_factor": 1.4,
             "del_duplicates": True,
             "use_cnn": False,
+            "fnames": os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], f"tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif")
             }
 
 
