@@ -61,10 +61,11 @@ def main(caiman_parameters):
     imwrite(caiman_parameters.params_caiman["fnames"], images.transpose(2, 0, 1))
     del images
 
-    opts_dict, advanced_settings = set_advanced_parameters(params.CNMFParams(params_dict=caiman_parameters.params_caiman),
-                                                            caiman_parameters.advanced_settings)
+    opts = params.CNMFParams(params_dict=caiman_parameters.params_caiman)
+    opts_dict, advanced_settings = set_advanced_parameters(opts, caiman_parameters.advanced_settings)
+
     #Update parameters and Advanced Setting
-    opts = params.CNMFParams(params_dict = opts_dict)
+    opts.change_params(opts_dict)
     caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
     if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
