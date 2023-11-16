@@ -88,7 +88,7 @@ def main(caiman_parameters):
         fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
 
     else:  # if no motion correction just memory map the file
-        fname_new = cm.save_memmap(caiman_parameters.params_caiman["fnames"], base_name="memmap_", order='C', border_to_0=0)
+        fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
 
 
     # load memory mappable file
