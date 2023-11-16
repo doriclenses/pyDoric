@@ -66,9 +66,10 @@ def main(caiman_parameters):
 
     caiman_parameters.params_caiman['fnames'] = [fname_tif]
 
-    opts = params.CNMFParams(params_dict=caiman_parameters.params_caiman)
-    opts, advanced_settings = set_advanced_parameters(opts, caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS])
-    #Update AdvancedSettings
+    opts_dict, advanced_settings = set_advanced_parameters(params.CNMFParams(params_dict=caiman_parameters.params_caiman),
+                                                            caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS])
+    #Update parameters and Advanced Setting
+    opts = params.CNMFParams(params_dict = opts_dict)
     caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
     if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
@@ -319,6 +320,6 @@ def set_advanced_parameters(
                advan_param_keys_used.append(part_key)
 
     #keep only used keys in andvanced parameters
-    advanced_parameters = {key: advanced_parameters[key] for key in advan_param_keys_used}
+    used_advanced_parameters = {key: advanced_parameters[key] for key in advan_param_keys_used}
 
-    return [param, advanced_parameters]
+    return [param_dict, used_advanced_parameters]
