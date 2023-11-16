@@ -80,6 +80,7 @@ class CaimanParameters:
             "fnames": os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], f"tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif")
             }
 
+        self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
 
 
     def get_h5path_names(self):

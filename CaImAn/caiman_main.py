@@ -62,7 +62,7 @@ def main(caiman_parameters):
     del images
 
     opts_dict, advanced_settings = set_advanced_parameters(params.CNMFParams(params_dict=caiman_parameters.params_caiman),
-                                                            caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS])
+                                                            caiman_parameters.advanced_settings)
     #Update parameters and Advanced Setting
     opts = params.CNMFParams(params_dict = opts_dict)
     caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
