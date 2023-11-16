@@ -47,7 +47,7 @@ def main(caiman_parameters):
     except():
         pass
 
-    c, dview, n_processes = setup_cluster(backend='local', n_processes=None, single_thread=False)
+    c, dview, n_processes = setup_cluster(backend="local", n_processes=None, single_thread=False)
 
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
     if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
@@ -77,7 +77,7 @@ def main(caiman_parameters):
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = MotionCorrect(caiman_parameters.params_caiman['fnames'], dview=dview, **opts.get_group('motion'))
+            mc = MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **opts.get_group("motion"))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
@@ -86,13 +86,13 @@ def main(caiman_parameters):
             sys.exit()
 
         mc.motion_correct(save_movie=True)
-        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman['pw_rigid'] else mc.fname_tot_rig
+        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman["pw_rigid"] else mc.fname_tot_rig
 
-        bord_px = 0 if caiman_parameters.params_caiman['border_nan'] == 'copy' else caiman_parameters.params_caiman['bord_px']
-        fname_new = cm.save_memmap(fname_mc, base_name='memmap_', order='C', border_to_0=bord_px)
+        bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
+        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
 
     else:  # if no motion correction just memory map the file
-        fname_new = cm.save_memmap(caiman_parameters.params_caiman['fnames'], base_name='memmap_', order='C', border_to_0=0)
+        fname_new = cm.save_memmap(caiman_parameters.params_caiman["fnames"], base_name="memmap_", order='C', border_to_0=0)
 
 
     # load memory mappable file
@@ -205,7 +205,7 @@ def save_caiman_to_doric(
     username: str,
     vname: str = "caiman.doric",
     vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
-    vdataset: str = 'Series1/Sensor1/',
+    vdataset: str = "Series1/Sensor1/",
     params_doric: Optional[dict] = {},
     params_source: Optional[dict] = {},
     saveimages: bool = True,
@@ -302,7 +302,7 @@ def set_advanced_parameters(
     advanced_parameters
 ):
 
-    '''
+    """
     input:
     param: is a class CNMFParams
     advanced_parameters: dict
@@ -310,7 +310,7 @@ def set_advanced_parameters(
     ouput:
     new param: is a class CNMFParams
     new advanced_parameters: dict
-    '''
+    """
     param_dict = param.to_dict()
     advan_param_keys_used = []
     for param_part_key, param_part_value in param_dict.items():
