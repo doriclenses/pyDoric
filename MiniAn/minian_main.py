@@ -600,7 +600,7 @@ def save_minian_to_doric(
             utils.print_group_path_for_DANSE(pathSpikes_vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
 
-    print(mn_defs.Messages.SAVE_TO.format(path = vname))
+    print(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
 @contextmanager

@@ -223,7 +223,6 @@ def save_caiman_to_doric(
     vpath    = utils.clean_path(vpath)
     vdataset = utils.clean_path(vdataset)
 
-    print("generating traces")
     AC = A.dot(C)
     res = Y - AC
 
@@ -232,7 +231,7 @@ def save_caiman_to_doric(
     A = A.toarray()
     A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1))
 
-    print(cm_defs.Messages.GEN_ROI_NAMES)
+    print(cm_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
     roiUsernames = []
     for i in range(len(C)):
@@ -259,7 +258,7 @@ def save_caiman_to_doric(
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
-        print(cm_defs.Messages.SAVE_ROI_SIG)
+        print(cm_defs.Messages.SAVE_ROI_SIG, flush = True)
         pathROIs          = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         pathROIs_vdataset = f"{pathROIs}/{vdataset}"
         utils.save_roi_signals(C, A, time_, f, pathROIs_vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
@@ -267,7 +266,7 @@ def save_caiman_to_doric(
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
 
         if saveimages:
-            print(cm_defs.Messages.SAVE_IMAGES)
+            print(cm_defs.Messages.SAVE_IMAGES, flush = True)
             pathImages          = f"{vpath}/{cm_defs.DoricFile.Group.IMAGES+operationCount}"
             pathImages_vdataset = f"{pathImages}/{vdataset}"
             utils.save_images(AC, time_, f, pathImages_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
@@ -275,7 +274,7 @@ def save_caiman_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
-            print(cm_defs.Messages.SAVE_RES_IMAGES)
+            print(cm_defs.Messages.SAVE_RES_IMAGES, flush = True)
             pathResiduals          = f"{vpath}/{cm_defs.DoricFile.Group.RESIDUALS+operationCount}"
             pathResiduals_vdataset = f"{pathResiduals}/{vdataset}"
             utils.save_images(res, time_, f, pathResiduals_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
@@ -283,14 +282,14 @@ def save_caiman_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
-            print(cm_defs.Messages.SAVE_SPIKES)
+            print(cm_defs.Messages.SAVE_SPIKES, flush = True)
             pathSpikes          = f"{vpath}/{cm_defs.DoricFile.Group.SPIKES+operationCount}"
             pathSpikes_vdataset = f"{pathSpikes}/{vdataset}"
             utils.save_signals(S > 0, time_, f, pathSpikes_vdataset, names, roiUsernames, range_min=0, range_max=1)
             utils.print_group_path_for_DANSE(pathSpikes_vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
 
-    print(cm_defs.Messages.SAVE_TO.format(path = vname))
+    print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
 def set_advanced_parameters(
