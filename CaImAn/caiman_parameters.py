@@ -18,14 +18,7 @@ class CaimanParameters:
         self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
         self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
 
-        # to deprecated use function in utils when there
-        h5path = self.paths[defs.Parameters.Path.H5PATH]
-        if h5path[0] == '/':
-            h5path = h5path[1:]
-        if h5path[-1] == '/':
-            h5path = h5path[:-1]
-        #*****************
-        self.paths[defs.Parameters.Path.H5PATH] = h5path
+        self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
 
         self.preview = False
         if defs.Parameters.Main.PREVIEW in danse_parameters:
