@@ -31,7 +31,7 @@ def main(caiman_parameters):
     from caiman.motion_correction import MotionCorrect
 
     """
-    MiniAn CNMF algorithm
+    CaImAn CNMF algorithm
     """
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -210,10 +210,7 @@ def save_caiman_to_doric(
 ) -> str:
     """
     Save CaImAn results to .doric file:
-    MiniAnImages - `AC` representing cellular activities as computed by :func:`minian.cnmf.compute_AtC`
-    MiniAnResidualImages - residule movie computed as the difference between `Y` and `AC`
-    MiniAnSignals - `C` with coordinates from `A`
-    MiniAnSpikes - `S`
+
     Since the CNMF algorithm contains various arbitrary scaling process, a normalizing
     scalar is computed with least square using a subset of frames from `Y` and `AC`
     such that their numerical values matches.
