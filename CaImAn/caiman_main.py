@@ -142,8 +142,8 @@ def main(caiman_parameters):
             qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
             username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
             vname = caiman_parameters.paths[defs.Parameters.Path.FILEPATH],
-            vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}/",
-            vdataset = f"{series}/{sensor}/",
+            vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+            vdataset = f"{series}/{sensor}",
             params_doric = caiman_parameters.parameters,
             params_source = params_source_data,
             saveimages = True,
@@ -200,8 +200,8 @@ def save_caiman_to_doric(
     qt_format: int,
     username: str,
     vname: str = "caiman.doric",
-    vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C/",
-    vdataset: str = "Series1/Sensor1/",
+    vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C",
+    vdataset: str = "Series1/Sensor1",
     params_doric: Optional[dict] = {},
     params_source: Optional[dict] = {},
     saveimages: bool = True,
@@ -219,6 +219,9 @@ def save_caiman_to_doric(
     such that their numerical values matches.
 
     """
+
+    vpath    = utils.clean_path(vpath)
+    vdataset = utils.clean_path(vdataset)
 
     print("generating traces")
     AC = A.dot(C)
@@ -245,7 +248,7 @@ def save_caiman_to_doric(
             if len(operations) > 0:
                 operationCount = str(len(operations))
                 for operation in operations:
-                    operationAttrs = utils.load_attributes(f, vpath+operation)
+                    operationAttrs = utils.load_attributes(f, f"{vpath}/{operation}")
                     if utils.merge_params(params_doric, params_source) == operationAttrs:
                         if(len(operation) == len(cm_defs.DoricFile.Group.ROISIGNALS)):
                             operationCount = ""
@@ -254,17 +257,10 @@ def save_caiman_to_doric(
 
                         break
 
-
-        if vpath[-1] != '/':
-            vpath += '/'
-
-        if vdataset[-1] != '/':
-            vdataset += '/'
-
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(cm_defs.Messages.SAVE_ROI_SIG)
-        pathROIs          = vpath+cm_defs.DoricFile.Group.ROISIGNALS+operationCount
+        pathROIs          = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         pathROIs_vdataset = f"{pathROIs}/{vdataset}"
         utils.save_roi_signals(C, A, time_, f, pathROIs_vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
         utils.print_group_path_for_DANSE(pathROIs_vdataset)
@@ -272,7 +268,7 @@ def save_caiman_to_doric(
 
         if saveimages:
             print(cm_defs.Messages.SAVE_IMAGES)
-            pathImages          = vpath+cm_defs.DoricFile.Group.IMAGES+operationCount
+            pathImages          = f"{vpath}/{cm_defs.DoricFile.Group.IMAGES+operationCount}"
             pathImages_vdataset = f"{pathImages}/{vdataset}"
             utils.save_images(AC, time_, f, pathImages_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathImages_vdataset)
@@ -280,7 +276,7 @@ def save_caiman_to_doric(
 
         if saveresiduals:
             print(cm_defs.Messages.SAVE_RES_IMAGES)
-            pathResiduals          = vpath+cm_defs.DoricFile.Group.RESIDUALS+operationCount
+            pathResiduals          = f"{vpath}/{cm_defs.DoricFile.Group.RESIDUALS+operationCount}"
             pathResiduals_vdataset = f"{pathResiduals}/{vdataset}"
             utils.save_images(res, time_, f, pathResiduals_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
             utils.print_group_path_for_DANSE(pathResiduals_vdataset)
@@ -288,7 +284,7 @@ def save_caiman_to_doric(
 
         if savespikes:
             print(cm_defs.Messages.SAVE_SPIKES)
-            pathSpikes          = vpath+cm_defs.DoricFile.Group.SPIKES+operationCount
+            pathSpikes          = f"{vpath}/{cm_defs.DoricFile.Group.SPIKES+operationCount}"
             pathSpikes_vdataset = f"{pathSpikes}/{vdataset}"
             utils.save_signals(S > 0, time_, f, pathSpikes_vdataset, names, roiUsernames, range_min=0, range_max=1)
             utils.print_group_path_for_DANSE(pathSpikes_vdataset)
