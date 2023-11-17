@@ -22,6 +22,9 @@ freeze_support()
 
 
 def main(caiman_parameters):
+    """
+    CaImAn CNMF algorithm
+    """
 
         # Import for CaimAn lib
     import caiman as cm
@@ -29,10 +32,6 @@ def main(caiman_parameters):
     from caiman.source_extraction import cnmf
     from caiman.source_extraction.cnmf import params
     from caiman.motion_correction import MotionCorrect
-
-    """
-    CaImAn CNMF algorithm
-    """
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
