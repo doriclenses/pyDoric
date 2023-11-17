@@ -13,7 +13,7 @@ class Messages:
     NO_CELLS_FOUND      = "No cells where found"
     ADVANCED_BAD_TYPE   = "One of the advanced parameters is not of a python type"
     LOADING_ARGUMENTS   = "Loading parameters"
-    PROCESS_DONE        = "The process is done"
+    PROCESS_DONE        = "CaImAn process is done"
     SAVE_TO_HDF5        = "Saving to hdf5"
     GEN_ROI_NAMES       = "Generating ROI names"
     SAVE_ROI_SIG        = "Saving ROI signals"
