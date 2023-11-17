@@ -264,30 +264,34 @@ def save_caiman_to_doric(
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(cm_defs.Messages.SAVE_ROI_SIG)
-        pathROIs = vpath+cm_defs.DoricFile.Group.ROISIGNALS+operationCount+'/'
-        utils.save_roi_signals(C, A, time_, f, pathROIs+vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
-        utils.print_group_path_for_DANSE(pathROIs+vdataset)
+        pathROIs          = vpath+cm_defs.DoricFile.Group.ROISIGNALS+operationCount
+        pathROIs_vdataset = f"{pathROIs}/{vdataset}"
+        utils.save_roi_signals(C, A, time_, f, pathROIs_vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
+        utils.print_group_path_for_DANSE(pathROIs_vdataset)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
 
         if saveimages:
             print(cm_defs.Messages.SAVE_IMAGES)
-            pathImages = vpath+cm_defs.DoricFile.Group.IMAGES+operationCount+'/'
-            utils.save_images(AC, time_, f, pathImages+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
-            utils.print_group_path_for_DANSE(pathImages+vdataset)
+            pathImages          = vpath+cm_defs.DoricFile.Group.IMAGES+operationCount
+            pathImages_vdataset = f"{pathImages}/{vdataset}"
+            utils.save_images(AC, time_, f, pathImages_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
+            utils.print_group_path_for_DANSE(pathImages_vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, pathImages)
 
         if saveresiduals:
             print(cm_defs.Messages.SAVE_RES_IMAGES)
-            pathResiduals = vpath+cm_defs.DoricFile.Group.RESIDUALS+operationCount+'/'
-            utils.save_images(res, time_, f, pathResiduals+vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
-            utils.print_group_path_for_DANSE(pathResiduals+vdataset)
+            pathResiduals          = vpath+cm_defs.DoricFile.Group.RESIDUALS+operationCount
+            pathResiduals_vdataset = f"{pathResiduals}/{vdataset}"
+            utils.save_images(res, time_, f, pathResiduals_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
+            utils.print_group_path_for_DANSE(pathResiduals_vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, pathResiduals)
 
         if savespikes:
             print(cm_defs.Messages.SAVE_SPIKES)
-            pathSpikes = vpath+cm_defs.DoricFile.Group.SPIKES+operationCount+'/'
-            utils.save_signals(S > 0, time_, f, pathSpikes+vdataset, names, roiUsernames, range_min=0, range_max=1)
-            utils.print_group_path_for_DANSE(pathSpikes+vdataset)
+            pathSpikes          = vpath+cm_defs.DoricFile.Group.SPIKES+operationCount
+            pathSpikes_vdataset = f"{pathSpikes}/{vdataset}"
+            utils.save_signals(S > 0, time_, f, pathSpikes_vdataset, names, roiUsernames, range_min=0, range_max=1)
+            utils.print_group_path_for_DANSE(pathSpikes_vdataset)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
 
     print(cm_defs.Messages.SAVE_TO.format(path = vname))
