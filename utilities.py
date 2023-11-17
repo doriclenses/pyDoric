@@ -28,6 +28,8 @@ def load_attributes(
         KeyError: If path does not exist in the file
     """
 
+    path = clean_path(path)
+
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
             raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
@@ -100,6 +102,8 @@ def get_dims(
     path: str
     ) -> Tuple[Tuple[int, int], int]:
 
+    path = clean_path(path)
+
     if type(file_) != h5py.File:
         if not h5py.is_hdf5(file_):
             raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
@@ -153,30 +157,33 @@ def save_images(
         username: Optional[str]
             Give an username for Danse
     """
+    path = clean_path(path)
 
     duration = images.shape[0]
     height = images.shape[1]
     width = images.shape[2]
 
-    if path+defs.DoricFile.Dataset.IMAGE_STACK in f:
-        del f[path+defs.DoricFile.Dataset.IMAGE_STACK]
+    path_image_stack = f"{path}/{defs.DoricFile.Dataset.IMAGE_STACK}"
+    if path_image_stack in f:
+        del f[path_image_stack]
 
-    dataset = f.create_dataset(path+defs.DoricFile.Dataset.IMAGE_STACK, (height,width,duration), dtype="uint16",
+    image_stack_dataset = f.create_dataset(path_image_stack, (height,width,duration), dtype="uint16",
                                   chunks=(height,width,1), maxshape=(height,width,None))
 
     for i, image in enumerate(images):
-        dataset[:,:,i] = image
+        image_stack_dataset[:,:,i] = image
 
-    if path+defs.DoricFile.Dataset.TIME in f:
-        del f[path+defs.DoricFile.Dataset.TIME]
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = username
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]  = bit_count
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.FORMAT]     = qt_format
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
+    image_stack_dataset.attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
 
-    f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
+    path_time        = f"{path}/{defs.DoricFile.Dataset.TIME}"
+    if path_time in f:
+        del f[path_time]
 
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = username
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]  = bit_count
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.FORMAT]     = qt_format
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
-    f[path+defs.DoricFile.Dataset.IMAGE_STACK].attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
+    f.create_dataset(path_time, data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
 
 
 def save_roi_signals(
@@ -219,8 +226,7 @@ def save_roi_signals(
 
     """
 
-    if path[-1] != '/':
-        path += '/'
+    path = clean_path(path)
 
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
@@ -247,9 +253,9 @@ def save_roi_signals(
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
 
-        save_signal(signals[i], f, path+dataset_name, attrs)
+        save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
 
-    save_signal(time_, f, path+defs.DoricFile.Dataset.TIME)
+    save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
 
 def save_signal(
@@ -285,20 +291,20 @@ def save_signals(
     if bit_count is None and (range_min is None or range_max is None or unit is None):
         raise ValueError("Set either bits count attribute, or range min, range max, and unit attributes.")
 
-    if path[-1] != '/':
-        path += '/'
+    path = clean_path(path)
 
     try:
-        f.create_dataset(path+defs.DoricFile.Dataset.TIME, data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
+        f.create_dataset(f"{path}/{defs.DoricFile.Dataset.TIME}", data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
     except:
         pass
 
     for i,name in enumerate(names):
+        path_name = f"{path}/{name}"
 
-        if path+name in f:
-            del f[path+name]
+        if path_name in f:
+            del f[path_name]
 
-        f.create_dataset(path+name, data=signals[i], dtype="float64", chunks=def_chunk_size(signals[i].shape), maxshape=None)
+        f.create_dataset(path_name, data=signals[i], dtype="float64", chunks=def_chunk_size(signals[i].shape), maxshape=None)
 
         attrs = {}
 
@@ -312,7 +318,7 @@ def save_signals(
             attrs[defs.DoricFile.Attribute.Signal.UNIT]      = unit
 
         if attrs is not None:
-            save_attributes(attrs, f, path+name)
+            save_attributes(attrs, f, path_name)
 
 
 def save_attributes(
@@ -320,6 +326,7 @@ def save_attributes(
     f: h5py.File,
     path: str
     ):
+    path = clean_path(path)
 
     for key in attributes.keys():
         try:
@@ -424,8 +431,7 @@ def print_to_intercept(msg):
 
 
 def print_group_path_for_DANSE(path):
-    if(path[-1] == "/"):
-        path = path[:-1]
+    path = clean_path(path)
 
     print_to_intercept(defs.Messages.PATHGROUP.format(path = f"/{path}"))
 
@@ -450,3 +456,14 @@ def def_chunk_size(data_shape):
             chunk_size = durantion
 
         return  chunk_size
+
+
+def clean_path(path):
+
+    if path[0] == '/':
+        path = path[1:]
+
+    if path[-1] == '/':
+        path = path[:-1]
+
+    return path
