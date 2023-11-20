@@ -108,7 +108,7 @@ def main(caiman_parameters):
     except Exception as error:
         utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
-
+    # CaimAn Cross register 
     ### Save results to doric file ###
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     # Get paramaters of the operation on source data
