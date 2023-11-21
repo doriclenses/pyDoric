@@ -251,8 +251,8 @@ def save_caiman_to_doric(
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(cm_defs.Messages.SAVE_ROI_SIG, flush = True)
-        rois_grouppath          = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
-        rois_datapath = f"{rois_grouppath}/{vdataset}"
+        rois_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
+        rois_datapath  = f"{rois_grouppath}/{vdataset}"
         utils.save_roi_signals(C, A, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
