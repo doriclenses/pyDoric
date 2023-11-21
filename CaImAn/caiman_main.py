@@ -182,7 +182,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     try:
         with h5py.File(caiman_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = cr, dtype = "float64", chunks = True)
-            hdf5_file.create_dataset(cm_defs.Preview.Dataset.PN, data = pnr, dtype = "float64", chunks = True)
+            hdf5_file.create_dataset(cm_defs.Preview.Dataset.PNR, data = pnr, dtype = "float64", chunks = True)
 
     except Exception as error:
         utils.print_error(error, cm_defs.Messages.SAVE_TO_HDF5)

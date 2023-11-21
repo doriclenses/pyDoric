@@ -50,8 +50,8 @@ class Preview:
         _ = ""
 
     class Dataset:
-        LOCALCORR = "LocalCorr"
-        PN        = "PN"
+        LOCALCORR  = "LocalCorr"
+        PNR        = "PNR"
 
     class Attribute:
         _ = ""
