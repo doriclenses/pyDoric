@@ -26,7 +26,7 @@ def main(caiman_parameters):
     CaImAn CNMF algorithm
     """
 
-        # Import for CaimAn lib
+    # Import for CaimAn lib
     import caiman as cm
     from caiman.cluster import setup_cluster
     from caiman.source_extraction import cnmf
