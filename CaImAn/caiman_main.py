@@ -50,10 +50,10 @@ def main(caiman_parameters):
 
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
 
-    dataname = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
-    images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{dataname}"])
+    datapath = caiman_parameters.paths[defs.Parameters.Path.H5PATH]
+    dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[datapath] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
 
-    logging.debug(images.shape)
+    images = np.array(file_[f"{datapath}/{dataname}"])
 
     print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
     imwrite(caiman_parameters.params_caiman["fnames"], images.transpose(2, 0, 1))
@@ -114,9 +114,8 @@ def main(caiman_parameters):
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{dataname}")
-
-    time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    attrs = utils.load_attributes(file_, f"{datapath}/{dataname}")
+    time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
