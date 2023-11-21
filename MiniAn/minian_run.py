@@ -40,3 +40,5 @@ if __name__ == "__main__":
         mn_main.preview(minian_params)
     else:
         mn_main.main(minian_params)
+
+    print(mn_defs.Messages.PROCESS_DONE, flush=True)
