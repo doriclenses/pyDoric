@@ -67,12 +67,13 @@ def main(caiman_parameters):
 
     Yr, dims, T, cnm = cnmf(n_processes, dview, opts, fname_new)
 
-    ### Save results to doric file ###
+    # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
-    # Get paramaters of the operation on source data
+
+    # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    # Get the attributes of the images stack
+
     attrs = utils.load_attributes(file_, f"{datapath}/{dataname}")
     time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
 
