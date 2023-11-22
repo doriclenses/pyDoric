@@ -1,6 +1,7 @@
 import h5py
 import sys
 import numpy as np
+from tifffile import imwrite
 
 sys.path.append("..")
 import utilities as utils
@@ -28,12 +29,12 @@ class CaimanParameters:
             self.preview_parameters = danse_parameters[defs.Parameters.Main.PREVIEW]
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
-            freq    = utils.get_frequency(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}")
+            self.dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[self.paths[defs.Parameters.Path.H5PATH]] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
 
-            if defs.DoricFile.Dataset.IMAGE_STACK in file_[self.paths[defs.Parameters.Path.H5PATH]]:
-                dims, T = utils.get_dims(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
-            else:
-                dims, T = utils.get_dims(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
+            images = np.array(file_[f"{self.paths[defs.Parameters.Path.H5PATH]}/{self.dataname}"])
+
+            freq    = utils.get_frequency(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}")
+            dims, T = utils.get_dims(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{self.dataname}")
 
         neuron_diameter = tuple([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
 
@@ -74,14 +75,16 @@ class CaimanParameters:
             "fnames": self.paths[defs.Parameters.Path.TMP_DIR] + '/' + f"tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif"
             }
 
+        print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
+        imwrite(self.params_caiman["fnames"], images.transpose(2, 0, 1))
+        del images
+
         self.opts = params.CNMFParams(params_dict = self.params_caiman)
         opts_dict, advanced_settings = self.set_advanced_parameters(self.opts, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
 
         #Update parameters and Advanced Setting
         self.opts.change_params(opts_dict)
         self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
-
-        # self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
 
 
     def get_h5path_names(self):

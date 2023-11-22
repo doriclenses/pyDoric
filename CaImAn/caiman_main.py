@@ -4,8 +4,6 @@ import sys
 import h5py
 import cv2
 import numpy as np
-import tempfile
-from tifffile import imwrite
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
@@ -44,17 +42,6 @@ def main(caiman_parameters):
 
     c, dview, n_processes = cm.cluster.setup_cluster(backend="local", n_processes=None, single_thread=False)
 
-    file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
-
-    datapath = caiman_parameters.paths[defs.Parameters.Path.H5PATH]
-    dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[datapath] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
-
-    images = np.array(file_[f"{datapath}/{dataname}"])
-
-    print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
-    imwrite(caiman_parameters.params_caiman["fnames"], images.transpose(2, 0, 1))
-    del images
-
     fname_new = motion_correction(dview, caiman_parameters)
 
     Yr, dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
@@ -62,12 +49,13 @@ def main(caiman_parameters):
     # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
 
+    file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
     # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
 
-    attrs = utils.load_attributes(file_, f"{datapath}/{dataname}")
-    time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
+    attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}")
+    time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
