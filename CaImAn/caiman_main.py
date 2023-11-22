@@ -16,7 +16,6 @@ import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
 
-from caiman.motion_correction import MotionCorrect
 # Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
@@ -163,12 +162,16 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
 
 
 def motion_correction(dview, opts, caiman_parameters):
+    """
+    motion correction
+    """
+
     if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
         # MOTION CORRECTION
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **opts.get_group("motion"))
+            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **opts.get_group("motion"))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
