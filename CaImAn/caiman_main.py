@@ -16,6 +16,10 @@ import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
 
+# Import for CaimAn lib
+import caiman as cm
+from caiman.source_extraction.cnmf import params
+
 # Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
@@ -25,12 +29,6 @@ def main(caiman_parameters):
     """
     CaImAn CNMF algorithm
     """
-
-    # Import for CaimAn lib
-    import caiman as cm
-    from caiman.cluster import setup_cluster
-    from caiman.source_extraction import cnmf
-    from caiman.source_extraction.cnmf import params
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -45,7 +43,7 @@ def main(caiman_parameters):
     except():
         pass
 
-    c, dview, n_processes = setup_cluster(backend="local", n_processes=None, single_thread=False)
+    c, dview, n_processes = cm.cluster.setup_cluster(backend="local", n_processes=None, single_thread=False)
 
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
 
@@ -65,26 +63,9 @@ def main(caiman_parameters):
     opts.change_params(opts_dict)
     caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
-
-    # load memory mappable file
-    Yr, dims, T = cm.load_memmap(fname_new)
-    images = Yr.T.reshape((T,) + dims, order='F')
-
-    try:
-        print(cm_defs.Messages.START_CNMF, flush=True)
-        cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
-        print(cm_defs.Messages.FITTING, flush=True)
-        cnm.fit(images)
-
-        print(cm_defs.Messages.EVA_COMPO, flush=True)
-        cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
-    except TypeError:
-        utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
-        sys.exit()
-    except Exception as error:
-        utils.print_error(error, cm_defs.Messages.START_CNMF)
-        sys.exit()
     fname_new = motion_correction(dview, opts, caiman_parameters)
+
+    Yr, dims, T, cnm = cnmf(n_processes, dview, opts, fname_new)
 
     ### Save results to doric file ###
     print(cm_defs.Messages.SAVING_DATA, flush=True)
@@ -189,6 +170,35 @@ def motion_correction(dview, opts, caiman_parameters):
         fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
 
     return fname_new
+
+
+def cnmf(n_processes, dview, opts, fname_new):
+    """
+    cnmf()
+    """
+
+    # load memory mappable file
+    Yr, dims, T = cm.load_memmap(fname_new)
+    images = Yr.T.reshape((T,) + dims, order='F')
+
+    try:
+        print(cm_defs.Messages.START_CNMF, flush=True)
+        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
+        print(cm_defs.Messages.FITTING, flush=True)
+        cnm.fit(images)
+
+        print(cm_defs.Messages.EVA_COMPO, flush=True)
+        cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
+    except TypeError:
+        utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
+        sys.exit()
+    except Exception as error:
+        utils.print_error(error, cm_defs.Messages.START_CNMF)
+        sys.exit()
+
+    return Yr, dims, T, cnm
+
+
 def save_caiman_to_doric(
     Y: np.ndarray,
     A: np.ndarray,
