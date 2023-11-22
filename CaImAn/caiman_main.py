@@ -113,7 +113,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     """
 
     # Import for CaimAn lib
-    from summary_images import correlation_pnr
+    #from summary_images import correlation_pnr
 
     video_start_frame, video_stop_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE]
 
@@ -128,7 +128,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
 
     images = images.transpose(2, 0, 1)
 
-    cr, pnr = correlation_pnr(images, swap_dim = False)
+    cr, pnr = cm.summary_images.correlation_pnr(images, swap_dim = False)
 
     cr[np.isnan(cr)] = 0
     pnr[np.isnan(pnr)] = 0
