@@ -26,7 +26,7 @@ def main(caiman_parameters):
     CaImAn CNMF algorithm
     """
 
-        # Import for CaimAn lib
+    # Import for CaimAn lib
     import caiman as cm
     from caiman.cluster import setup_cluster
     from caiman.source_extraction import cnmf
@@ -49,12 +49,11 @@ def main(caiman_parameters):
     c, dview, n_processes = setup_cluster(backend="local", n_processes=None, single_thread=False)
 
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
-        images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
-    else:
-        images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
 
-    logging.debug(images.shape)
+    datapath = caiman_parameters.paths[defs.Parameters.Path.H5PATH]
+    dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[datapath] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
+
+    images = np.array(file_[f"{datapath}/{dataname}"])
 
     print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
     imwrite(caiman_parameters.params_caiman["fnames"], images.transpose(2, 0, 1))
@@ -115,12 +114,8 @@ def main(caiman_parameters):
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     # Get the attributes of the images stack
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
-        attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
-    else:
-        attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
-
-    time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    attrs = utils.load_attributes(file_, f"{datapath}/{dataname}")
+    time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
@@ -182,7 +177,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     try:
         with h5py.File(caiman_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = cr, dtype = "float64", chunks = True)
-            hdf5_file.create_dataset(cm_defs.Preview.Dataset.PN, data = pnr, dtype = "float64", chunks = True)
+            hdf5_file.create_dataset(cm_defs.Preview.Dataset.PNR, data = pnr, dtype = "float64", chunks = True)
 
     except Exception as error:
         utils.print_error(error, cm_defs.Messages.SAVE_TO_HDF5)
@@ -229,10 +224,10 @@ def save_caiman_to_doric(
 
     print(cm_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
-    roiUsernames = []
+    usernames = []
     for i in range(len(C)):
         names.append("ROI"+str(i+1).zfill(4))
-        roiUsernames.append(f"ROI {i+1}")
+        usernames.append(f"ROI {i+1}")
 
     with h5py.File(vname, 'a') as f:
 
@@ -255,35 +250,35 @@ def save_caiman_to_doric(
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(cm_defs.Messages.SAVE_ROI_SIG, flush = True)
-        pathROIs          = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
-        pathROIs_vdataset = f"{pathROIs}/{vdataset}"
-        utils.save_roi_signals(C, A, time_, f, pathROIs_vdataset, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
-        utils.print_group_path_for_DANSE(pathROIs_vdataset)
-        utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathROIs)
+        rois_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
+        rois_datapath  = f"{rois_grouppath}/{vdataset}"
+        utils.save_roi_signals(C, A, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
+        utils.print_group_path_for_DANSE(rois_datapath)
+        utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
         if saveimages:
             print(cm_defs.Messages.SAVE_IMAGES, flush = True)
-            pathImages          = f"{vpath}/{cm_defs.DoricFile.Group.IMAGES+operationCount}"
-            pathImages_vdataset = f"{pathImages}/{vdataset}"
-            utils.save_images(AC, time_, f, pathImages_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
-            utils.print_group_path_for_DANSE(pathImages_vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, pathImages)
+            images_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.IMAGES+operationCount}"
+            images_datapath  = f"{images_grouppath}/{vdataset}"
+            utils.save_images(AC, time_, f, images_datapath, bit_count=bit_count, qt_format=qt_format, username=username)
+            utils.print_group_path_for_DANSE(images_datapath)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, images_grouppath)
 
         if saveresiduals:
             print(cm_defs.Messages.SAVE_RES_IMAGES, flush = True)
-            pathResiduals          = f"{vpath}/{cm_defs.DoricFile.Group.RESIDUALS+operationCount}"
-            pathResiduals_vdataset = f"{pathResiduals}/{vdataset}"
-            utils.save_images(res, time_, f, pathResiduals_vdataset, bit_count=bit_count, qt_format=qt_format, username=username)
-            utils.print_group_path_for_DANSE(pathResiduals_vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, pathResiduals)
+            residuals_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.RESIDUALS+operationCount}"
+            residuals_datapath  = f"{residuals_grouppath}/{vdataset}"
+            utils.save_images(res, time_, f, residuals_datapath, bit_count=bit_count, qt_format=qt_format, username=username)
+            utils.print_group_path_for_DANSE(residuals_datapath)
+            utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, residuals_grouppath)
 
         if savespikes:
             print(cm_defs.Messages.SAVE_SPIKES, flush = True)
-            pathSpikes          = f"{vpath}/{cm_defs.DoricFile.Group.SPIKES+operationCount}"
-            pathSpikes_vdataset = f"{pathSpikes}/{vdataset}"
-            utils.save_signals(S > 0, time_, f, pathSpikes_vdataset, names, roiUsernames, range_min=0, range_max=1)
-            utils.print_group_path_for_DANSE(pathSpikes_vdataset)
-            utils.save_attributes(utils.merge_params(params_doric, params_source), f, pathSpikes)
+            spikes_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.SPIKES+operationCount}"
+            spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
+            utils.save_signals(S > 0, time_, f, spikes_datapath, names, usernames, range_min=0, range_max=1)
+            utils.print_group_path_for_DANSE(spikes_datapath)
+            utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
