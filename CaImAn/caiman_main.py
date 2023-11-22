@@ -16,6 +16,7 @@ import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
 
+from caiman.motion_correction import MotionCorrect
 # Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
@@ -31,7 +32,6 @@ def main(caiman_parameters):
     from caiman.cluster import setup_cluster
     from caiman.source_extraction import cnmf
     from caiman.source_extraction.cnmf import params
-    from caiman.motion_correction import MotionCorrect
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -66,28 +66,6 @@ def main(caiman_parameters):
     opts.change_params(opts_dict)
     caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
-    if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
-        # MOTION CORRECTION
-        print(cm_defs.Messages.MOTION_CORREC,  flush=True)
-        # do motion correction rigid
-        try:
-            mc = MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **opts.get_group("motion"))
-        except TypeError:
-            utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
-            sys.exit()
-        except Exception as error:
-            utils.print_error(error, cm_defs.Messages.MOTION_CORREC)
-            sys.exit()
-
-        mc.motion_correct(save_movie=True)
-        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman["pw_rigid"] else mc.fname_tot_rig
-
-        bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
-        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
-
-    else:  # if no motion correction just memory map the file
-        fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
-
 
     # load memory mappable file
     Yr, dims, T = cm.load_memmap(fname_new)
@@ -107,6 +85,7 @@ def main(caiman_parameters):
     except Exception as error:
         utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
+    fname_new = motion_correction(dview, opts, caiman_parameters)
 
     ### Save results to doric file ###
     print(cm_defs.Messages.SAVING_DATA, flush=True)
@@ -183,6 +162,30 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
         utils.print_error(error, cm_defs.Messages.SAVE_TO_HDF5)
 
 
+def motion_correction(dview, opts, caiman_parameters):
+    if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
+        # MOTION CORRECTION
+        print(cm_defs.Messages.MOTION_CORREC,  flush=True)
+        # do motion correction rigid
+        try:
+            mc = MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **opts.get_group("motion"))
+        except TypeError:
+            utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
+            sys.exit()
+        except Exception as error:
+            utils.print_error(error, cm_defs.Messages.MOTION_CORREC)
+            sys.exit()
+
+        mc.motion_correct(save_movie=True)
+        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman["pw_rigid"] else mc.fname_tot_rig
+
+        bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
+        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
+
+    else:  # if no motion correction just memory map the file
+        fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
+
+    return fname_new
 def save_caiman_to_doric(
     Y: np.ndarray,
     A: np.ndarray,
