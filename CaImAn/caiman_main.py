@@ -18,7 +18,6 @@ import caiman_parameters  as cm_params
 
 # Import for CaimAn lib
 import caiman as cm
-from caiman.source_extraction.cnmf import params
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
@@ -56,16 +55,9 @@ def main(caiman_parameters):
     imwrite(caiman_parameters.params_caiman["fnames"], images.transpose(2, 0, 1))
     del images
 
-    opts = params.CNMFParams(params_dict=caiman_parameters.params_caiman)
-    opts_dict, advanced_settings = set_advanced_parameters(opts, caiman_parameters.advanced_settings)
+    fname_new = motion_correction(dview, caiman_parameters)
 
-    #Update parameters and Advanced Setting
-    opts.change_params(opts_dict)
-    caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
-
-    fname_new = motion_correction(dview, opts, caiman_parameters)
-
-    Yr, dims, T, cnm, images = cnmf(n_processes, dview, opts, fname_new)
+    Yr, dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
     # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
@@ -110,7 +102,7 @@ def main(caiman_parameters):
 
 def preview(caiman_parameters: cm_params.CaimanParameters):
     """
-    in HDF5 file
+    Save Correlation and PNR in HDF5 file
     """
 
     # Import for CaimAn lib
@@ -143,7 +135,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
         utils.print_error(error, cm_defs.Messages.SAVE_TO_HDF5)
 
 
-def motion_correction(dview, opts, caiman_parameters):
+def motion_correction(dview, caiman_parameters):
     """
     motion correction
     """
@@ -153,7 +145,7 @@ def motion_correction(dview, opts, caiman_parameters):
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **opts.get_group("motion"))
+            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **caiman_parameters.opts.get_group("motion"))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
@@ -173,7 +165,7 @@ def motion_correction(dview, opts, caiman_parameters):
     return fname_new
 
 
-def cnmf(n_processes, dview, opts, fname_new):
+def cnmf(n_processes, dview, fname_new, caiman_parameters):
     """
     cnmf()
     """
@@ -184,7 +176,7 @@ def cnmf(n_processes, dview, opts, fname_new):
 
     try:
         print(cm_defs.Messages.START_CNMF, flush=True)
-        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
+        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview = dview, params = caiman_parameters.opts)
         print(cm_defs.Messages.FITTING, flush=True)
         cnm.fit(images)
 
@@ -300,29 +292,3 @@ def save_caiman_to_doric(
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
-def set_advanced_parameters(
-    param,
-    advanced_parameters
-):
-
-    """
-    input:
-    param: is a class CNMFParams
-    advanced_parameters: dict
-
-    ouput:
-    new param: is a class CNMFParams
-    new advanced_parameters: dict
-    """
-    param_dict = param.to_dict()
-    advan_param_keys_used = []
-    for param_part_key, param_part_value in param_dict.items():
-        for part_key, part_value in param_part_value.items():
-            if part_key in advanced_parameters:
-               param_dict[param_part_key][part_key] = advanced_parameters[part_key]
-               advan_param_keys_used.append(part_key)
-
-    #keep only used keys in andvanced parameters
-    used_advanced_parameters = {key: advanced_parameters[key] for key in advan_param_keys_used}
-
-    return [param_dict, used_advanced_parameters]

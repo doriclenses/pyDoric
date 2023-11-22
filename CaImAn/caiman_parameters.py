@@ -7,6 +7,8 @@ import utilities as utils
 import definitions as defs
 import caiman_definitions as cm_defs
 
+from caiman.source_extraction.cnmf import params
+
 class CaimanParameters:
 
     """
@@ -72,7 +74,14 @@ class CaimanParameters:
             "fnames": self.paths[defs.Parameters.Path.TMP_DIR] + '/' + f"tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif"
             }
 
-        self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
+        self.opts = params.CNMFParams(params_dict = self.params_caiman)
+        opts_dict, advanced_settings = self.set_advanced_parameters(self.opts, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
+
+        #Update parameters and Advanced Setting
+        self.opts.change_params(opts_dict)
+        self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
+
+        # self.advanced_settings = self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
 
 
     def get_h5path_names(self):
@@ -91,3 +100,27 @@ class CaimanParameters:
 
         return [data, driver, operation, series, sensor]
 
+
+    def set_advanced_parameters(self, param, advanced_parameters):
+
+        """
+        input:
+        param: is a class CNMFParams
+        advanced_parameters: dict
+
+        ouput:
+        new param: is a class CNMFParams
+        new advanced_parameters: dict
+        """
+        param_dict = param.to_dict()
+        advan_param_keys_used = []
+        for param_part_key, param_part_value in param_dict.items():
+            for part_key, part_value in param_part_value.items():
+                if part_key in advanced_parameters:
+                    param_dict[param_part_key][part_key] = advanced_parameters[part_key]
+                    advan_param_keys_used.append(part_key)
+
+        #keep only used keys in andvanced parameters
+        used_advanced_parameters = {key: advanced_parameters[key] for key in advan_param_keys_used}
+
+        return [param_dict, used_advanced_parameters]
