@@ -13,6 +13,7 @@ import utilities as utils
 import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
+from caiman.base.rois import register_multisession
 
 # Import for CaimAn lib
 import caiman as cm
@@ -45,7 +46,17 @@ def main(caiman_parameters):
     fname_new = motion_correction(dview, caiman_parameters)
 
     Yr, dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
-    # CaimAn Cross register 
+
+    # CaimAn Cross register
+    A = cnm.estimates.A[:,cnm.estimates.idx_components]
+    C = cnm.estimates.C[cnm.estimates.idx_components,:]
+    AC = A.dot(C)
+    shape = (dims[0],dims[1],T)
+    AC = AC.reshape(shape, order='F').transpose((-1, 0, 1))
+    A = A.toarray()
+    A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1))
+    A = cross_register(A, AC, caiman_parameters)
+
     # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
 
@@ -85,7 +96,6 @@ def main(caiman_parameters):
             savespikes = True)
 
     cm.stop_server(dview=dview)
-
 
 
 def preview(caiman_parameters: cm_params.CaimanParameters):
@@ -280,3 +290,49 @@ def save_caiman_to_doric(
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
+
+
+def cross_register(A, AC, caiman_parameters):
+
+    if not caiman_parameters.params_cross_reg:
+        return A
+
+    print(cm_defs.Messages.CROSS_REGISTRATING , flush=True)
+
+    # Load AC componenets from the reference file
+    ref_filepath = caiman_parameters.params_cross_reg["fname"]
+    ref_images   = caiman_parameters.params_cross_reg["h5path_images"]
+    file_ = h5py.File(ref_filepath, 'r')
+    ref_images = utils.clean_path(ref_images)
+
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[ref_images]:
+        file_image_stack = file_[f"{ref_images}/{defs.DoricFile.Dataset.IMAGE_STACK}"]
+    else:
+        file_image_stack= file_[f"{ref_images}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"]
+
+    AC_ref = np.array(file_image_stack)
+
+    # Load A componenets from the reference file
+    ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
+    A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
+    return A
+
+
+def get_footprints(filename, rois_h5path, dims):
+
+    with h5py.File(filename, 'r') as file_:
+        
+        roi_names =  list(file_.get(rois_h5path))
+        roi_ids = np.zeros((len(roi_names) - 1))
+        footprints = np.zeros(((len(roi_names) - 1), dims[0], dims[1]), np.float64)
+        for i in range(len(roi_names) - 1):
+            attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
+
+            roi_ids[i] = int(attrs["ID"])
+
+            coords = np.array(attrs["Coordinates"])
+            mask = np.zeros((dims[0], dims[0]), np.float64)
+            cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
+            footprints[i, :, :] = mask
+
+    return footprints
