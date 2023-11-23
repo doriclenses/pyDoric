@@ -21,6 +21,7 @@ class Messages:
     SAVE_RES_IMAGES     = "Saving residual images"
     SAVE_SPIKES         = "Saving spikes"
     SAVE_TO             = "Saved to {path}"
+    CROSS_REGISTRATING  = "Cross-registering cells between sessions."
 
 class Folder:
     """

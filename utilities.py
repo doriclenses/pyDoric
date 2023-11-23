@@ -192,10 +192,8 @@ def save_roi_signals(
     time_: np.array,
     f: h5py.File,
     path: str,
-    names: Optional[List[str]] = None,
-    usernames: Optional[List[str]] = None,
-    bit_count: int = -1,
-    attrs_add: Optional[dict] = None
+    attrs_add: Optional[dict] = None,
+    roi_ids: List[int] = None
     ):
 
     """
@@ -231,10 +229,17 @@ def save_roi_signals(
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
 
+        if roi_ids is not None:
+            id_ = roi_ids[i]
+        else:
+            id_ = i + 1
+
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+
         attrs = {
-            defs.DoricFile.Attribute.ROI.ID:           i+1,
-            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(i+1),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(i+1),
+            defs.DoricFile.Attribute.ROI.ID:           id_,
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_),
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
             defs.DoricFile.Attribute.ROI.COORDS:       coords
         }
@@ -242,16 +247,7 @@ def save_roi_signals(
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
 
-        if bit_count > -1:
-            attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
 
-        if names is not None:
-            attrs[defs.DoricFile.Attribute.Dataset.NAME] = names[i]
-
-        if usernames is not None:
-            attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i]
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str(i+1).zfill(4))
 
         save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
 
@@ -268,6 +264,7 @@ def save_signal(
     if path in f:
         del f[path]
 
+    print("chunkSize: ", def_chunk_size(signal.shape), " shape ", signal.shape, flush = True)
     f.create_dataset(path, data=signal, dtype="float64", chunks=def_chunk_size(signal.shape), maxshape=None)
 
 
@@ -455,7 +452,7 @@ def def_chunk_size(data_shape):
         if durantion < chunk_size:
             chunk_size = durantion
 
-        return  chunk_size
+        return  (chunk_size,)
 
 
 def clean_path(path):

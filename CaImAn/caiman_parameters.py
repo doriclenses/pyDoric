@@ -74,6 +74,14 @@ class CaimanParameters:
             "use_cnn": False,
             "fnames": self.paths[defs.Parameters.Path.TMP_DIR] + '/' + f"tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif"
             }
+        self.params_cross_reg = {}
+        if self.parameters[defs.Parameters.danse.CROSS_REG]:
+            self.params_cross_reg = {
+                "cross_reg"     : self.parameters[defs.Parameters.danse.CROSS_REG],
+                "fname"         : self.parameters[defs.Parameters.danse.REF_FILEPATH],
+                "h5path_images" : self.parameters[defs.Parameters.danse.REF_IMAGES_PATH],
+                "h5path_roi"    : self.parameters[defs.Parameters.danse.REF_ROIS_PATH]
+            }
 
         print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
         imwrite(self.params_caiman["fnames"], images.transpose(2, 0, 1))
