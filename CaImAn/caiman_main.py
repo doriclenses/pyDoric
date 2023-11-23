@@ -4,8 +4,6 @@ import sys
 import h5py
 import cv2
 import numpy as np
-import tempfile
-from tifffile import imwrite
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
@@ -16,6 +14,9 @@ import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
 
+# Import for CaimAn lib
+import caiman as cm
+
 # Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
@@ -25,13 +26,6 @@ def main(caiman_parameters):
     """
     CaImAn CNMF algorithm
     """
-
-    # Import for CaimAn lib
-    import caiman as cm
-    from caiman.cluster import setup_cluster
-    from caiman.source_extraction import cnmf
-    from caiman.source_extraction.cnmf import params
-    from caiman.motion_correction import MotionCorrect
 
     #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -46,76 +40,22 @@ def main(caiman_parameters):
     except():
         pass
 
-    c, dview, n_processes = setup_cluster(backend="local", n_processes=None, single_thread=False)
+    c, dview, n_processes = cm.cluster.setup_cluster(backend="local", n_processes=None, single_thread=False)
+
+    fname_new = motion_correction(dview, caiman_parameters)
+
+    Yr, dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
+    # CaimAn Cross register 
+    # Save results to .doric file
+    print(cm_defs.Messages.SAVING_DATA, flush=True)
 
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
-
-    datapath = caiman_parameters.paths[defs.Parameters.Path.H5PATH]
-    dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[datapath] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
-
-    images = np.array(file_[f"{datapath}/{dataname}"])
-
-    print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
-    imwrite(caiman_parameters.params_caiman["fnames"], images.transpose(2, 0, 1))
-    del images
-
-    opts = params.CNMFParams(params_dict=caiman_parameters.params_caiman)
-    opts_dict, advanced_settings = set_advanced_parameters(opts, caiman_parameters.advanced_settings)
-
-    #Update parameters and Advanced Setting
-    opts.change_params(opts_dict)
-    caiman_parameters.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
-
-    if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
-        # MOTION CORRECTION
-        print(cm_defs.Messages.MOTION_CORREC,  flush=True)
-        # do motion correction rigid
-        try:
-            mc = MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **opts.get_group("motion"))
-        except TypeError:
-            utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
-            sys.exit()
-        except Exception as error:
-            utils.print_error(error, cm_defs.Messages.MOTION_CORREC)
-            sys.exit()
-
-        mc.motion_correct(save_movie=True)
-        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman["pw_rigid"] else mc.fname_tot_rig
-
-        bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
-        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
-
-    else:  # if no motion correction just memory map the file
-        fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
-
-
-    # load memory mappable file
-    Yr, dims, T = cm.load_memmap(fname_new)
-    images = Yr.T.reshape((T,) + dims, order='F')
-
-    try:
-        print(cm_defs.Messages.START_CNMF, flush=True)
-        cnm = cnmf.CNMF(n_processes = n_processes, dview=dview, params=opts)
-        print(cm_defs.Messages.FITTING, flush=True)
-        cnm.fit(images)
-
-        print(cm_defs.Messages.EVA_COMPO, flush=True)
-        cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
-    except TypeError:
-        utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
-        sys.exit()
-    except Exception as error:
-        utils.print_error(error, cm_defs.Messages.START_CNMF)
-        sys.exit()
-    # CaimAn Cross register 
-    ### Save results to doric file ###
-    print(cm_defs.Messages.SAVING_DATA, flush=True)
-    # Get paramaters of the operation on source data
+    # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    # Get the attributes of the images stack
-    attrs = utils.load_attributes(file_, f"{datapath}/{dataname}")
-    time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
+
+    attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}")
+    time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
@@ -150,11 +90,11 @@ def main(caiman_parameters):
 
 def preview(caiman_parameters: cm_params.CaimanParameters):
     """
-    in HDF5 file
+    Save Correlation and PNR in HDF5 file
     """
 
     # Import for CaimAn lib
-    from summary_images import correlation_pnr
+    #from summary_images import correlation_pnr
 
     video_start_frame, video_stop_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE]
 
@@ -169,7 +109,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
 
     images = images.transpose(2, 0, 1)
 
-    cr, pnr = correlation_pnr(images, swap_dim = False)
+    cr, pnr = cm.summary_images.correlation_pnr(images, swap_dim = False)
 
     cr[np.isnan(cr)] = 0
     pnr[np.isnan(pnr)] = 0
@@ -181,6 +121,63 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
 
     except Exception as error:
         utils.print_error(error, cm_defs.Messages.SAVE_TO_HDF5)
+
+
+def motion_correction(dview, caiman_parameters):
+    """
+    motion correction
+    """
+
+    if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
+        # MOTION CORRECTION
+        print(cm_defs.Messages.MOTION_CORREC,  flush=True)
+        # do motion correction rigid
+        try:
+            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **caiman_parameters.opts.get_group("motion"))
+        except TypeError:
+            utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
+            sys.exit()
+        except Exception as error:
+            utils.print_error(error, cm_defs.Messages.MOTION_CORREC)
+            sys.exit()
+
+        mc.motion_correct(save_movie=True)
+        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman["pw_rigid"] else mc.fname_tot_rig
+
+        bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
+        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
+
+    else:  # if no motion correction just memory map the file
+        fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
+
+    return fname_new
+
+
+def cnmf(n_processes, dview, fname_new, caiman_parameters):
+    """
+    cnmf()
+    """
+
+    # load memory mappable file
+    Yr, dims, T = cm.load_memmap(fname_new)
+    images = Yr.T.reshape((T,) + dims, order='F')
+
+    try:
+        print(cm_defs.Messages.START_CNMF, flush=True)
+        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview = dview, params = caiman_parameters.opts)
+        print(cm_defs.Messages.FITTING, flush=True)
+        cnm.fit(images)
+
+        print(cm_defs.Messages.EVA_COMPO, flush=True)
+        cnm.estimates.evaluate_components(images, cnm.params, dview=dview)
+    except TypeError:
+        utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
+        sys.exit()
+    except Exception as error:
+        utils.print_error(error, cm_defs.Messages.START_CNMF)
+        sys.exit()
+
+    return Yr, dims, T, cnm, images
 
 
 def save_caiman_to_doric(
@@ -283,29 +280,3 @@ def save_caiman_to_doric(
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
-def set_advanced_parameters(
-    param,
-    advanced_parameters
-):
-
-    """
-    input:
-    param: is a class CNMFParams
-    advanced_parameters: dict
-
-    ouput:
-    new param: is a class CNMFParams
-    new advanced_parameters: dict
-    """
-    param_dict = param.to_dict()
-    advan_param_keys_used = []
-    for param_part_key, param_part_value in param_dict.items():
-        for part_key, part_value in param_part_value.items():
-            if part_key in advanced_parameters:
-               param_dict[param_part_key][part_key] = advanced_parameters[part_key]
-               advan_param_keys_used.append(part_key)
-
-    #keep only used keys in andvanced parameters
-    used_advanced_parameters = {key: advanced_parameters[key] for key in advan_param_keys_used}
-
-    return [param_dict, used_advanced_parameters]
