@@ -80,10 +80,10 @@ class CaimanParameters:
         del images
 
         self.cnmf_params = params.CNMFParams(params_dict = self.params_caiman)
-        opts_dict, advanced_settings = self.set_advanced_parameters(self.cnmf_params, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
+        advanced_settings = self.remove_bad_keys(self.cnmf_params, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
 
-        #Update parameters and Advanced Setting
-        self.cnmf_params.change_params(opts_dict)
+        # Update cnmf parameters and Advanced Setting
+        self.cnmf_params.change_params(advanced_settings, True)
         self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
 
@@ -104,26 +104,17 @@ class CaimanParameters:
         return [data, driver, operation, series, sensor]
 
 
-    def set_advanced_parameters(self, param, advanced_parameters):
+    def remove_bad_keys(self, cnmf_params, advanced_parameters):
 
         """
-        input:
-        param: is a class CNMFParams
-        advanced_parameters: dict
-
-        ouput:
-        new param: is a class CNMFParams
-        new advanced_parameters: dict
+        remove bad keys
         """
-        param_dict = param.to_dict()
-        advan_param_keys_used = []
-        for param_part_key, param_part_value in param_dict.items():
-            for part_key, part_value in param_part_value.items():
-                if part_key in advanced_parameters:
-                    param_dict[param_part_key][part_key] = advanced_parameters[part_key]
-                    advan_param_keys_used.append(part_key)
 
-        #keep only used keys in andvanced parameters
-        used_advanced_parameters = {key: advanced_parameters[key] for key in advan_param_keys_used}
+        cnmf_dict = cnmf_params.to_dict()
+        caiman_keys = []
+        for key1, value1 in cnmf_dict.items():
+            for key2, value2 in value1.items():
+                if key2 in advanced_parameters:
+                    caiman_keys.append(key2)
 
-        return [param_dict, used_advanced_parameters]
+        return {key: advanced_parameters[key] for key in caiman_keys}
