@@ -59,19 +59,16 @@ def main(caiman_parameters):
 
     file_.close()
 
-    Y = np.transpose(images, list(range(1, len(dims) + 1)) + [0])
-    Yr = np.transpose(np.reshape(images, (T, -1), order='F'))
-
     if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
         utils.print_to_intercept(cm_defs.Messages.NO_CELLS_FOUND)
     else :
         save_caiman_to_doric(
-            Yr,
+            images,
             cnm.estimates.A[:,cnm.estimates.idx_components],
             cnm.estimates.C[cnm.estimates.idx_components,:],
             cnm.estimates.S[cnm.estimates.idx_components,:],
             time_= time_,
-            shape = (dims[0],dims[1],T),
+            shape = (dims[0], dims[1], T),
             bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
             qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
             username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
@@ -212,12 +209,14 @@ def save_caiman_to_doric(
     vdataset = utils.clean_path(vdataset)
 
     AC = A.dot(C)
-    res = Y - AC
 
     AC = AC.reshape(shape, order='F').transpose((-1, 0, 1))
-    res = res.reshape(shape, order='F').transpose((-1, 0, 1))
+    Y  = Y.reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
-    A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1))
+    A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
+
+    res = Y - AC
+
 
     print(cm_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
