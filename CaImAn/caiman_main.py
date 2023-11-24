@@ -130,7 +130,7 @@ def motion_correction(dview, caiman_parameters):
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **caiman_parameters.opts.get_group("motion"))
+            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **caiman_parameters.cnmf_params.get_group("motion"))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
@@ -161,7 +161,7 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
 
     try:
         print(cm_defs.Messages.START_CNMF, flush=True)
-        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview = dview, params = caiman_parameters.opts)
+        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview = dview, params = caiman_parameters.cnmf_params)
         print(cm_defs.Messages.FITTING, flush=True)
         cnm.fit(images)
 

@@ -79,11 +79,11 @@ class CaimanParameters:
         imwrite(self.params_caiman["fnames"], images.transpose(2, 0, 1))
         del images
 
-        self.opts = params.CNMFParams(params_dict = self.params_caiman)
-        opts_dict, advanced_settings = self.set_advanced_parameters(self.opts, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
+        self.cnmf_params = params.CNMFParams(params_dict = self.params_caiman)
+        opts_dict, advanced_settings = self.set_advanced_parameters(self.cnmf_params, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
 
         #Update parameters and Advanced Setting
-        self.opts.change_params(opts_dict)
+        self.cnmf_params.change_params(opts_dict)
         self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
 
