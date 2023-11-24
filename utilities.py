@@ -220,10 +220,10 @@ def save_roi_signals(
     for i in range(len(footprints)):
         coords = footprint_to_coords(footprints[i])
 
-        if roi_ids is not None:
-            id_ = roi_ids[i]
-        else:
+        if roi_ids is None:
             id_ = i + 1
+        else:
+            id_ = roi_ids[i]
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
 
