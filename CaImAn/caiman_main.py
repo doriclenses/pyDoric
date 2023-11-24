@@ -208,15 +208,12 @@ def save_caiman_to_doric(
     vpath    = utils.clean_path(vpath)
     vdataset = utils.clean_path(vdataset)
 
-    AC = A.dot(C)
-
-    AC = AC.reshape(shape, order='F').transpose((-1, 0, 1))
+    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
     Y  = Y.reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
     A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
 
     res = Y - AC
-
 
     print(cm_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
