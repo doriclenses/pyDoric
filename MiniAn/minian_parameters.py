@@ -25,6 +25,8 @@ class MinianParameters:
         self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
         self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
 
+        self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
+
         self.preview = False
         if defs.Parameters.Main.PREVIEW in danse_parameters:
             self.preview = True
@@ -35,7 +37,7 @@ class MinianParameters:
         os.environ["OPENBLAS_NUM_THREADS"]  = "1"
         os.environ["MINIAN_INTERMEDIATE"]   = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
-        self.freq = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], self.paths[defs.Parameters.Path.H5PATH] + defs.DoricFile.Dataset.TIME)
+        self.freq = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}")
 
         neuron_diameter = np.array([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
         neuron_diameter = neuron_diameter / self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
@@ -296,29 +298,13 @@ class MinianParameters:
         return [all_params, advanced_params]
 
 
-    def clean_h5path(self):
-
-        """
-        Correct the path for hdf5 file
-        """
-
-        h5path = self.paths[defs.Parameters.Path.H5PATH]
-
-        if h5path[0] == '/':
-            h5path = h5path[1:]
-        if h5path[-1] == '/':
-            h5path = h5path[:-1]
-
-        return h5path
-
-
     def get_h5path_names(self):
 
         """
         Split the path to dataset into relevant names
         """
 
-        h5path_names = self.clean_h5path().split('/')
+        h5path_names = self.paths[defs.Parameters.Path.H5PATH].split('/')
 
         data = h5path_names[0]
         driver = h5path_names[1]

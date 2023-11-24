@@ -49,6 +49,8 @@ class Messages:
     LOADING_ARGUMENTS           = "Loading parameters"
 
     CROSS_REGISTRATING          = "Cross-registering cells between sessions."
+    PROCESS_DONE                = "MiniAn process is done"
+
 
 
 class Folder:
