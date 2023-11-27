@@ -159,9 +159,7 @@ def save_images(
     """
     path = clean_path(path)
 
-    duration = images.shape[0]
-    height = images.shape[1]
-    width = images.shape[2]
+    duration, height, width = images.shape
 
     path_image_stack = f"{path}/{defs.DoricFile.Dataset.IMAGE_STACK}"
     if path_image_stack in f:
