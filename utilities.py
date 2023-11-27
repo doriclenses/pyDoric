@@ -296,7 +296,7 @@ def save_signals(
     except:
         pass
 
-    for i,name in enumerate(names):
+    for i, name in enumerate(names):
         path_name = f"{path}/{name}"
 
         if path_name in f:
