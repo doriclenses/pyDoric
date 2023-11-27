@@ -44,7 +44,7 @@ def main(caiman_parameters):
 
     fname_new = motion_correction(dview, caiman_parameters)
 
-    Yr, dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
+    dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
     # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
@@ -174,7 +174,7 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
         utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
 
-    return Yr, dims, T, cnm, images
+    return dims, T, cnm, images
 
 
 def save_caiman_to_doric(
