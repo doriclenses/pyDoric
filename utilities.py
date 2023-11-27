@@ -177,7 +177,7 @@ def save_images(
     dataset.attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
     dataset.attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
 
-    path_time        = f"{path}/{defs.DoricFile.Dataset.TIME}"
+    path_time = f"{path}/{defs.DoricFile.Dataset.TIME}"
     if path_time in f:
         del f[path_time]
 
