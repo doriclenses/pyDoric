@@ -228,8 +228,8 @@ def save_roi_signals(
 
     path = clean_path(path)
 
-    for i in range(len(footprints)):
-        coords = footprint_to_coords(footprints[i])
+    for i, footprint in enumerate(footprints):
+        coords = footprint_to_coords(footprint)
 
         attrs = {
             defs.DoricFile.Attribute.ROI.ID:           i+1,
@@ -344,9 +344,9 @@ def footprint_to_coords(
 
     maxI = 0
     maxArea = 0
-    for i in range(len(contours)):
-        if cv2.contourArea(contours[i]) > maxArea:
-            maxArea = cv2.contourArea(contours[i])
+    for i, contour in enumerate(contours):
+        if cv2.contourArea(contour) > maxArea:
+            maxArea = cv2.contourArea(contour)
             maxI = i
 
     coords = np.squeeze(contours[maxI])
