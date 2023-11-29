@@ -56,7 +56,7 @@ def main(caiman_parameters):
     A = A.toarray()
     A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
 
-    A = cross_register(A, AC, caiman_parameters)
+    registered_ids = cross_register(A, AC, caiman_parameters)
 
     # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
@@ -91,7 +91,8 @@ def main(caiman_parameters):
             params_source = params_source_data,
             saveimages = True,
             saveresiduals = True,
-            savespikes = True)
+            savespikes = True,
+            ids = registered_ids)
 
     cm.stop_server(dview=dview)
 
@@ -205,7 +206,8 @@ def save_caiman_to_doric(
     params_source: Optional[dict] = {},
     saveimages: bool = True,
     saveresiduals: bool = True,
-    savespikes: bool = True
+    savespikes: bool = True,
+    ids = None
 ) -> str:
     """
     Save CaImAn results to .doric file:
@@ -256,7 +258,7 @@ def save_caiman_to_doric(
         print(cm_defs.Messages.SAVE_ROI_SIG, flush = True)
         rois_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
-        utils.save_roi_signals(C, A, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
+        utils.save_roi_signals(C, A, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"}, roi_ids = ids)
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
@@ -334,16 +336,30 @@ def cross_register(A, AC, caiman_parameters):
     spatial_union, assignments, matchings = register_multisession(A=spatial, dims=dims, templates=templates)
 
     # Filter components by number of sessions the component could be found
-
     n_reg = 2  # minimal number of sessions that each component has to be registered in
-
     # Use number of non-NaNs in each row to filter out components that were not registered in enough sessions
     assignments_filtered = np.array(np.nan_to_num(assignments[np.sum(~np.isnan(assignments), axis=1) >= n_reg]), dtype=int);
-
     # Use filtered indices to select the corresponding spatial components
     spatial_filtered = spatial[0][:, assignments_filtered[:, 0]]
 
-    return A
+    # Update unit ids of the current spatial componenets A
+    ids = [0] * A.shape[1]
+    ref_id_max = A_ref.shape[1] + 1
+
+    for i in range(spatial_union.shape[1]):
+        current = assignments[i,0]
+        ref = assignments[i,1]
+        if np.isfinite(current) and np.isfinite(ref):
+            print(current, ref)
+            ids[i] = ref
+        elif np.isfinite(current):
+            ids[i] = ref_id_max
+            ref_id_max += 1
+
+    print(A.shape, flush = True)
+    print(ids, flush = True)
+
+    return ids
 
 
 def get_footprints(filename, rois_h5path, refShape):
