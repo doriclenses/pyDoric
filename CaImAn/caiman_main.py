@@ -46,7 +46,7 @@ def main(caiman_parameters):
 
     fname_new = motion_correction(dview, caiman_parameters)
 
-    Yr, dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
+    dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
     # CaimAn Cross register
     A = cnm.estimates.A[:,cnm.estimates.idx_components]
@@ -133,7 +133,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
 
 def motion_correction(dview, caiman_parameters):
     """
-    motion correction
+    Perform the motion correction
     """
 
     if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
@@ -163,7 +163,7 @@ def motion_correction(dview, caiman_parameters):
 
 def cnmf(n_processes, dview, fname_new, caiman_parameters):
     """
-    cnmf()
+    Peform CNMF operation
     """
 
     # load memory mappable file
@@ -185,7 +185,7 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
         utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
 
-    return Yr, dims, T, cnm, images
+    return dims, T, cnm, images
 
 
 def save_caiman_to_doric(

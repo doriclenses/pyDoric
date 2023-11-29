@@ -30,11 +30,11 @@ def load_attributes(
 
     path = clean_path(path)
 
-    if type(file_) != h5py.File:
+    if not isinstance(file_, h5py.File):
         if not h5py.is_hdf5(file_):
             raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
-    if type(file_) == h5py.File:
+    if isinstance(file_, h5py.File):
         f = file_
         if not f.__bool__():
             raise ValueError(defs.Messages.FILE_CLOSE)
@@ -46,16 +46,16 @@ def load_attributes(
 
     params = {}
     for key, value in f[path].attrs.items():
-        if type(value) == np.ndarray and value.shape == (2,) and value.size == 2:
+        if isinstance(value, np.ndarray) and value.shape == (2,) and value.size == 2:
             params[key] = tuple(value)
-        elif type(value) == np.ndarray:
+        elif isinstance(value, np.ndarray):
             params[key] = value.tolist()
-        elif type(value) == bytes:
+        elif isinstance(value, bytes):
             params[key] = value.decode("utf-8")
         else:
             params[key] = value
 
-    if type(file_) != h5py.File and h5py.is_hdf5(file_):
+    if not isinstance(file_, h5py.File) and h5py.is_hdf5(file_):
         f.close()
 
     return params
@@ -66,11 +66,11 @@ def get_frequency(
     vdataset: str
     ) -> float:
 
-    if type(file_) != h5py.File:
+    if not isinstance(file_, h5py.File):
         if not h5py.is_hdf5(file_):
             raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
-    if type(file_) == h5py.File:
+    if isinstance(file_, h5py.File):
         f = file_
         if not f.__bool__():
             raise ValueError(defs.Messages.FILE_CLOSE)
@@ -91,7 +91,7 @@ def get_frequency(
     dt = np.diff(t)
     T = np.round(np.median(dt),10)
 
-    if type(file_) != h5py.File and h5py.is_hdf5(file_):
+    if not isinstance(file_, h5py.File) and h5py.is_hdf5(file_):
         f.close()
 
     return 1/T
@@ -104,11 +104,11 @@ def get_dims(
 
     path = clean_path(path)
 
-    if type(file_) != h5py.File:
+    if not isinstance(file_, h5py.File):
         if not h5py.is_hdf5(file_):
             raise TypeError(defs.Messages.F_NOT_H5_FILE_FILEPATH)
 
-    if type(file_) == h5py.File:
+    if isinstance(file_, h5py.File):
         f = file_
         if not f.__bool__():
             raise ValueError(defs.Messages.FILE_CLOSE)
@@ -120,7 +120,7 @@ def get_dims(
 
     shape = np.array(f[path]).shape
 
-    if type(file_) != h5py.File and h5py.is_hdf5(file_):
+    if not isinstance(file_, h5py.File) and h5py.is_hdf5(file_):
         f.close()
 
     return shape[:-1], shape[-1]
@@ -159,9 +159,7 @@ def save_images(
     """
     path = clean_path(path)
 
-    duration = images.shape[0]
-    height = images.shape[1]
-    width = images.shape[2]
+    duration, height, width = images.shape
 
     path_image_stack = f"{path}/{defs.DoricFile.Dataset.IMAGE_STACK}"
     if path_image_stack in f:
@@ -179,7 +177,7 @@ def save_images(
     dataset.attrs[defs.DoricFile.Attribute.Image.HEIGHT]     = height
     dataset.attrs[defs.DoricFile.Attribute.Image.WIDTH]      = width
 
-    path_time        = f"{path}/{defs.DoricFile.Dataset.TIME}"
+    path_time = f"{path}/{defs.DoricFile.Dataset.TIME}"
     if path_time in f:
         del f[path_time]
 
@@ -226,8 +224,8 @@ def save_roi_signals(
 
     path = clean_path(path)
 
-    for i in range(len(footprints)):
-        coords = footprint_to_coords(footprints[i])
+    for i, footprint in enumerate(footprints):
+        coords = footprint_to_coords(footprint)
 
         if roi_ids is not None:
             id_ = roi_ids[i]
@@ -295,7 +293,7 @@ def save_signals(
     except:
         pass
 
-    for i,name in enumerate(names):
+    for i, name in enumerate(names):
         path_name = f"{path}/{name}"
 
         if path_name in f:
@@ -341,9 +339,9 @@ def footprint_to_coords(
 
     maxI = 0
     maxArea = 0
-    for i in range(len(contours)):
-        if cv2.contourArea(contours[i]) > maxArea:
-            maxArea = cv2.contourArea(contours[i])
+    for i, contour in enumerate(contours):
+        if cv2.contourArea(contour) > maxArea:
+            maxArea = cv2.contourArea(contour)
             maxI = i
 
     coords = np.squeeze(contours[maxI])
