@@ -6,7 +6,6 @@ import cv2
 import numpy as np
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
-from scipy.sparse import csc_matrix
 
 sys.path.append("..")
 # Import CaimAn related utilities libraries
@@ -289,8 +288,6 @@ def save_caiman_to_doric(
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
-
-
 def cross_register(A, AC, caiman_parameters):
 
     if not caiman_parameters.params_cross_reg:
@@ -327,11 +324,7 @@ def cross_register(A, AC, caiman_parameters):
 
     A = A.reshape(-1, A.shape[2])
     A_ref = A_ref.reshape(-1, A_ref.shape[2])
-
-    sparse_A = csc_matrix(A)
-    sparse_A_ref = csc_matrix(A_ref)
-
-    spatial = [sparse_A, sparse_A_ref]
+    spatial = [A, A_ref]
 
     spatial_union, assignments, matchings = register_multisession(A=spatial, dims=dims, templates=templates)
 
