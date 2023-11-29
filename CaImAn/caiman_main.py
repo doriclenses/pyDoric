@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, Callable
+from scipy.sparse import csc_matrix
 
 sys.path.append("..")
 # Import CaimAn related utilities libraries
@@ -50,11 +51,11 @@ def main(caiman_parameters):
     # CaimAn Cross register
     A = cnm.estimates.A[:,cnm.estimates.idx_components]
     C = cnm.estimates.C[cnm.estimates.idx_components,:]
-    AC = A.dot(C)
     shape = (dims[0],dims[1],T)
-    AC = AC.reshape(shape, order='F').transpose((-1, 0, 1))
+    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
-    A = A.reshape(shape[0],shape[1],A.shape[1], order='F').transpose((-1, 0, 1))
+    A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
+
     A = cross_register(A, AC, caiman_parameters)
 
     # Save results to .doric file
@@ -307,28 +308,57 @@ def cross_register(A, AC, caiman_parameters):
         file_image_stack= file_[f"{ref_images}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"]
 
     AC_ref = np.array(file_image_stack)
+    AC_ref = AC_ref.astype(float)
+
+    AC_ref_max = AC_ref.max(axis = 2)
+    AC_max  = AC.max(axis = 0)
+
+    templates = [AC_ref_max, AC_max]
+    dims = AC_max.shape
 
     # Load A componenets from the reference file
     ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
     A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
+
+    A = A.transpose(1, 2, 0)
+    A_ref = A_ref.transpose(1, 2, 0)
+
+    A = A.reshape(-1, A.shape[2])
+    A_ref = A_ref.reshape(-1, A_ref.shape[2])
+
+    sparse_A = csc_matrix(A)
+    sparse_A_ref = csc_matrix(A_ref)
+
+    spatial = [sparse_A, sparse_A_ref]
+
+    spatial_union, assignments, matchings = register_multisession(A=spatial, dims=dims, templates=templates)
+
+    # Filter components by number of sessions the component could be found
+
+    n_reg = 2  # minimal number of sessions that each component has to be registered in
+
+    # Use number of non-NaNs in each row to filter out components that were not registered in enough sessions
+    assignments_filtered = np.array(np.nan_to_num(assignments[np.sum(~np.isnan(assignments), axis=1) >= n_reg]), dtype=int);
+
+    # Use filtered indices to select the corresponding spatial components
+    spatial_filtered = spatial[0][:, assignments_filtered[:, 0]]
+
     return A
 
 
-def get_footprints(filename, rois_h5path, dims):
+def get_footprints(filename, rois_h5path, refShape):
 
     with h5py.File(filename, 'r') as file_:
-        
         roi_names =  list(file_.get(rois_h5path))
         roi_ids = np.zeros((len(roi_names) - 1))
-        footprints = np.zeros(((len(roi_names) - 1), dims[0], dims[1]), np.float64)
+        footprints = np.zeros(((len(roi_names) - 1), refShape[0], refShape[0]), np.float64)
+
         for i in range(len(roi_names) - 1):
             attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
-
             roi_ids[i] = int(attrs["ID"])
-
             coords = np.array(attrs["Coordinates"])
-            mask = np.zeros((dims[0], dims[0]), np.float64)
+            mask = np.zeros((refShape[0], refShape[0]), np.float64)
             cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
             footprints[i, :, :] = mask
-
+            
     return footprints
