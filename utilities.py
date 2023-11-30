@@ -221,16 +221,15 @@ def save_roi_signals(
     ------
 
     """
-
     path = clean_path(path)
 
     for i, footprint in enumerate(footprints):
         coords = footprint_to_coords(footprint)
 
-        if roi_ids is not None:
-            id_ = roi_ids[i]
-        else:
+        if roi_ids is None:
             id_ = i + 1
+        else:
+            id_ = roi_ids[i]
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
 
@@ -244,8 +243,6 @@ def save_roi_signals(
 
         if attrs_add is not None:
             attrs = {**attrs, **attrs_add}
-
-
 
         save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
 
