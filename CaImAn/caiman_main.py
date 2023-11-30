@@ -54,7 +54,6 @@ def main(caiman_parameters):
     AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
     A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
-
     registered_ids = cross_register(A, AC, caiman_parameters)
 
     # Save results to .doric file
@@ -291,7 +290,7 @@ def save_caiman_to_doric(
 def cross_register(A, AC, caiman_parameters):
 
     if not caiman_parameters.params_cross_reg:
-        return A
+        return
 
     print(cm_defs.Messages.CROSS_REGISTRATING , flush=True)
 
