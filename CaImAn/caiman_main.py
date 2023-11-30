@@ -329,7 +329,7 @@ def cross_register(A, AC, caiman_parameters):
 
     # Update unit ids of the current spatial componenets A
     ids = [0] * A.shape[1]
-    ref_id_max = A_ref.shape[1] + 1
+    ref_id_max = int(A_ref.shape[1]) + 1
 
     for i in range(spatial_union.shape[1]):
         current = assignments[i,0]
@@ -339,9 +339,6 @@ def cross_register(A, AC, caiman_parameters):
         elif np.isfinite(current):
             ids[i] = ref_id_max
             ref_id_max += 1
-
-    print(A.shape, flush = True)
-    print(ids, flush = True)
 
     return ids
 
