@@ -335,8 +335,7 @@ def cross_register(A, AC, caiman_parameters):
         current = assignments[i,0]
         ref = assignments[i,1]
         if np.isfinite(current) and np.isfinite(ref):
-            print(current, ref)
-            ids[i] = ref
+            ids[i] = ref + 1
         elif np.isfinite(current):
             ids[i] = ref_id_max
             ref_id_max += 1
