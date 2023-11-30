@@ -327,13 +327,6 @@ def cross_register(A, AC, caiman_parameters):
 
     spatial_union, assignments, matchings = register_multisession(A=spatial, dims=dims, templates=templates)
 
-    # Filter components by number of sessions the component could be found
-    n_reg = 2  # minimal number of sessions that each component has to be registered in
-    # Use number of non-NaNs in each row to filter out components that were not registered in enough sessions
-    assignments_filtered = np.array(np.nan_to_num(assignments[np.sum(~np.isnan(assignments), axis=1) >= n_reg]), dtype=int);
-    # Use filtered indices to select the corresponding spatial components
-    spatial_filtered = spatial[0][:, assignments_filtered[:, 0]]
-
     # Update unit ids of the current spatial componenets A
     ids = [0] * A.shape[1]
     ref_id_max = A_ref.shape[1] + 1
