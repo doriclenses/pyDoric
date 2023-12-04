@@ -23,10 +23,7 @@ class CaimanParameters:
 
         self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
 
-        self.preview = False
-        if defs.Parameters.Main.PREVIEW in danse_parameters:
-            self.preview = True
-            self.preview_parameters = danse_parameters[defs.Parameters.Main.PREVIEW]
+        self.preview_parameters = danse_parameters.get(defs.Parameters.Main.PREVIEW, {})
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             self.dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[self.paths[defs.Parameters.Path.H5PATH]] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
