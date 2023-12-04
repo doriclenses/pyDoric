@@ -77,7 +77,7 @@ class CaimanParameters:
         del images
 
         self.cnmf_params = params.CNMFParams(params_dict = self.params_caiman)
-        advanced_settings = self.remove_bad_keys(self.cnmf_params, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
+        advanced_settings = self.remove_wrong_keys(self.cnmf_params, self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
 
         # Update cnmf parameters and Advanced Setting
         self.cnmf_params.change_params(advanced_settings, True)
@@ -101,7 +101,7 @@ class CaimanParameters:
         return [data, driver, operation, series, sensor]
 
 
-    def remove_bad_keys(self, cnmf_params, advanced_parameters):
+    def remove_wrong_keys(self, cnmf_params, advanced_parameters):
 
         """
         remove bad keys
