@@ -316,7 +316,7 @@ def cross_register(A, AC, caiman_parameters):
 
     # Load A componenets from the reference file
     ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
-    A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
+    A_ref, roi_ids_ref  = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
 
     A = A.transpose(1, 2, 0)
     A_ref = A_ref.transpose(1, 2, 0)
@@ -329,17 +329,17 @@ def cross_register(A, AC, caiman_parameters):
 
     # Update unit ids of the current spatial componenets A
     ids = [0] * A.shape[1]
-    ref_id_max = int(A_ref.shape[1]) + 1
-
+    # ref_id_max = int(A_ref.shape[1]) + 1
+    ref_id_max = int(max(roi_ids_ref)) + 1
     for i in range(spatial_union.shape[1]):
         current = assignments[i,0]
         ref = assignments[i,1]
         if np.isfinite(current) and np.isfinite(ref):
-            ids[i] = ref + 1
+            ids[i] = roi_ids_ref[int(ref)]
+            # ids[i] = ref + 1
         elif np.isfinite(current):
             ids[i] = ref_id_max
             ref_id_max += 1
-
     return ids
 
 
@@ -357,5 +357,5 @@ def get_footprints(filename, rois_h5path, refShape):
             mask = np.zeros((refShape[0], refShape[0]), np.float64)
             cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
             footprints[i, :, :] = mask
-            
-    return footprints
+
+    return footprints, roi_ids
