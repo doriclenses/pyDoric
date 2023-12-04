@@ -18,8 +18,8 @@ class CaimanParameters:
 
     def __init__(self, danse_parameters):
 
-        self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
-        self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
+        self.paths      = danse_parameters.get(defs.Parameters.Main.PATHS, {})
+        self.parameters = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
 
         self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
 
