@@ -92,10 +92,8 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     video_start_frame, video_stop_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE]
 
     with h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
-        if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
-            images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
-        else:
-            images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
+        images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}"])
+
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::caiman_parameters.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
