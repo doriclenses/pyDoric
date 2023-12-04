@@ -62,12 +62,6 @@ def main(minian_parameters):
 
     A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters)
 
-    # making unit_ids start with 1 instead of 0
-    ids_temp = A["unit_id"].values +1
-    A["unit_id"] = ids_temp
-    C["unit_id"] = ids_temp
-    C_chk["unit_id"] = ids_temp
-
     A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
 
     # Cross registration
@@ -370,6 +364,12 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
+
+    # making unit_ids start with 1 instead of 0
+    ids_temp = A["unit_id"].values + 1
+    A["unit_id"] = ids_temp
+    C["unit_id"] = ids_temp
+    C_chk["unit_id"] = ids_temp
 
     return A, C, C_chk, sn_spatial
 
