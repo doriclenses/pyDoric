@@ -90,9 +90,6 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     Save Correlation and PNR in HDF5 file
     """
 
-    # Import for CaimAn lib
-    #from summary_images import correlation_pnr
-
     video_start_frame, video_stop_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE]
 
     with h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
