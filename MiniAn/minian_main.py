@@ -365,11 +365,11 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
-    # making unit_ids start with 1 instead of 0
-    ids_temp = A["unit_id"].values + 1
-    A["unit_id"] = ids_temp
-    C["unit_id"] = ids_temp
-    C_chk["unit_id"] = ids_temp
+    # Renumber unit_ids to start from 1 instead of 0
+    ids = A["unit_id"].values + 1
+    A["unit_id"] = ids
+    C["unit_id"] = ids
+    C_chk["unit_id"] = ids
 
     return A, C, C_chk, sn_spatial
 
