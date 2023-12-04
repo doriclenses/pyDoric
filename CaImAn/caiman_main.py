@@ -48,12 +48,11 @@ def main(caiman_parameters):
 
     # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
-
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
+
     # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-
     attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}")
     time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
