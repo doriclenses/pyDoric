@@ -44,7 +44,7 @@ def main(caiman_parameters):
 
     fname_new = motion_correction(dview, caiman_parameters)
 
-    dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
+    dims, T, estimates, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
@@ -56,14 +56,14 @@ def main(caiman_parameters):
 
     file_.close()
 
-    if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
+    if len(estimates.C[estimates.idx_components,:]) == 0 :
         utils.print_to_intercept(cm_defs.Messages.NO_CELLS_FOUND)
     else :
         save_caiman_to_doric(
             images,
-            cnm.estimates.A[:,cnm.estimates.idx_components],
-            cnm.estimates.C[cnm.estimates.idx_components,:],
-            cnm.estimates.S[cnm.estimates.idx_components,:],
+            estimates.A[:,estimates.idx_components],
+            estimates.C[estimates.idx_components,:],
+            estimates.S[estimates.idx_components,:],
             time_= time_,
             shape = (dims[0], dims[1], T),
             bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
@@ -164,7 +164,7 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
         utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
 
-    return dims, T, cnm, images
+    return dims, T, cnm.estimates, images
 
 
 def save_caiman_to_doric(
