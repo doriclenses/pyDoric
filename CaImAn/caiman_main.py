@@ -103,14 +103,14 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
 
     images = images.transpose(2, 0, 1)
 
-    cr, pnr = cm.summary_images.correlation_pnr(images, swap_dim = False)
+    corr, pnr = cm.summary_images.correlation_pnr(images, swap_dim = False)
 
-    cr[np.isnan(cr)] = 0
+    corr[np.isnan(corr)] = 0
     pnr[np.isnan(pnr)] = 0
 
     try:
         with h5py.File(caiman_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
-            hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = cr, dtype = "float64", chunks = True)
+            hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = corr, dtype = "float64", chunks = True)
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.PNR, data = pnr, dtype = "float64", chunks = True)
 
     except Exception as error:
