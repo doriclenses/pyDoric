@@ -114,4 +114,4 @@ class CaimanParameters:
                 if key in advanced_params:
                     cnmf_keys.append(key)
 
-        return {key: advanced_parameters[key] for key in cnmf_keys}
+        return {key: advanced_params[key] for key in cnmf_keys}
