@@ -101,17 +101,17 @@ class CaimanParameters:
         return [data, driver, operation, series, sensor]
 
 
-    def remove_wrong_keys(self, cnmf_params, advanced_parameters):
+    def remove_wrong_keys(self, cnmf_params, advanced_params):
 
         """
-        remove bad keys
+        Remove wrong keys from advanced parameters
         """
 
         cnmf_dict = cnmf_params.to_dict()
-        caiman_keys = []
-        for key1, value1 in cnmf_dict.items():
-            for key2, value2 in value1.items():
-                if key2 in advanced_parameters:
-                    caiman_keys.append(key2)
+        cnmf_keys = []
+        for params_type, params_dict in cnmf_dict.items():
+            for key, value in params_dict.items():
+                if key in advanced_params:
+                    cnmf_keys.append(key)
 
-        return {key: advanced_parameters[key] for key in caiman_keys}
+        return {key: advanced_parameters[key] for key in cnmf_keys}
