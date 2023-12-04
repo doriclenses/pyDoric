@@ -46,11 +46,9 @@ def main(caiman_parameters):
 
     dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
-    # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
 
-    # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}")
@@ -120,7 +118,6 @@ def motion_correction(dview, caiman_parameters):
     """
 
     if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
-        # MOTION CORRECTION
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
@@ -138,7 +135,7 @@ def motion_correction(dview, caiman_parameters):
         bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
         fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
 
-    else:  # if no motion correction just memory map the file
+    else:
         fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
 
     return fname_new
@@ -149,7 +146,6 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
     Peform CNMF operation
     """
 
-    # load memory mappable file
     Yr, dims, T = cm.load_memmap(fname_new)
     images = Yr.T.reshape((T,) + dims, order='F')
 
@@ -218,7 +214,6 @@ def save_caiman_to_doric(
 
     with h5py.File(vname, 'a') as f:
 
-        # Check if CaImAn results already exist
         operationCount = ""
         if vpath in f:
             operations = [ name for name in f[vpath] if cm_defs.DoricFile.Group.ROISIGNALS in name ]
