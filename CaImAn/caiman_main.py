@@ -48,13 +48,11 @@ def main(caiman_parameters):
     dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
     # CaimAn Cross register
-    A = cnm.estimates.A[:,cnm.estimates.idx_components]
-    C = cnm.estimates.C[cnm.estimates.idx_components,:]
-    shape = (dims[0],dims[1],T)
-    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
-    A = A.toarray()
-    A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
-    registered_ids = cross_register(A, AC, caiman_parameters)
+    registered_ids = cross_register(
+                        cnm.estimates.A[:,cnm.estimates.idx_components],
+                        cnm.estimates.C[cnm.estimates.idx_components,:],
+                        (dims[0],dims[1],T),
+                        caiman_parameters)
 
     # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
@@ -284,7 +282,16 @@ def save_caiman_to_doric(
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
-def cross_register(A, AC, caiman_parameters):
+def cross_register(
+    A: np.ndarray,
+    C: np.ndarray,
+    shape,
+    caiman_parameters
+) -> List[int]:
+
+    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
+    A = A.toarray()
+    A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
 
     if not caiman_parameters.params_cross_reg:
         return
