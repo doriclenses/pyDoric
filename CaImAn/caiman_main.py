@@ -132,7 +132,7 @@ def motion_correction(dview, caiman_parameters):
         mc.motion_correct(save_movie=True)
         fname_mc = mc.fname_tot_els if caiman_parameters.cnmf_params.motion["pw_rigid"] else mc.fname_tot_rig
 
-        bord_px = 0 if caiman_parameters.cnmf_params.motion["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
+        bord_px = 0 if caiman_parameters.cnmf_params.motion["border_nan"] == "copy" else caiman_parameters.cnmf_params.patch["border_pix"]
         fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0 = bord_px)
 
     else:
