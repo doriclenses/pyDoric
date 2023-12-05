@@ -121,7 +121,7 @@ def motion_correction(dview, caiman_parameters):
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **caiman_parameters.cnmf_params.get_group("motion"))
+            mc = cm.motion_correction.MotionCorrect(caiman_parameters.cnmf_params.data["fnames"], dview=dview, **caiman_parameters.cnmf_params.get_group("motion"))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
@@ -130,13 +130,13 @@ def motion_correction(dview, caiman_parameters):
             sys.exit()
 
         mc.motion_correct(save_movie=True)
-        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman["pw_rigid"] else mc.fname_tot_rig
+        fname_mc = mc.fname_tot_els if caiman_parameters.cnmf_params.motion["pw_rigid"] else mc.fname_tot_rig
 
-        bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
-        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
+        bord_px = 0 if caiman_parameters.cnmf_params.motion["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
+        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0 = bord_px)
 
     else:
-        fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
+        fname_new = cm.save_memmap([caiman_parameters.cnmf_params.data["fnames"]], base_name="memmap_", order='C', border_to_0=0)
 
     return fname_new
 
