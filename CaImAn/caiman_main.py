@@ -44,7 +44,7 @@ def main(caiman_parameters):
 
     fname_new = motion_correction(dview, caiman_parameters)
 
-    dims, T, estimates, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
+    estimates, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
@@ -65,7 +65,6 @@ def main(caiman_parameters):
             estimates.C[estimates.idx_components,:],
             estimates.S[estimates.idx_components,:],
             time_= time_,
-            shape = (dims[0], dims[1], T),
             bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
             qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
             username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
@@ -164,7 +163,7 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
         utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
 
-    return dims, T, cnm.estimates, images
+    return cnm.estimates, images
 
 
 def save_caiman_to_doric(
@@ -172,7 +171,6 @@ def save_caiman_to_doric(
     A: np.ndarray,
     C: np.ndarray,
     S: np.ndarray,
-    shape,
     time_: np.array,
     bit_count: int,
     qt_format: int,
@@ -197,6 +195,9 @@ def save_caiman_to_doric(
 
     vpath    = utils.clean_path(vpath)
     vdataset = utils.clean_path(vdataset)
+
+    shape = np.array(Y).shape
+    shape = (shape[1],shape[2], shape[0])
 
     AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
     Y  = Y.reshape(shape, order='F').transpose((-1, 0, 1))
