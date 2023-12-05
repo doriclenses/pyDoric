@@ -300,50 +300,50 @@ def cross_register(
 
     # Load AC componenets from the reference file
     ref_filepath = caiman_parameters.params_cross_reg["fname"]
-    ref_images   = caiman_parameters.params_cross_reg["h5path_images"]
-    file_ = h5py.File(ref_filepath, 'r')
-    ref_images = utils.clean_path(ref_images)
+    ref_images_path = utils.clean_path(caiman_parameters.params_cross_reg["h5path_images"])
 
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[ref_images]:
-        file_image_stack = file_[f"{ref_images}/{defs.DoricFile.Dataset.IMAGE_STACK}"]
-    else:
-        file_image_stack= file_[f"{ref_images}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"]
+    with h5py.File(ref_filepath, 'r') as file_:
+        if defs.DoricFile.Dataset.IMAGE_STACK in file_[ref_images_path]:
+            path = f"{ref_images_path}/{defs.DoricFile.Dataset.IMAGE_STACK}"
+        else:
+            path = f"{ref_images_path}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"
 
-    AC_ref = np.array(file_image_stack)
-    AC_ref = AC_ref.astype(float)
+        AC_ref = np.array(file_[path])
+        AC_ref = AC_ref.astype(float)
 
-    AC_ref_max = AC_ref.max(axis = 2)
-    AC_max  = AC.max(axis = 0)
+        AC_ref_max = AC_ref.max(axis = 2)
+        AC_max  = AC.max(axis = 0)
 
-    templates = [AC_ref_max, AC_max]
-    dims = AC_max.shape
+        templates = [AC_ref_max, AC_max]
+        dims = AC_max.shape
 
-    # Load A componenets from the reference file
-    ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
-    A_ref, roi_ids_ref  = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
+        # Load A componenets from the reference file
+        ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
+        A_ref, roi_ids_ref  = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
 
-    A = A.transpose(1, 2, 0)
-    A_ref = A_ref.transpose(1, 2, 0)
+        A = A.transpose(1, 2, 0)
+        A_ref = A_ref.transpose(1, 2, 0)
 
-    A = A.reshape(-1, A.shape[2])
-    A_ref = A_ref.reshape(-1, A_ref.shape[2])
-    spatial = [A, A_ref]
+        A = A.reshape(-1, A.shape[2])
+        A_ref = A_ref.reshape(-1, A_ref.shape[2])
+        spatial = [A, A_ref]
 
-    spatial_union, assignments, matchings = register_multisession(A=spatial, dims=dims, templates=templates)
+        spatial_union, assignments, matchings = register_multisession(A=spatial, dims=dims, templates=templates)
 
-    # Update unit ids of the current spatial componenets A
-    ids = [0] * A.shape[1]
-    # ref_id_max = int(A_ref.shape[1]) + 1
-    ref_id_max = int(max(roi_ids_ref)) + 1
-    for i in range(spatial_union.shape[1]):
-        current = assignments[i,0]
-        ref = assignments[i,1]
-        if np.isfinite(current) and np.isfinite(ref):
-            ids[i] = roi_ids_ref[int(ref)]
-            # ids[i] = ref + 1
-        elif np.isfinite(current):
-            ids[i] = ref_id_max
-            ref_id_max += 1
+        # Update unit ids of the current spatial componenets A
+        ids = [0] * A.shape[1]
+        # ref_id_max = int(A_ref.shape[1]) + 1
+        ref_id_max = int(max(roi_ids_ref)) + 1
+        for i in range(spatial_union.shape[1]):
+            current = assignments[i,0]
+            ref = assignments[i,1]
+            if np.isfinite(current) and np.isfinite(ref):
+                ids[i] = roi_ids_ref[int(ref)]
+                # ids[i] = ref + 1
+            elif np.isfinite(current):
+                ids[i] = ref_id_max
+                ref_id_max += 1
+
     return ids
 
 
