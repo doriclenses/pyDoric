@@ -45,7 +45,7 @@ def main(caiman_parameters):
 
     fname_new = motion_correction(dview, caiman_parameters)
 
-    dims, T, cnm, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
+    estimates, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
 
     # CaimAn Cross register
     registered_ids = cross_register(
@@ -54,29 +54,25 @@ def main(caiman_parameters):
                         (dims[0],dims[1],T),
                         caiman_parameters)
 
-    # Save results to .doric file
     print(cm_defs.Messages.SAVING_DATA, flush=True)
-
     file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
-    # Get all operation parameters and dataset attributes
+
     data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-
     attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}")
     time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
-    if len(cnm.estimates.C[cnm.estimates.idx_components,:]) == 0 :
+    if len(estimates.C[estimates.idx_components,:]) == 0 :
         utils.print_to_intercept(cm_defs.Messages.NO_CELLS_FOUND)
     else :
         save_caiman_to_doric(
             images,
-            cnm.estimates.A[:,cnm.estimates.idx_components],
-            cnm.estimates.C[cnm.estimates.idx_components,:],
-            cnm.estimates.S[cnm.estimates.idx_components,:],
+            estimates.A[:,estimates.idx_components],
+            estimates.C[estimates.idx_components,:],
+            estimates.S[estimates.idx_components,:],
             time_= time_,
-            shape = (dims[0], dims[1], T),
             bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
             qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
             username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
@@ -101,24 +97,22 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     video_start_frame, video_stop_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE]
 
     with h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
-        if defs.DoricFile.Dataset.IMAGE_STACK in file_[caiman_parameters.paths[defs.Parameters.Path.H5PATH]]:
-            images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}"])
-        else:
-            images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"])
+        images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}"])
+
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::caiman_parameters.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
 
     images = images.transpose(2, 0, 1)
 
-    cr, pnr = cm.summary_images.correlation_pnr(images, swap_dim = False)
+    corr, pnr = cm.summary_images.correlation_pnr(images, swap_dim = False)
 
-    cr[np.isnan(cr)] = 0
+    corr[np.isnan(corr)] = 0
     pnr[np.isnan(pnr)] = 0
 
     try:
         with h5py.File(caiman_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
-            hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = cr, dtype = "float64", chunks = True)
+            hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = corr, dtype = "float64", chunks = True)
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.PNR, data = pnr, dtype = "float64", chunks = True)
 
     except Exception as error:
@@ -131,11 +125,10 @@ def motion_correction(dview, caiman_parameters):
     """
 
     if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
-        # MOTION CORRECTION
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = cm.motion_correction.MotionCorrect(caiman_parameters.params_caiman["fnames"], dview=dview, **caiman_parameters.cnmf_params.get_group("motion"))
+            mc = cm.motion_correction.MotionCorrect(caiman_parameters.cnmf_params.data["fnames"], dview=dview, **caiman_parameters.cnmf_params.get_group("motion"))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
@@ -144,13 +137,13 @@ def motion_correction(dview, caiman_parameters):
             sys.exit()
 
         mc.motion_correct(save_movie=True)
-        fname_mc = mc.fname_tot_els if caiman_parameters.params_caiman["pw_rigid"] else mc.fname_tot_rig
+        fname_mc = mc.fname_tot_els if caiman_parameters.cnmf_params.motion["pw_rigid"] else mc.fname_tot_rig
 
-        bord_px = 0 if caiman_parameters.params_caiman["border_nan"] == "copy" else caiman_parameters.params_caiman["bord_px"]
-        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0=bord_px)
+        bord_px = 0 if caiman_parameters.cnmf_params.motion["border_nan"] == "copy" else caiman_parameters.cnmf_params.patch["border_pix"]
+        fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0 = bord_px)
 
-    else:  # if no motion correction just memory map the file
-        fname_new = cm.save_memmap([caiman_parameters.params_caiman["fnames"]], base_name="memmap_", order='C', border_to_0=0)
+    else:
+        fname_new = cm.save_memmap([caiman_parameters.cnmf_params.data["fnames"]], base_name="memmap_", order='C', border_to_0=0)
 
     return fname_new
 
@@ -160,7 +153,6 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
     Peform CNMF operation
     """
 
-    # load memory mappable file
     Yr, dims, T = cm.load_memmap(fname_new)
     images = Yr.T.reshape((T,) + dims, order='F')
 
@@ -179,7 +171,7 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
         utils.print_error(error, cm_defs.Messages.START_CNMF)
         sys.exit()
 
-    return dims, T, cnm, images
+    return cnm.estimates, images
 
 
 def save_caiman_to_doric(
@@ -187,7 +179,6 @@ def save_caiman_to_doric(
     A: np.ndarray,
     C: np.ndarray,
     S: np.ndarray,
-    shape,
     time_: np.array,
     bit_count: int,
     qt_format: int,
@@ -214,6 +205,9 @@ def save_caiman_to_doric(
     vpath    = utils.clean_path(vpath)
     vdataset = utils.clean_path(vdataset)
 
+    shape = np.array(Y).shape
+    shape = (shape[1],shape[2], shape[0])
+
     AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
     Y  = Y.reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
@@ -230,7 +224,6 @@ def save_caiman_to_doric(
 
     with h5py.File(vname, 'a') as f:
 
-        # Check if CaImAn results already exist
         operationCount = ""
         if vpath in f:
             operations = [ name for name in f[vpath] if cm_defs.DoricFile.Group.ROISIGNALS in name ]
