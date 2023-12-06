@@ -61,7 +61,6 @@ class Parameters:
         PARAMETERS = "Parameters"
         PATHS      = "Paths"
         PREVIEW    = "Preview"
-        CROSS_REG  = "CrossReg"
 
 
     class Path:
@@ -91,8 +90,10 @@ class Parameters:
         TEMPORAL_PENALTY    = "TemporalPenalty"
         CORRECT_MOTION      = "CorrectMotion"
         ADVANCED_SETTINGS   = "AdvancedSettings"
-        # CrossReg parameters HERE
-
+        CROSS_REG           = "CrossReg";
+        REF_FILEPATH        = "ReferenceFilepath";
+        REF_IMAGES_PATH     = "ReferenceImagesPath";
+        REF_ROIS_PATH       = "ReferenceROIsPath";
 
     class Preview:
 

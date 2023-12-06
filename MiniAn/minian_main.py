@@ -6,8 +6,9 @@ import inspect
 import tempfile
 import dask as da
 import numpy as np
-import xarray as xr
 import pandas as pd
+import xarray as xr
+import cv2
 import functools as fct
 from dask.distributed import Client, LocalCluster
 from contextlib import contextmanager
@@ -25,10 +26,12 @@ from minian.preprocessing import denoise, remove_background
 from minian.initialization import seeds_init, pnr_refine, ks_refine, seeds_merge, initA, initC
 from minian.cnmf import compute_trace, get_noise_fft, update_spatial, update_temporal, unit_merge, update_background, compute_AtC, smooth_sig
 from minian.motion_correction import apply_transform, estimate_motion
+from minian.cross_registration import calculate_centroids, calculate_centroid_distance, calculate_mapping, resolve_mapping, fill_mapping, group_by_session
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
+
 
 def main(minian_parameters):
 
@@ -61,6 +64,9 @@ def main(minian_parameters):
 
     A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
 
+    # Cross registration
+    A = cross_register(AC, A, minian_parameters)
+    
     # Save final MiniAn results
     print(mn_defs.Messages.SAVING_FINAL, flush=True)
     A = save_minian(A.rename("A"), **minian_parameters.params_save_minian)
@@ -110,7 +116,6 @@ def main(minian_parameters):
     # Close cluster
     client.close()
     cluster.close()
-
 
 
 def preview(minian_parameters):
@@ -360,6 +365,12 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
+    # Renumber unit_ids to start from 1 instead of 0
+    ids = A["unit_id"].values + 1
+    A["unit_id"] = ids
+    C["unit_id"] = ids
+    C_chk["unit_id"] = ids
+
     return A, C, C_chk, sn_spatial
 
 
@@ -470,6 +481,111 @@ def load_doric_to_xarray(
 
     return varr, file_
 
+            
+def cross_register(AC, A, minian_parameters):
+
+    if not minian_parameters.params_cross_reg:
+        return A
+
+    print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
+
+    # Load AC componenets from the reference file
+    ref_filepath = minian_parameters.params_cross_reg["fname"]
+    ref_images   = minian_parameters.params_cross_reg["h5path_images"]
+    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, ref_images, np.float64, None, "subset", None)
+
+    # Concatenate max proj of both results
+    AC_ref_max = AC_ref.max("frame")
+    AC_max  = AC.max("frame")
+    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["reference", "current"], name = "session"))
+
+    # Estimate a translational shift along the session dimension using the max projection for each dataset. 
+    # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
+    shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
+    temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
+    shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
+
+    # Load A componenets from the reference file
+    ref_rois_path  = minian_parameters.params_cross_reg["h5path_roi"]
+    A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
+    A_concat = xr.concat([A_ref, A], pd.Index(["reference", "current"], name="session"))
+    file_ref.close()
+    
+    # Apply shifts to spatial footprints of each session
+    A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
+
+    window = shiftds['temps_shifted'].isnull().sum('session')
+    window, _ = xr.broadcast(window, shiftds['temps_shifted'])
+    def set_window(wnd):
+        return wnd == wnd.min()
+    window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]], 
+                            output_core_dims=[["height", "width"]], vectorize=True)
+
+    # Calculate centroids of spatial footprints for cells inside a window.
+    cents = calculate_centroids(A_shifted, window)
+
+    # Calculate pairwise distance between cells in all pairs of sessions. 
+    # Note that at this stage, since we are computing something along the session dimension, 
+    # it is no longer considered as a metadata dimension, so we remove it    
+    dist = calculate_centroid_distance(cents, "session", [])
+
+    # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
+    param_dist = minian_parameters.params_cross_reg["param_dist"]
+
+    dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
+    dist_ft = group_by_session(dist_ft)
+
+    # Generate mappings for ids of the current and reference sessions
+    mappings = calculate_mapping(dist_ft)
+    mappings_meta = resolve_mapping(mappings)
+    mappings_meta_fill = fill_mapping(mappings_meta, cents)
+
+    # Update unit ids of the current spatial componenets A
+    ids        = list(A["unit_id"].values)
+    new_ids    = [0]*len(ids)
+    ref_id_max = int(A_ref.coords["unit_id"].values.max()) + 1
+
+    for i in range(len(mappings_meta_fill)):
+        # Matching ids between the sessions
+        group = mappings_meta_fill.iloc[i]["group"][0]
+        if "current" in group and "reference" in group:
+            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
+            new_ids[index] = int(mappings_meta_fill.iloc[i]["session"]["reference"])
+        # Unique ids for the current session
+        elif "current" in group:
+            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
+            new_ids[index] = ref_id_max
+            ref_id_max += 1
+
+    A["unit_id"] = new_ids
+
+    return A
+
+
+def get_footprints(filename, rois_h5path, dims):
+    
+    with h5py.File(filename, 'r') as file_:
+
+        roi_names =  list(file_.get(rois_h5path))
+
+        roi_ids = np.zeros((len(roi_names) - 1))
+        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.float64)
+        for i in range(len(roi_names) - 1):
+            attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
+
+            roi_ids[i] = int(attrs["ID"])
+
+            coords = np.array(attrs["Coordinates"])
+            mask = np.zeros((dims["height"].size, dims["width"].size), np.float64)
+            cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
+            footprints[i, :, :] = mask
+
+        footprints_xr = xr.DataArray(footprints, 
+                                     coords = {"unit_id": roi_ids, "height": dims["height"], "width": dims["width"]}, 
+                                     dims   = ["unit_id", "height", "width"])
+
+    return footprints_xr
+
 
 def save_minian_to_doric(
     Y: xr.DataArray,
@@ -572,7 +688,7 @@ def save_minian_to_doric(
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
         rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
-        utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"})
+        utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}, roi_ids=A.coords["unit_id"].values)
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
