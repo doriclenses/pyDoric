@@ -39,7 +39,7 @@ except Exception as error:
 if __name__ == "__main__":
     caiman_params = cm_params.CaimanParameters(danse_parameters)
 
-    if caiman_params.preview_parameters:
+    if caiman_params.preview_params:
         cm_main.preview(caiman_params)
     else:
         cm_main.main(caiman_params)

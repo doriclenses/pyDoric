@@ -16,14 +16,13 @@ class CaimanParameters:
     Parameters used in Caiman library
     """
 
-    def __init__(self, danse_parameters):
+    def __init__(self, danse_params):
 
-        self.paths      = danse_parameters.get(defs.Parameters.Main.PATHS, {})
-        self.parameters = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
+        self.paths  = danse_params.get(defs.Parameters.Main.PATHS, {})
+        self.params = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
+        self.preview_params = danse_params.get(defs.Parameters.Main.PREVIEW, {})
 
         self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
-
-        self.preview_parameters = danse_parameters.get(defs.Parameters.Main.PREVIEW, {})
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             self.dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[self.paths[defs.Parameters.Path.H5PATH]] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
@@ -33,7 +32,7 @@ class CaimanParameters:
             freq    = utils.get_frequency(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}")
             dims, T = utils.get_dims(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{self.dataname}")
 
-        neuron_diameter = tuple([self.parameters[defs.Parameters.danse.NEURO_DIAM_MIN], self.parameters[defs.Parameters.danse.NEURO_DIAM_MAX]])
+        neuron_diameter = tuple([self.params[defs.Parameters.danse.NEURO_DIAM_MIN], self.params[defs.Parameters.danse.NEURO_DIAM_MAX]])
 
         print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
         fnames = self.paths[defs.Parameters.Path.TMP_DIR] + '/' + f"tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif"
@@ -56,8 +55,8 @@ class CaimanParameters:
                                                         "gSig": (neuron_diameter[0], neuron_diameter[0]),
                                                         "merge_thr": 0.8,
                                                         "p": 1,
-                                                        "tsub": self.parameters[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE],
-                                                        "ssub": self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
+                                                        "tsub": self.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE],
+                                                        "ssub": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
                                                         "rf": neuron_diameter[-1]*4,
                                                         "stride": neuron_diameter[-1]*2,
                                                         "only_init": True,    # set it to True to run CNMF-E
@@ -66,8 +65,8 @@ class CaimanParameters:
                                                         "method_deconvolution": "oasis",       # could use "cvxpy" alternatively
                                                         "low_rank_background": None,
                                                         "update_background_components": True,  # sometimes setting to False improve the results
-                                                        "min_corr": self.parameters[defs.Parameters.danse.LOCAL_CORR_THRESHOLD],
-                                                        "min_pnr": self.parameters[defs.Parameters.danse.PNR_THRESHOLD],
+                                                        "min_corr": self.params[defs.Parameters.danse.LOCAL_CORR_THRESHOLD],
+                                                        "min_pnr": self.params[defs.Parameters.danse.PNR_THRESHOLD],
                                                         "normalize_init": False,               # just leave as is
                                                         "center_psf": True,                    # leave as is for 1 photon
                                                         "ssub_B": 2,
@@ -78,9 +77,9 @@ class CaimanParameters:
                                                         }
                                             )
 
-        advanced_settings = self.remove_wrong_keys(self.cnmf_params.to_dict(), self.parameters.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
+        advanced_settings = self.remove_wrong_keys(self.cnmf_params.to_dict(), self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
         self.cnmf_params.change_params(advanced_settings)
-        self.parameters[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
+        self.params[defs.Parameters.danse.ADVANCED_SETTINGS] = advanced_settings.copy()
 
 
 
