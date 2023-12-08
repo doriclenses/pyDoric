@@ -23,7 +23,7 @@ from multiprocessing import freeze_support
 freeze_support()
 
 
-def main(caiman_parameters):
+def main(caiman_params):
     """
     CaImAn CNMF algorithm
     """
@@ -43,9 +43,9 @@ def main(caiman_parameters):
 
     c, dview, n_processes = cm.cluster.setup_cluster(backend="local", n_processes=None, single_thread=False)
 
-    fname_new = motion_correction(dview, caiman_parameters)
+    fname_new = motion_correction(dview, caiman_params)
 
-    estimates, images = cnmf(n_processes, dview, fname_new, caiman_parameters)
+    estimates, images = cnmf(n_processes, dview, fname_new, caiman_params)
 
     # CaimAn Cross register
     registered_ids = cross_register(
@@ -55,12 +55,12 @@ def main(caiman_parameters):
                         caiman_parameters)
 
     print(cm_defs.Messages.SAVING_DATA, flush=True)
-    file_ = h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r')
+    file_ = h5py.File(caiman_params.paths[defs.Parameters.Path.FILEPATH], 'r')
 
-    data, driver, operation, series, sensor = caiman_parameters.get_h5path_names()
+    data, driver, operation, series, sensor = caiman_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    attrs = utils.load_attributes(file_, f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}")
-    time_ = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    attrs = utils.load_attributes(file_, f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{caiman_params.dataname}")
+    time_ = np.array(file_[f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
@@ -76,10 +76,10 @@ def main(caiman_parameters):
             bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
             qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
             username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-            vname = caiman_parameters.paths[defs.Parameters.Path.FILEPATH],
+            vname = caiman_params.paths[defs.Parameters.Path.FILEPATH],
             vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
             vdataset = f"{series}/{sensor}",
-            params_doric = caiman_parameters.parameters,
+            params_doric = caiman_params.params,
             params_source = params_source_data,
             saveimages = True,
             saveresiduals = True,
@@ -89,19 +89,19 @@ def main(caiman_parameters):
     cm.stop_server(dview=dview)
 
 
-def preview(caiman_parameters: cm_params.CaimanParameters):
+def preview(caiman_params: cm_params.CaimanParameters):
     """
     Save Correlation and PNR in HDF5 file
     """
 
-    video_start_frame, video_stop_frame   = caiman_parameters.preview_parameters[defs.Parameters.Preview.RANGE]
+    video_start_frame, video_stop_frame   = caiman_params.preview_params[defs.Parameters.Preview.RANGE]
 
-    with h5py.File(caiman_parameters.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
-        images = np.array(file_[f"{caiman_parameters.paths[defs.Parameters.Path.H5PATH]}/{caiman_parameters.dataname}"])
+    with h5py.File(caiman_params.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
+        images = np.array(file_[f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{caiman_params.dataname}"])
 
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
-    images = images[:, :, ::caiman_parameters.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
+    images = images[:, :, ::caiman_params.preview_params[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
 
     images = images.transpose(2, 0, 1)
 
@@ -111,7 +111,7 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
     pnr[np.isnan(pnr)] = 0
 
     try:
-        with h5py.File(caiman_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
+        with h5py.File(caiman_params.preview_params[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.LOCALCORR, data = corr, dtype = "float64", chunks = True)
             hdf5_file.create_dataset(cm_defs.Preview.Dataset.PNR, data = pnr, dtype = "float64", chunks = True)
 
@@ -119,16 +119,16 @@ def preview(caiman_parameters: cm_params.CaimanParameters):
         utils.print_error(error, cm_defs.Messages.SAVE_TO_HDF5)
 
 
-def motion_correction(dview, caiman_parameters):
+def motion_correction(dview, caiman_params):
     """
     Perform the motion correction
     """
 
-    if bool(caiman_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]):
+    if bool(caiman_params.params[defs.Parameters.danse.CORRECT_MOTION]):
         print(cm_defs.Messages.MOTION_CORREC,  flush=True)
         # do motion correction rigid
         try:
-            mc = cm.motion_correction.MotionCorrect(caiman_parameters.cnmf_params.data["fnames"], dview=dview, **caiman_parameters.cnmf_params.get_group("motion"))
+            mc = cm.motion_correction.MotionCorrect(caiman_params.cnmf_params.data["fnames"], dview=dview, **caiman_params.cnmf_params.get_group("motion"))
         except TypeError:
             utils.print_to_intercept(cm_defs.Messages.PARAM_WRONG_TYPE)
             sys.exit()
@@ -137,18 +137,18 @@ def motion_correction(dview, caiman_parameters):
             sys.exit()
 
         mc.motion_correct(save_movie=True)
-        fname_mc = mc.fname_tot_els if caiman_parameters.cnmf_params.motion["pw_rigid"] else mc.fname_tot_rig
+        fname_mc = mc.fname_tot_els if caiman_params.cnmf_params.motion["pw_rigid"] else mc.fname_tot_rig
 
-        bord_px = 0 if caiman_parameters.cnmf_params.motion["border_nan"] == "copy" else caiman_parameters.cnmf_params.patch["border_pix"]
+        bord_px = 0 if caiman_params.cnmf_params.motion["border_nan"] == "copy" else caiman_params.cnmf_params.patch["border_pix"]
         fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0 = bord_px)
 
     else:
-        fname_new = cm.save_memmap([caiman_parameters.cnmf_params.data["fnames"]], base_name="memmap_", order='C', border_to_0=0)
+        fname_new = cm.save_memmap([caiman_params.cnmf_params.data["fnames"]], base_name="memmap_", order='C', border_to_0=0)
 
     return fname_new
 
 
-def cnmf(n_processes, dview, fname_new, caiman_parameters):
+def cnmf(n_processes, dview, fname_new, caiman_params):
     """
     Peform CNMF operation
     """
@@ -158,7 +158,7 @@ def cnmf(n_processes, dview, fname_new, caiman_parameters):
 
     try:
         print(cm_defs.Messages.START_CNMF, flush=True)
-        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview = dview, params = caiman_parameters.cnmf_params)
+        cnm = cm.source_extraction.cnmf.CNMF(n_processes = n_processes, dview = dview, params = caiman_params.cnmf_params)
         print(cm_defs.Messages.FITTING, flush=True)
         cnm.fit(images)
 
