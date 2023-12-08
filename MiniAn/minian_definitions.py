@@ -48,13 +48,10 @@ class Messages:
     ADVANCED_BAD_TYPE           = "One of the advanced parameters is not of a python type"
     LOADING_ARGUMENTS           = "Loading parameters"
 
+    CROSS_REGISTRATING          = "Cross-registering cells between sessions."
     PROCESS_DONE                = "MiniAn process is done"
 
-    """
-    Cross Registration
-    """
 
-    _ = ""
 
 class Folder:
     """
