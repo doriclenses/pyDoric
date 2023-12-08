@@ -210,15 +210,6 @@ def save_roi_signals(
         Group path in the HDF file
     bit_count : int
         Bits depth of images
-    qt_format : int
-        QImage_Format, necessary to display images in DNS. For reference, please
-        see https://doc.qt.io/qt-6/qimage.html
-
-    Returns
-    -------
-
-    Raises
-    ------
 
     """
     path = clean_path(path)
@@ -233,12 +224,19 @@ def save_roi_signals(
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
 
+        if roi_ids is None:
+            id_ = i + 1
+        else:
+            id_ = roi_ids[i]
+
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+
         attrs = {
             defs.DoricFile.Attribute.ROI.ID:           id_,
-            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_),
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
-            defs.DoricFile.Attribute.ROI.COORDS:       coords
+            defs.DoricFile.Attribute.ROI.COORDS:       coords,
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_)
         }
 
         if attrs_add is not None:

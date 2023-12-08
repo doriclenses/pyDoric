@@ -92,12 +92,10 @@ class Parameters:
         ADVANCED_SETTINGS    = "AdvancedSettings"
         LOCAL_CORR_THRESHOLD = "CorrelationThreshold";
         PNR_THRESHOLD        = "PNRThreshold";
-        # CrossReg parameters
         CROSS_REG            = "CrossReg"
         REF_FILEPATH         = "ReferenceFilepath";
         REF_IMAGES_PATH      = "ReferenceImagesPath";
         REF_ROIS_PATH        = "ReferenceROIsPath";
-
 
     class Preview:
 
