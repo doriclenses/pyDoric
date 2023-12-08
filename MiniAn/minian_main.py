@@ -103,7 +103,7 @@ def main(minian_parameters):
         bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
         qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
         username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-        vname = minian_parameters.params_load_doric["fname"],
+        vname = minian_parameters.paths[defs.Parameters.Path.FILEPATH],
         vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
         vdataset = f"{series}/{sensor}",
         params_doric = minian_parameters.parameters,
@@ -716,7 +716,7 @@ def save_minian_to_doric(
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
-    print(mn_defs.Messages.SAVE_TO.format(path = vname))
+    print(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
 @contextmanager
