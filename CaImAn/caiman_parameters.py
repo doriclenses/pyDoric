@@ -40,42 +40,41 @@ class CaimanParameters:
         del images
 
         self.cnmf_params = CNMFParams(params_dict = {
-                                                        "fr": freq,
-                                                        "dims": dims,
-                                                        "decay_time": 0.4,
-                                                        "pw_rigid": True,
-                                                        "max_shifts": (neuron_diameter[0], neuron_diameter[0]),
-                                                        "gSig_filt": (neuron_diameter[0], neuron_diameter[0]),
-                                                        "strides": (neuron_diameter[-1]*4, neuron_diameter[-1]*4),
-                                                        "overlaps": (neuron_diameter[-1]*2, neuron_diameter[-1]*2),
-                                                        "max_deviation_rigid": neuron_diameter[0]/2,
-                                                        "border_nan": "copy",
-                                                        "method_init": "corr_pnr",  # use this for 1 photon
-                                                        "K": None,
-                                                        "gSig": (neuron_diameter[0], neuron_diameter[0]),
-                                                        "merge_thr": 0.8,
-                                                        "p": 1,
-                                                        "tsub": self.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE],
-                                                        "ssub": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
-                                                        "rf": neuron_diameter[-1]*4,
-                                                        "stride": neuron_diameter[-1]*2,
-                                                        "only_init": True,    # set it to True to run CNMF-E
-                                                        "nb": 0,
-                                                        "nb_patch": 0,
-                                                        "method_deconvolution": "oasis",       # could use "cvxpy" alternatively
-                                                        "low_rank_background": None,
-                                                        "update_background_components": True,  # sometimes setting to False improve the results
-                                                        "min_corr": self.params[defs.Parameters.danse.LOCAL_CORR_THRESHOLD],
-                                                        "min_pnr": self.params[defs.Parameters.danse.PNR_THRESHOLD],
-                                                        "normalize_init": False,               # just leave as is
-                                                        "center_psf": True,                    # leave as is for 1 photon
-                                                        "ssub_B": 2,
-                                                        "ring_size_factor": 1.4,
-                                                        "del_duplicates": True,
-                                                        "use_cnn": False,
-                                                        "fnames": fnames
-                                                        }
-                                            )
+            "fr": freq,
+            "dims": dims,
+            "decay_time": 0.4,
+            "pw_rigid": True,
+            "max_shifts": (neuron_diameter[0], neuron_diameter[0]),
+            "gSig_filt": (neuron_diameter[0], neuron_diameter[0]),
+            "strides": (neuron_diameter[-1]*4, neuron_diameter[-1]*4),
+            "overlaps": (neuron_diameter[-1]*2, neuron_diameter[-1]*2),
+            "max_deviation_rigid": neuron_diameter[0]/2,
+            "border_nan": "copy",
+            "method_init": "corr_pnr",  # use this for 1 photon
+            "K": None,
+            "gSig": (neuron_diameter[0], neuron_diameter[0]),
+            "merge_thr": 0.8,
+            "p": 1,
+            "tsub": self.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE],
+            "ssub": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
+            "rf": neuron_diameter[-1]*4,
+            "stride": neuron_diameter[-1]*2,
+            "only_init": True,    # set it to True to run CNMF-E
+            "nb": 0,
+            "nb_patch": 0,
+            "method_deconvolution": "oasis",       # could use "cvxpy" alternatively
+            "low_rank_background": None,
+            "update_background_components": True,  # sometimes setting to False improve the results
+            "min_corr": self.params[defs.Parameters.danse.LOCAL_CORR_THRESHOLD],
+            "min_pnr": self.params[defs.Parameters.danse.PNR_THRESHOLD],
+            "normalize_init": False,               # just leave as is
+            "center_psf": True,                    # leave as is for 1 photon
+            "ssub_B": 2,
+            "ring_size_factor": 1.4,
+            "del_duplicates": True,
+            "use_cnn": False,
+            "fnames": fnames
+        })
 
         advanced_settings = self.remove_wrong_keys(self.cnmf_params.to_dict(), self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))
         self.cnmf_params.change_params(advanced_settings)
