@@ -118,6 +118,17 @@ def main(minian_params):
     cluster.close()
 
 
+def preview(minian_params):
+    """
+    ...
+    """
+
+    if minian_params.preview_params[defs.Parameters.Preview.PREVIEW_TYPE] == mn_defs.Preview.Type.INIT_PREVIEW:
+        init_preview(minian_params)
+
+    return 1
+
+
 def init_preview(minian_params):
     """
     Saves max projection image and seeds in HDF5 file

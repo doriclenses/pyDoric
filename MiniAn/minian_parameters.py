@@ -24,8 +24,7 @@ class MinianParameters:
     def __init__(self, danse_params):
         self.paths                    = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params                   = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
-        self.init_preview_params      = danse_params.get(defs.Parameters.Main.INIT_PREVIEW, {})
-        self.penalties_preview_params = danse_params.get(defs.Parameters.Main.PENALTIES_PREVIEW, {})
+        self.preview_params           = danse_params.get(defs.Parameters.Main.PREVIEW, {})
 
         self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
 
