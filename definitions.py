@@ -61,8 +61,6 @@ class Parameters:
         PARAMETERS        = "Parameters"
         PATHS             = "Paths"
         PREVIEW           = "Preview"
-        INIT_PREVIEW      = "InitializationPreview"
-        PENALTIES_PREVIEW = "PenaltiesPreview"
 
 
     class Path:
@@ -108,7 +106,7 @@ class Parameters:
         FILEPATH            = "PreviewFilepath"
         RANGE               = "PreviewRange"
         TEMPORAL_DOWNSAMPLE = "TemporalDownsample"
-
+        PREVIEW_TYPE        = "PreviewType"
 
 
 class Messages:
