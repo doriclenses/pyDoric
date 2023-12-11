@@ -33,7 +33,7 @@ from multiprocessing import freeze_support
 freeze_support()
 
 
-def main(minian_parameters):
+def main(minian_params):
 
     """
     MiniAn CNMF algorithm
@@ -41,59 +41,59 @@ def main(minian_parameters):
 
     # Start cluster
     print(mn_defs.Messages.START_CLUSTER, flush=True)
-    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
+    cluster = LocalCluster(**minian_params.params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
+    intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
     subset = {"frame": slice(0, None)}
 
-    file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
+    file_, chk, varr_ref = load_chunk(intpath, subset, minian_params)
 
-    varr_ref = preprocess(varr_ref, intpath, minian_parameters)
+    varr_ref = preprocess(varr_ref, intpath, minian_params)
 
-    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
+    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
 
-    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters)
+    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params)
 
-    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_parameters)
+    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
-    A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters)
+    A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params)
 
-    A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters)
+    A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_params)
 
     # Cross registration
-    A = cross_register(AC, A, minian_parameters)
-    
+    A = cross_register(AC, A, minian_params)
+
     # Save final MiniAn results
     print(mn_defs.Messages.SAVING_FINAL, flush=True)
-    A = save_minian(A.rename("A"), **minian_parameters.params_save_minian)
-    C = save_minian(C.rename("C"), **minian_parameters.params_save_minian)
-    AC = save_minian(AC.rename("AC"), **minian_parameters.params_save_minian)
-    S = save_minian(S.rename("S"), **minian_parameters.params_save_minian)
-    c0 = save_minian(c0.rename("c0"), **minian_parameters.params_save_minian)
-    b0 = save_minian(b0.rename("b0"), **minian_parameters.params_save_minian)
-    b = save_minian(b.rename("b"), **minian_parameters.params_save_minian)
-    f = save_minian(f.rename("f"), **minian_parameters.params_save_minian)
+    A = save_minian(A.rename("A"), **minian_params.params_save_minian)
+    C = save_minian(C.rename("C"), **minian_params.params_save_minian)
+    AC = save_minian(AC.rename("AC"), **minian_params.params_save_minian)
+    S = save_minian(S.rename("S"), **minian_params.params_save_minian)
+    c0 = save_minian(c0.rename("c0"), **minian_params.params_save_minian)
+    b0 = save_minian(b0.rename("b0"), **minian_params.params_save_minian)
+    b = save_minian(b.rename("b"), **minian_params.params_save_minian)
+    f = save_minian(f.rename("f"), **minian_params.params_save_minian)
 
     # Save results to .doric file
     print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
 
     # Get all operation parameters and dataset attributes
-    data, driver, operation, series, sensor = minian_parameters.get_h5path_names()
+    data, driver, operation, series, sensor = minian_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
 
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[minian_parameters.paths[defs.Parameters.Path.H5PATH]]:
-        attrs = utils.load_attributes(file_, f"{minian_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
+    if defs.DoricFile.Dataset.IMAGE_STACK in file_[minian_params.paths[defs.Parameters.Path.H5PATH]]:
+        attrs = utils.load_attributes(file_, f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
     else:
-        attrs = utils.load_attributes(file_, f"{minian_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
+        attrs = utils.load_attributes(file_, f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
-    if minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
-        minian_parameters.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_parameters.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+    if minian_params.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
+        minian_params.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
-    time_ = np.array(file_[f"{minian_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    time_ = np.array(file_[f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
     file_.close()
 
@@ -103,10 +103,10 @@ def main(minian_parameters):
         bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
         qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
         username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-        vname = minian_parameters.paths[defs.Parameters.Path.FILEPATH],
+        vname = minian_params.paths[defs.Parameters.Path.FILEPATH],
         vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
         vdataset = f"{series}/{sensor}",
-        params_doric = minian_parameters.parameters,
+        params_doric = minian_params.parameters,
         params_source = params_source_data,
         saveimages = True,
         saveresiduals = True,
@@ -118,44 +118,44 @@ def main(minian_parameters):
     cluster.close()
 
 
-def preview(minian_parameters):
+def preview(minian_params):
     """
     Saves max projection image and seeds in HDF5 file
     """
 
     # Start cluster
     print(mn_defs.Messages.START_CLUSTER, flush=True)
-    cluster = LocalCluster(**minian_parameters.params_LocalCluster)
+    cluster = LocalCluster(**minian_params.params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
     client = Client(cluster)
 
     # MiniAn CNMF
-    intpath = os.path.join(minian_parameters.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    subset = {"frame": slice(*minian_parameters.preview_parameters[defs.Parameters.Preview.RANGE])}
+    intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
+    subset = {"frame": slice(*minian_params.initialization_preview_params[defs.Parameters.Preview.RANGE])}
 
-    file_, chk, varr_ref = load_chunk(intpath, subset, minian_parameters)
+    file_, chk, varr_ref = load_chunk(intpath, subset, minian_params)
 
-    varr_ref = preprocess(varr_ref, intpath, minian_parameters)
+    varr_ref = preprocess(varr_ref, intpath, minian_params)
 
-    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_parameters)
+    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
 
-    time_ = np.array(file_[f"{minian_parameters.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    time_ = np.array(file_[f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
-    seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, True)
+    seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
     example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
                                  width=seeds["width"].to_xarray(),
                                  ).rename(**{"index": "seed"})
 
-    trace_smth_low = smooth_sig(example_trace, minian_parameters.parameters[defs.Parameters.danse.NOISE_FREQ])
-    trace_smth_high = smooth_sig(example_trace, minian_parameters.parameters[defs.Parameters.danse.NOISE_FREQ], btype="high")
+    trace_smth_low = smooth_sig(example_trace, minian_params.parameters[defs.Parameters.danse.NOISE_FREQ])
+    trace_smth_high = smooth_sig(example_trace, minian_params.parameters[defs.Parameters.danse.NOISE_FREQ], btype="high")
     trace_smth_low = trace_smth_low.compute()
     trace_smth_high = trace_smth_high.compute()
 
     # Save data for preview to hdf5 file
     try:
-        with h5py.File(minian_parameters.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
+        with h5py.File(minian_params.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
             initialization_group = hdf5_file.create_group(mn_defs.Preview.Group.INITIALIZATION)
             initialization_group.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 
@@ -184,18 +184,18 @@ def preview(minian_parameters):
 
 
 
-def load_chunk(intpath, subset, minian_parameters):
+def load_chunk(intpath, subset, minian_params):
 
     print(mn_defs.Messages.LOAD_DATA, flush=True)
-    varr, file_ = load_doric_to_xarray(**minian_parameters.params_load_doric)
-    chk, _ = get_optimal_chk(varr, **minian_parameters.params_get_optimal_chk)
+    varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric)
+    chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
     varr_ref = varr.sel(subset)
 
     return file_, chk, varr_ref
 
-def preprocess(varr_ref, intpath, minian_parameters):
+def preprocess(varr_ref, intpath, minian_params):
 
     print(mn_defs.Messages.PREPROCESS, flush=True)
 
@@ -207,12 +207,12 @@ def preprocess(varr_ref, intpath, minian_parameters):
     # 2. Denoise
     print(mn_defs.Messages.PREPROC_DENOISING, flush=True)
     with except_type_error("denoise"):
-        varr_ref = denoise(varr_ref, **minian_parameters.params_denoise)
+        varr_ref = denoise(varr_ref, **minian_params.params_denoise)
 
     # 3. Background removal
     print(mn_defs.Messages.PREPROC_REMOV_BACKG, flush=True)
     with except_type_error("remove_background"):
-        varr_ref = remove_background(varr_ref, **minian_parameters.params_remove_background)
+        varr_ref = remove_background(varr_ref, **minian_params.params_remove_background)
 
     # Save
     print(mn_defs.Messages.PREPROC_SAVE, flush=True)
@@ -221,16 +221,16 @@ def preprocess(varr_ref, intpath, minian_parameters):
     return varr_ref
 
 
-def correct_motion(varr_ref, intpath, chk, minian_parameters):
+def correct_motion(varr_ref, intpath, chk, minian_params):
 
-    if minian_parameters.parameters[defs.Parameters.danse.CORRECT_MOTION]:
+    if minian_params.parameters[defs.Parameters.danse.CORRECT_MOTION]:
         print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
         with except_type_error("estimate_motion"):
-            motion = estimate_motion(varr_ref, **minian_parameters.params_estimate_motion)
+            motion = estimate_motion(varr_ref, **minian_params.params_estimate_motion)
 
-        motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **minian_parameters.params_save_minian)
+        motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **minian_params.params_save_minian)
         print(mn_defs.Messages.CORRECT_MOTION_APPLY_SHIFT, flush=True)
-        Y = apply_transform(varr_ref, motion, **minian_parameters.params_apply_transform)
+        Y = apply_transform(varr_ref, motion, **minian_params.params_apply_transform)
 
     else:
         Y = varr_ref
@@ -243,32 +243,32 @@ def correct_motion(varr_ref, intpath, chk, minian_parameters):
     return Y, Y_fm_chk, Y_hw_chk
 
 
-def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, return_all_seeds = False):
+def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, return_all_seeds = False):
 
     print(mn_defs.Messages.INIT_SEEDS, flush=True)
     with except_print_error_no_cells(mn_defs.Messages.INIT_SEEDS):
         # 1. Compute max projection
-        max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **minian_parameters.params_save_minian).compute()
+        max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **minian_params.params_save_minian).compute()
 
         # 2. Generating over-complete set of seeds
         with except_type_error("seeds_init"):
-            seeds = seeds_init(Y_fm_chk, **minian_parameters.params_seeds_init)
+            seeds = seeds_init(Y_fm_chk, **minian_params.params_seeds_init)
 
         # 3. Peak-Noise-Ratio refine
         print(mn_defs.Messages.INIT_SEEDS_PNR_REFI, flush=True)
         with except_type_error("pnr_refine"):
-            seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **minian_parameters.params_pnr_refine)
+            seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **minian_params.params_pnr_refine)
 
         # 4. Kolmogorov-Smirnov refine
         print(mn_defs.Messages.INIT_SEEDS_KOLSM_REF, flush=True)
         with except_type_error("ks_refine"):
-            seeds = ks_refine(Y_hw_chk, seeds, **minian_parameters.params_ks_refine)
+            seeds = ks_refine(Y_hw_chk, seeds, **minian_params.params_ks_refine)
 
         # 5. Merge seeds
         print(mn_defs.Messages.INIT_SEEDS_MERG, flush=True)
         seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
         with except_type_error("seeds_merge"):
-            seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_parameters.params_seeds_merge)
+            seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_params.params_seeds_merge)
 
         if return_all_seeds:
             return pd.merge(seeds, seeds_final, how="outer").fillna(False), max_proj
@@ -276,14 +276,14 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_parameters, return_all_seeds = F
             return seeds_final, max_proj
 
 
-def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_parameters):
+def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_params):
 
     print(mn_defs.Messages.INIT_COMP, flush=True)
     with except_print_error_no_cells(mn_defs.Messages.INIT_COMP):
         # 1. Initialize spatial
         print(mn_defs.Messages.INIT_COMP_SPATIAL, flush=True)
         with except_type_error("initA"):
-            A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **minian_parameters.params_initA)
+            A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **minian_params.params_initA)
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
 
         # 2. Initialize temporal
@@ -295,7 +295,7 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
         # 3. Merge components
         print(mn_defs.Messages.INIT_COMP_MERG, flush=True)
         with except_type_error("unit_merge"):
-            A, C = unit_merge(A_init, C_init, **minian_parameters.params_unit_merge)
+            A, C = unit_merge(A_init, C_init, **minian_params.params_unit_merge)
 
         A = save_minian(A.rename("A"), intpath, overwrite=True)
         C = save_minian(C.rename("C"), intpath, overwrite=True)
@@ -311,20 +311,20 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
     return A, C, C_chk, f, b
 
 
-def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
+def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params):
 
     with except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("1st")):
         # 1. Estimate spatial noise
         print(mn_defs.Messages.CNMF_ESTIM_NOISE.format("1st"), flush=True)
         with except_type_error("get_noise_fft"):
-            sn_spatial = get_noise_fft(Y_hw_chk, **minian_parameters.params_get_noise_fft)
+            sn_spatial = get_noise_fft(Y_hw_chk, **minian_params.params_get_noise_fft)
 
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
 
         # 2. First spatial update
         print(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
         with except_type_error("update_spatial"):
-            A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
+            A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_params.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
@@ -343,7 +343,7 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with except_type_error("update_temporal"):
-            C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_parameters.params_update_temporal)
+            C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_params.params_update_temporal)
 
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]},)
@@ -355,7 +355,7 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
         # 5. Merge components
         print(mn_defs.Messages.CNMF_MERG_COMP.format("1st"), flush=True)
         with except_type_error("unit_merge"):
-            A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **minian_parameters.params_unit_merge)
+            A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **minian_params.params_unit_merge)
 
         # Save
         print(mn_defs.Messages.CNMF_SAVE_INTERMED.format("1st"), flush=True)
@@ -374,13 +374,13 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
     return A, C, C_chk, sn_spatial
 
 
-def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_parameters):
+def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_params):
 
     with except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("2nd")):
         # 1. Second spatial update
         print(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
         with except_type_error("update_spatial"):
-            A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_parameters.params_update_spatial)
+            A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_params.params_update_spatial)
 
         C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
@@ -399,7 +399,7 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with except_type_error("update_temporal"):
-            C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_parameters.params_update_temporal)
+            C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_params.params_update_temporal)
 
         # Save
         print(mn_defs.Messages.CNMF_SAVE_INTERMED.format("2nd"), flush=True)
@@ -481,17 +481,17 @@ def load_doric_to_xarray(
 
     return varr, file_
 
-            
-def cross_register(AC, A, minian_parameters):
 
-    if not minian_parameters.params_cross_reg:
+def cross_register(AC, A, minian_params):
+
+    if not minian_params.params_cross_reg:
         return A
 
     print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
 
     # Load AC componenets from the reference file
-    ref_filepath = minian_parameters.params_cross_reg["fname"]
-    ref_images   = minian_parameters.params_cross_reg["h5path_images"]
+    ref_filepath = minian_params.params_cross_reg["fname"]
+    ref_images   = minian_params.params_cross_reg["h5path_images"]
     AC_ref, file_ref = load_doric_to_xarray(ref_filepath, ref_images, np.float64, None, "subset", None)
 
     # Concatenate max proj of both results
@@ -499,18 +499,18 @@ def cross_register(AC, A, minian_parameters):
     AC_max  = AC.max("frame")
     AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["reference", "current"], name = "session"))
 
-    # Estimate a translational shift along the session dimension using the max projection for each dataset. 
+    # Estimate a translational shift along the session dimension using the max projection for each dataset.
     # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
     shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
     temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
     shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
 
     # Load A componenets from the reference file
-    ref_rois_path  = minian_parameters.params_cross_reg["h5path_roi"]
+    ref_rois_path  = minian_params.params_cross_reg["h5path_roi"]
     A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
     A_concat = xr.concat([A_ref, A], pd.Index(["reference", "current"], name="session"))
     file_ref.close()
-    
+
     # Apply shifts to spatial footprints of each session
     A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
 
@@ -518,19 +518,19 @@ def cross_register(AC, A, minian_parameters):
     window, _ = xr.broadcast(window, shiftds['temps_shifted'])
     def set_window(wnd):
         return wnd == wnd.min()
-    window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]], 
+    window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]],
                             output_core_dims=[["height", "width"]], vectorize=True)
 
     # Calculate centroids of spatial footprints for cells inside a window.
     cents = calculate_centroids(A_shifted, window)
 
-    # Calculate pairwise distance between cells in all pairs of sessions. 
-    # Note that at this stage, since we are computing something along the session dimension, 
-    # it is no longer considered as a metadata dimension, so we remove it    
+    # Calculate pairwise distance between cells in all pairs of sessions.
+    # Note that at this stage, since we are computing something along the session dimension,
+    # it is no longer considered as a metadata dimension, so we remove it
     dist = calculate_centroid_distance(cents, "session", [])
 
     # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
-    param_dist = minian_parameters.params_cross_reg["param_dist"]
+    param_dist = minian_params.params_cross_reg["param_dist"]
 
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
@@ -563,7 +563,7 @@ def cross_register(AC, A, minian_parameters):
 
 
 def get_footprints(filename, rois_h5path, dims):
-    
+
     with h5py.File(filename, 'r') as file_:
 
         roi_names =  list(file_.get(rois_h5path))
@@ -580,8 +580,8 @@ def get_footprints(filename, rois_h5path, dims):
             cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
             footprints[i, :, :] = mask
 
-        footprints_xr = xr.DataArray(footprints, 
-                                     coords = {"unit_id": roi_ids, "height": dims["height"], "width": dims["width"]}, 
+        footprints_xr = xr.DataArray(footprints,
+                                     coords = {"unit_id": roi_ids, "height": dims["height"], "width": dims["width"]},
                                      dims   = ["unit_id", "height", "width"])
 
     return footprints_xr
