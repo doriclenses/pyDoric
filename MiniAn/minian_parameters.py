@@ -24,13 +24,10 @@ class MinianParameters:
     def __init__(self, danse_parameters):
         self.paths   = danse_parameters.get(defs.Parameters.Main.PATHS, {})
         self.parameters  = danse_parameters.get(defs.Parameters.Main.PARAMETERS, {})
+        self.preview_parameters = danse_parameters.get(defs.Parameters.Main.PREVIEW, {})
+
 
         self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
-
-        self.preview = False
-        if defs.Parameters.Main.PREVIEW in danse_parameters:
-            self.preview = True
-            self.preview_parameters = danse_parameters[defs.Parameters.Main.PREVIEW]
 
         os.environ["OMP_NUM_THREADS"]       = "1"
         os.environ["MKL_NUM_THREADS"]       = "1"
@@ -59,7 +56,7 @@ class MinianParameters:
             "fname": self.paths[defs.Parameters.Path.FILEPATH],
             "h5path": self.paths[defs.Parameters.Path.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": self.parameters[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE] if not self.preview else self.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE],
+            "downsample": {"frame": self.parameters[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE] if not self.preview_parameters else self.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE],
                             "height": self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
                             "width": self.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]},
             "downsample_strategy": "subset",
