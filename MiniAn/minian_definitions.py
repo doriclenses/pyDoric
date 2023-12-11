@@ -99,3 +99,7 @@ class Preview:
         MERGED      = "Merged"
         REFINED     = "Refined"
         SEED_COUNT  = "SeedCount"
+
+    class Type:
+        INIT_PREVIEW        = "InitializationPreview"
+        PENALTIES_PREVIEW   = "PenaltiesPreview"
