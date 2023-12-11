@@ -1,4 +1,4 @@
-# Import miscellaneous and utilities librarys
+# Import miscellaneous and utilities lybraries
 import os
 import sys
 import h5py
@@ -98,7 +98,6 @@ def preview(caiman_params: cm_params.CaimanParameters):
 
     with h5py.File(caiman_params.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
         images = np.array(file_[f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{caiman_params.dataname}"])
-
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::caiman_params.preview_params[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
@@ -232,7 +231,7 @@ def save_caiman_to_doric(
                 for operation in operations:
                     operationAttrs = utils.load_attributes(f, f"{vpath}/{operation}")
                     if utils.merge_params(params_doric, params_source) == operationAttrs:
-                        if(len(operation) == len(cm_defs.DoricFile.Group.ROISIGNALS)):
+                        if len(operation) == len(cm_defs.DoricFile.Group.ROISIGNALS):
                             operationCount = ""
                         else:
                             operationCount = operation[-1]
