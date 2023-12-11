@@ -661,9 +661,9 @@ def save_minian_to_doric(
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
     names = []
     usernames = []
-    for i in range(len(C)):
-        names.append("ROI"+str(i+1).zfill(4))
-        usernames.append("ROI {0}".format(i+1))
+    for i in A.coords["unit_id"].values:
+        names.append("ROI"+str(i).zfill(4))
+        usernames.append("ROI {0}".format(i))
 
     with h5py.File(vname, 'a') as f:
 
