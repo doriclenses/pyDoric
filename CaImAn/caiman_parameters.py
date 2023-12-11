@@ -76,11 +76,11 @@ class CaimanParameters:
             "fnames": fnames
         })
         self.params_cross_reg = {}
-        if self.parameters.get(defs.Parameters.danse.CROSS_REG, False):
+        if self.params.get(defs.Parameters.danse.CROSS_REG, False):
             self.params_cross_reg = {
-                "fname"         : self.parameters[defs.Parameters.danse.REF_FILEPATH],
-                "h5path_images" : self.parameters[defs.Parameters.danse.REF_IMAGES_PATH],
-                "h5path_roi"    : self.parameters[defs.Parameters.danse.REF_ROIS_PATH]
+                "fname"         : self.params[defs.Parameters.danse.REF_FILEPATH],
+                "h5path_images" : self.params[defs.Parameters.danse.REF_IMAGES_PATH],
+                "h5path_roi"    : self.params[defs.Parameters.danse.REF_ROIS_PATH]
             }
 
         advanced_settings = self.remove_wrong_keys(self.cnmf_params.to_dict(), self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {}))

@@ -49,10 +49,10 @@ def main(caiman_params):
 
     # CaimAn Cross register
     registered_ids = cross_register(
-                        cnm.estimates.A[:,cnm.estimates.idx_components],
-                        cnm.estimates.C[cnm.estimates.idx_components,:],
-                        (dims[0],dims[1],T),
-                        caiman_parameters)
+                        estimates.A[:,estimates.idx_components],
+                        estimates.C[estimates.idx_components,:],
+                        np.array(images).shape,
+                        caiman_params)
 
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     file_ = h5py.File(caiman_params.paths[defs.Parameters.Path.FILEPATH], 'r')
@@ -281,6 +281,7 @@ def cross_register(
     caiman_parameters
 ) -> List[int]:
 
+    shape = (shape[1], shape[2], shape[0]);
     AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
     A = A.toarray()
     A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
