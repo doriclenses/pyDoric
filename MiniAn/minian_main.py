@@ -90,8 +90,8 @@ def main(minian_params):
     else:
         attrs = utils.load_attributes(file_, f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
 
-    if minian_params.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
-        minian_params.parameters[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.parameters[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+    if minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
+        minian_params.params[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
 
     time_ = np.array(file_[f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
 
@@ -106,7 +106,7 @@ def main(minian_params):
         vname = minian_params.paths[defs.Parameters.Path.FILEPATH],
         vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
         vdataset = f"{series}/{sensor}",
-        params_doric = minian_params.parameters,
+        params_doric = minian_params.params,
         params_source = params_source_data,
         saveimages = True,
         saveresiduals = True,
@@ -159,8 +159,8 @@ def init_preview(minian_params):
                                  width=seeds["width"].to_xarray(),
                                  ).rename(**{"index": "seed"})
 
-    trace_smth_low = smooth_sig(example_trace, minian_params.parameters[defs.Parameters.danse.NOISE_FREQ])
-    trace_smth_high = smooth_sig(example_trace, minian_params.parameters[defs.Parameters.danse.NOISE_FREQ], btype="high")
+    trace_smth_low = smooth_sig(example_trace, minian_params.params[defs.Parameters.danse.NOISE_FREQ])
+    trace_smth_high = smooth_sig(example_trace, minian_params.params[defs.Parameters.danse.NOISE_FREQ], btype="high")
     trace_smth_low = trace_smth_low.compute()
     trace_smth_high = trace_smth_high.compute()
 
@@ -242,7 +242,7 @@ def preprocess(varr_ref, intpath, minian_params):
 
 def correct_motion(varr_ref, intpath, chk, minian_params):
 
-    if minian_params.parameters[defs.Parameters.danse.CORRECT_MOTION]:
+    if minian_params.params[defs.Parameters.danse.CORRECT_MOTION]:
         print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
         with except_type_error("estimate_motion"):
             motion = estimate_motion(varr_ref, **minian_params.params_estimate_motion)
