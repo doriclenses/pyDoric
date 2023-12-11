@@ -118,7 +118,7 @@ def main(minian_params):
     cluster.close()
 
 
-def preview(minian_params):
+def init_preview(minian_params):
     """
     Saves max projection image and seeds in HDF5 file
     """
@@ -183,6 +183,13 @@ def preview(minian_params):
     cluster.close()
 
 
+def penalties_preview(minian_params):
+    """
+    Saves
+    """
+
+    return 0
+
 
 def load_chunk(intpath, subset, minian_params):
 
@@ -194,6 +201,7 @@ def load_chunk(intpath, subset, minian_params):
     varr_ref = varr.sel(subset)
 
     return file_, chk, varr_ref
+
 
 def preprocess(varr_ref, intpath, minian_params):
 
