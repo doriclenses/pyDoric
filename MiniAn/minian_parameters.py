@@ -143,7 +143,7 @@ class MinianParameters:
         }
 
         self.params_cross_reg = {}
-        if self.parameters[defs.Parameters.danse.CROSS_REG]:
+        if self.parameters.get(defs.Parameters.danse.CROSS_REG, False):
             self.params_cross_reg = {
                 "fname"         : self.parameters[defs.Parameters.danse.REF_FILEPATH],
                 "h5path_images" : self.parameters[defs.Parameters.danse.REF_IMAGES_PATH],
