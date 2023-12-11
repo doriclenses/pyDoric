@@ -36,7 +36,7 @@ except Exception as error:
 if __name__ == "__main__":
     minian_params = mn_params.MinianParameters(danse_parameters)
 
-    if minian_params.preview:
+    if minian_params.preview_parameters:
         mn_main.preview(minian_params)
     else:
         mn_main.main(minian_params)
