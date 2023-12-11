@@ -366,7 +366,7 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
     # Renumber unit_ids to start from 1 instead of 0
-    ids = A["unit_id"].values + 1
+    ids = np.arange(len(A["unit_id"])) + 1
     A["unit_id"] = ids
     C["unit_id"] = ids
     C_chk["unit_id"] = ids
