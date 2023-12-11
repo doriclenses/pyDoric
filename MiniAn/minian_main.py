@@ -132,7 +132,7 @@ def init_preview(minian_params):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    subset = {"frame": slice(*minian_params.initialization_preview_params[defs.Parameters.Preview.RANGE])}
+    subset = {"frame": slice(*minian_params.preview_params[defs.Parameters.Preview.RANGE])}
 
     file_, chk, varr_ref = load_chunk(intpath, subset, minian_params)
 
@@ -155,7 +155,7 @@ def init_preview(minian_params):
 
     # Save data for preview to hdf5 file
     try:
-        with h5py.File(minian_params.preview_parameters[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
+        with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'w') as hdf5_file:
             initialization_group = hdf5_file.create_group(mn_defs.Preview.Group.INITIALIZATION)
             initialization_group.create_dataset(mn_defs.Preview.Dataset.MAX_PROJECTION, data = max_proj.values, dtype = "float64", chunks = True)
 

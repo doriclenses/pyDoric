@@ -56,7 +56,7 @@ class MinianParameters:
             "fname": self.paths[defs.Parameters.Path.FILEPATH],
             "h5path": self.paths[defs.Parameters.Path.H5PATH],
             "dtype": np.uint8,
-            "downsample": {"frame": self.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE] if not self.preview_parameters else self.preview_parameters[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE],
+            "downsample": {"frame": self.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE] if not self.preview_params else self.preview_params[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE],
                             "height": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
                             "width": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]},
             "downsample_strategy": "subset",
