@@ -365,12 +365,6 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_parameters):
                             chunks={"unit_id": -1, "frame": chk["frame"]})
         sig = save_minian(sig_mrg.rename("sig_mrg"), intpath, overwrite=True)
 
-    # Renumber unit_ids to start from 1 instead of 0
-    ids = np.arange(len(A["unit_id"])) + 1
-    A["unit_id"] = ids
-    C["unit_id"] = ids
-    C_chk["unit_id"] = ids
-
     return A, C, C_chk, sn_spatial
 
 
@@ -410,7 +404,13 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
         c0 = save_minian(c0_new.rename("c0").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         A = A.sel(unit_id=C.coords["unit_id"].values)
 
-        AC = compute_AtC(A, C_chk)
+    # Renumber unit_ids to start from 1 instead of 0
+    ids = np.arange(len(A["unit_id"])) + 1
+    A["unit_id"] = ids
+    C["unit_id"] = ids
+    C_chk["unit_id"] = ids
+
+    AC = compute_AtC(A, C_chk)
 
     return A, C, AC, S, c0, b0
 
