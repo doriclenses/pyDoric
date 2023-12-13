@@ -200,6 +200,11 @@ def penalties_preview(minian_params):
     """
     Saves penalties_preview
     """
+
+    # We assume that initialization preview was generated first
+    # Read the saved data during the generation of the Initialization Preview
+    # It's in the "[TmpDir]/Intermediate", e.g. Y_hw_chk, Y_fm_chk
+
     # Start cluster
     print(mn_defs.Messages.START_CLUSTER, flush=True)
     cluster = LocalCluster(**minian_params.params_LocalCluster)
@@ -207,7 +212,6 @@ def penalties_preview(minian_params):
     cluster.scheduler.add_plugin(annt_plugin)
     client = Client(cluster)
 
-    # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
     subset = {"frame": slice(*minian_params.preview_params[defs.Parameters.Preview.RANGE])}
 
@@ -215,19 +219,38 @@ def penalties_preview(minian_params):
     Y_hw_chk = minian_ds["Y_hw_chk"]
     Y_fm_chk = minian_ds["Y_fm_chk"]
 
+    print("Y_hw_chk", Y_hw_chk)
+    print("Y_fm_chk", Y_fm_chk)
+
     file_, chk, _ = load_chunk(intpath, subset, minian_params)
-    seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
+    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
     time_ = np.array(file_[f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
-    width  = max_proj.shape[1]
-    height = max_proj.shape[0]
+    file_.close()
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
     sn_spatial = get_noise_fft(Y_hw_chk, **minian_params.params_get_noise_fft)
     sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
 
-    print(minian_params.params_update_spatial)
+    units = np.random.choice(A.coords["unit_id"], 10, replace=False)
+    units.sort()
+    A_sub = A.sel(unit_id=units).persist()
+    C_sub = C.sel(unit_id=units).persist()
+
+    cur_A, cur_mask, cur_norm = update_spatial(Y_hw_chk, A_sub, C_sub, sn_spatial, in_memory = True, **minian_params.params_update_spatial)
+
+    A_save = cur_A.compute()
+    A_proj = A_save.sum("unit_id")
+    width  = A_proj.shape[1]
+    height = A_proj.shape[0]
+
+    print("A_proj", A_proj)
+
+    with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
+        h5file.create_dataset('SpatialPenalty', data = np.array(A_proj).reshape((height, width, 1)), dtype='float', chunks=(height,width,1), maxshape=(height,width,None))
+        h5file['SpatialPenalty'].attrs['Seeds'] = np.array(A_save["unit_id"]).tolist()
+
     A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_params.params_update_spatial)
     C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
     C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
@@ -240,23 +263,24 @@ def penalties_preview(minian_params):
     C = save_minian(C_new.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
 
-    YrA = compute_trace(Y_fm_chk, A, b, C, f).persist().chunk({"unit_id": 1, "frame": -1})
-    cur_C, cur_S, cur_b0, cur_c0, cur_g, cur_mask = update_temporal(A, C, YrA=YrA, **minian_params.params_update_temporal)
+    units = np.random.choice(A.coords["unit_id"], 10, replace=False)
+    units.sort()
+    A_sub = A.sel(unit_id=units).persist()
+    C_sub = C_chk.sel(unit_id=units).persist()
 
-    with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
-        h5file.create_dataset('SpatialPenalty', data = np.array(A_proj).reshape(height,width,1), dtype='float', chunks=(height,width,1), maxshape=(height,width,None))
-        h5file['SpatialPenalty'].attrs['Seeds'] = np.array(A_save["unit_id"]).tolist()
+    YrA = save_minian(compute_trace(Y_fm_chk, A_sub, b, C_sub, f).rename("YrA"), intpath, overwrite=True, chunks={"unit_id": 1, "frame": -1})
+
+    cur_C, cur_S, cur_b0, cur_c0, cur_g, cur_mask = update_temporal(A_sub, C_sub, YrA=YrA, **minian_params.params_update_temporal)
+    sig = (cur_C + cur_b0 + cur_c0).compute()
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
         h5file.create_dataset('TemporalPenalty/Time', data = time_, dtype='float', chunks = True)
         h5file['TemporalPenalty'].attrs['Seeds'] = np.array(YrA["unit_id"]).tolist()
         for i in range(len(YrA["unit_id"])):
-            h5file.create_dataset('TemporalPenalty/RawSignal/Seed'+str(int(YrA["unit_id"][i])).zfill(4), data = YrA[i], dtype='float', chunks = True)
+            h5file.create_dataset('TemporalPenalty/RawTrace/Seed'+str(int(YrA["unit_id"][i])).zfill(4), data = YrA[i], dtype='float', chunks = True)
             h5file.create_dataset('TemporalPenalty/FittedCalciumTrace/Seed'+str(int(sig["unit_id"][i])).zfill(4), data = sig[i], dtype='float', chunks = True)
-            h5file.create_dataset('TemporalPenalty/FittedSignal/Seed'+str(int(cur_C["unit_id"][i])).zfill(4), data = cur_C[i], dtype='float', chunks = True)
+            h5file.create_dataset('TemporalPenalty/FittedTrace/Seed'+str(int(cur_C["unit_id"][i])).zfill(4), data = cur_C[i], dtype='float', chunks = True)
             h5file.create_dataset('TemporalPenalty/FittedSpikes/Seed'+str(int(cur_S["unit_id"][i])).zfill(4), data = cur_S[i], dtype='float', chunks = True)
-
-    file_.close()
 
     # Close cluster
     client.close()
