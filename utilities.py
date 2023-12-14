@@ -257,9 +257,7 @@ def save_signal(
     if path in f:
         del f[path]
 
-    print("chunkSize: ", def_chunk_size(signal.shape), " shape ", signal.shape, flush = True)
     f.create_dataset(path, data=signal, dtype="float64", chunks=def_chunk_size(signal.shape), maxshape=None)
-
 
     if attrs is not None:
         save_attributes(attrs, f, path)
