@@ -173,6 +173,79 @@ def cnmf(n_processes, dview, fname_new, caiman_params):
     return cnm.estimates, images
 
 
+def cross_register(
+    A: np.ndarray,
+    C: np.ndarray,
+    shape,
+    caiman_parameters
+) -> List[int]:
+
+    if not caiman_parameters.params_cross_reg:
+        return
+    print(cm_defs.Messages.CROSS_REGISTRATING , flush=True)
+    shape = (shape[1], shape[2], shape[0]);
+    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
+
+    # Load AC componenets from the reference file
+    ref_filepath = caiman_parameters.params_cross_reg["fname"]
+    ref_images_path = utils.clean_path(caiman_parameters.params_cross_reg["h5path_images"])
+    with h5py.File(ref_filepath, 'r') as file_:
+        path = f"{ref_images_path}/{caiman_parameters.dataname}"
+
+        # Concatenate max proj of both results
+        AC_ref = np.array(file_[path])
+    AC_ref = AC_ref.astype(float)
+    AC_ref_max = AC_ref.max(axis = 2)
+    AC_max  = AC.max(axis = 0)
+    templates = [AC_ref_max, AC_max]
+    dims = AC_max.shape
+
+    # Load A componenets from the reference file and convert A from current file to an array
+    ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
+    A_ref, roi_ids_ref  = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
+    A_ref = A_ref.transpose(1, 2, 0).reshape(-1, A_ref.shape[0])
+    A  = A.toarray()
+    A = A.reshape((shape[0], shape[1], -1), order = 'F').transpose((-1, 0, 1))
+    A = A.transpose(1, 2, 0).reshape(-1, A.shape[0])
+
+    # Concatenate ref and current A
+    spatial = [A, A_ref]
+
+    _, assignments, _ = register_multisession(A=spatial, dims=dims, templates=templates)
+
+    # Update unit ids of the current spatial componenets A
+    ids = [0] * A.shape[1]
+    ref_id_max = int(max(roi_ids_ref)) + 1
+    for i in range(assignments.shape[0]):
+        current = assignments[i,0]
+        ref = assignments[i,1]
+        if np.isfinite(current) and np.isfinite(ref):
+            ids[i] = int(roi_ids_ref[int(ref)])
+        elif np.isfinite(current):
+            ids[i] = ref_id_max
+            ref_id_max += 1
+
+    return ids
+
+
+def get_footprints(filename, rois_h5path, refShape):
+
+    with h5py.File(filename, 'r') as file_:
+        roi_names =  list(file_.get(rois_h5path))
+        roi_ids = np.zeros((len(roi_names) - 1))
+        footprints = np.zeros(((len(roi_names) - 1), refShape[0], refShape[0]), np.float64)
+
+        for i in range(len(roi_names) - 1):
+            attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
+            roi_ids[i] = int(attrs["ID"])
+            coords = np.array(attrs["Coordinates"])
+            mask = np.zeros((refShape[0], refShape[0]), np.float64)
+            cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
+            footprints[i, :, :] = mask
+
+    return footprints, roi_ids
+
+
 def save_caiman_to_doric(
     Y: np.ndarray,
     A: np.ndarray,
@@ -272,87 +345,3 @@ def save_caiman_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
-
-
-def cross_register(
-    A: np.ndarray,
-    C: np.ndarray,
-    shape,
-    caiman_parameters
-) -> List[int]:
-
-    shape = (shape[1], shape[2], shape[0]);
-    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
-    A = A.toarray()
-    A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
-
-    if not caiman_parameters.params_cross_reg:
-        return
-
-    print(cm_defs.Messages.CROSS_REGISTRATING , flush=True)
-
-    # Load AC componenets from the reference file
-    ref_filepath = caiman_parameters.params_cross_reg["fname"]
-    ref_images_path = utils.clean_path(caiman_parameters.params_cross_reg["h5path_images"])
-
-    with h5py.File(ref_filepath, 'r') as file_:
-        if defs.DoricFile.Dataset.IMAGE_STACK in file_[ref_images_path]:
-            path = f"{ref_images_path}/{defs.DoricFile.Dataset.IMAGE_STACK}"
-        else:
-            path = f"{ref_images_path}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"
-
-        AC_ref = np.array(file_[path])
-        AC_ref = AC_ref.astype(float)
-
-        AC_ref_max = AC_ref.max(axis = 2)
-        AC_max  = AC.max(axis = 0)
-
-        templates = [AC_ref_max, AC_max]
-        dims = AC_max.shape
-
-        # Load A componenets from the reference file
-        ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
-        A_ref, roi_ids_ref  = get_footprints(ref_filepath, ref_rois_path, AC_ref.shape)
-
-        A = A.transpose(1, 2, 0)
-        A_ref = A_ref.transpose(1, 2, 0)
-
-        A = A.reshape(-1, A.shape[2])
-        A_ref = A_ref.reshape(-1, A_ref.shape[2])
-        spatial = [A, A_ref]
-
-        spatial_union, assignments, matchings = register_multisession(A=spatial, dims=dims, templates=templates)
-
-        # Update unit ids of the current spatial componenets A
-        ids = [0] * A.shape[1]
-        # ref_id_max = int(A_ref.shape[1]) + 1
-        ref_id_max = int(max(roi_ids_ref)) + 1
-        for i in range(spatial_union.shape[1]):
-            current = assignments[i,0]
-            ref = assignments[i,1]
-            if np.isfinite(current) and np.isfinite(ref):
-                ids[i] = roi_ids_ref[int(ref)]
-                # ids[i] = ref + 1
-            elif np.isfinite(current):
-                ids[i] = ref_id_max
-                ref_id_max += 1
-
-    return ids
-
-
-def get_footprints(filename, rois_h5path, refShape):
-
-    with h5py.File(filename, 'r') as file_:
-        roi_names =  list(file_.get(rois_h5path))
-        roi_ids = np.zeros((len(roi_names) - 1))
-        footprints = np.zeros(((len(roi_names) - 1), refShape[0], refShape[0]), np.float64)
-
-        for i in range(len(roi_names) - 1):
-            attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
-            roi_ids[i] = int(attrs["ID"])
-            coords = np.array(attrs["Coordinates"])
-            mask = np.zeros((refShape[0], refShape[0]), np.float64)
-            cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
-            footprints[i, :, :] = mask
-
-    return footprints, roi_ids
