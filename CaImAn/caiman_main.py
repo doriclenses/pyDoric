@@ -194,17 +194,15 @@ def cross_register(
 
     # Concatenate max proj of images (AC and AC_ref)
     shape = (shape[1], shape[2], shape[0]);
-    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
-    AC_max  = AC.max(axis = 0)
+    AC = (A.dot(C)).reshape(shape, order='F')  # reshaping from caiman shape (2D) to image shape (3D)
+    AC_max  = AC.max(axis = 2)
     AC_ref = AC_ref.astype(float)
     AC_ref_max = AC_ref.max(axis = 2)
     templates = [AC_ref_max, AC_max]
 
     # Concatenate footprints (A and A_ref)
-    A_ref = A_ref.transpose(1, 2, 0).reshape(-1, A_ref.shape[0])
-    A  = A.toarray()
-    A = A.reshape((shape[0], shape[1], -1), order = 'F').transpose((-1, 0, 1))
-    A = A.transpose(1, 2, 0).reshape(-1, A.shape[0])    
+    A_ref = A_ref.transpose(1, 2, 0).reshape((-1, A_ref.shape[0]), order='F')  # reshape to caiman shape (2D)
+    A  = A.toarray()   
     spatial = [A, A_ref]
 
     _, assignments, _ = register_multisession(A=spatial, dims=AC_max.shape, templates=templates)
