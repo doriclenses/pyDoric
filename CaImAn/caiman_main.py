@@ -199,7 +199,6 @@ def cross_register(
     AC_ref = AC_ref.astype(float)
     AC_ref_max = AC_ref.max(axis = 2)
     templates = [AC_ref_max, AC_max]
-    dims = AC_max.shape
 
     # Concatenate footprints (A and A_ref)
     A_ref = A_ref.transpose(1, 2, 0).reshape(-1, A_ref.shape[0])
@@ -208,7 +207,7 @@ def cross_register(
     A = A.transpose(1, 2, 0).reshape(-1, A.shape[0])    
     spatial = [A, A_ref]
 
-    _, assignments, _ = register_multisession(A=spatial, dims=dims, templates=templates)
+    _, assignments, _ = register_multisession(A=spatial, dims=AC_max.shape, templates=templates)
 
     # Update unit ids of the current spatial componenets A
     ids = [0] * A.shape[1]
