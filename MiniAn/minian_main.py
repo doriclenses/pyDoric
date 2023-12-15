@@ -275,7 +275,7 @@ def penalties_preview(minian_params):
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
         h5file.create_dataset('TemporalPenalty/Time', data = time_, dtype='float', chunks = True)
-        h5file['TemporalPenalty'].attrs['Seeds'] = np.array(YrA["unit_id"]).tolist()
+        h5file['TemporalPenalty'].attrs['SeedIDs'] = np.array(YrA["unit_id"]).tolist()
         for i in range(len(YrA["unit_id"])):
             h5file.create_dataset('TemporalPenalty/RawTrace/Seed'+str(int(YrA["unit_id"][i])).zfill(4), data = YrA[i], dtype='float', chunks = True)
             h5file.create_dataset('TemporalPenalty/FittedCalciumTrace/Seed'+str(int(sig["unit_id"][i])).zfill(4), data = sig[i], dtype='float', chunks = True)
