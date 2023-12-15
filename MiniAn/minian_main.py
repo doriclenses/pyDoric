@@ -248,8 +248,8 @@ def penalties_preview(minian_params):
     print("A_proj", A_proj)
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
-        h5file.create_dataset('SpatialPenalty', data = np.array(A_proj).reshape((height, width, 1)), dtype='float', chunks=(height,width,1), maxshape=(height,width,None))
-        h5file['SpatialPenalty'].attrs['Seeds'] = np.array(A_save["unit_id"]).tolist()
+        spatial_penalty = h5file.create_dataset(mn_defs.Preview.Dataset.SPATIAL_PENALTY, data = np.array(A_proj).reshape((height, width, 1)), dtype='float', chunks=(height,width,1), maxshape=(height,width,None))
+        spatial_penalty.attrs[mn_defs.Preview.Attribute.SEEDS] = np.array(A_save["unit_id"]).tolist()
 
     A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_params.params_update_spatial)
     C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
@@ -274,13 +274,20 @@ def penalties_preview(minian_params):
     sig = (cur_C + cur_b0 + cur_c0).compute()
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
-        h5file.create_dataset('TemporalPenalty/Time', data = time_, dtype='float', chunks = True)
-        h5file['TemporalPenalty'].attrs['SeedIDs'] = np.array(YrA["unit_id"]).tolist()
+        temporal_penalty = h5file.create_group(mn_defs.Preview.Group.TEMPORAL_PENALTY)
+        temporal_penalty.create_dataset(defs.DoricFile.Dataset.TIME, data = time_, dtype='float', chunks = True)
+        temporal_penalty.attrs[mn_defs.Preview.Attribute.SEED_IDS] = np.array(YrA["unit_id"]).tolist()
+        raw_trace            = temporal_penalty.create_group(mn_defs.Preview.Group.RAW_TRACE)
+        fitted_calcium_trace = temporal_penalty.create_group(mn_defs.Preview.Group.FITTED_CALCIUM_TRACE)
+        fitted_trace         = temporal_penalty.create_group(mn_defs.Preview.Group.FITTED_TRACE)
+        fitted_spikes        = temporal_penalty.create_group(mn_defs.Preview.Group.FITTED_SPIKES)
+
         for i in range(len(YrA["unit_id"])):
-            h5file.create_dataset('TemporalPenalty/RawTrace/Seed'+str(int(YrA["unit_id"][i])).zfill(4), data = YrA[i], dtype='float', chunks = True)
-            h5file.create_dataset('TemporalPenalty/FittedCalciumTrace/Seed'+str(int(sig["unit_id"][i])).zfill(4), data = sig[i], dtype='float', chunks = True)
-            h5file.create_dataset('TemporalPenalty/FittedTrace/Seed'+str(int(cur_C["unit_id"][i])).zfill(4), data = cur_C[i], dtype='float', chunks = True)
-            h5file.create_dataset('TemporalPenalty/FittedSpikes/Seed'+str(int(cur_S["unit_id"][i])).zfill(4), data = cur_S[i], dtype='float', chunks = True)
+            seed_id = mn_defs.Preview.Dataset.SEED.format(idx = str(int(YrA["unit_id"][i])).zfill(4))
+            raw_trace.create_dataset(seed_id, data = YrA[i], dtype='float', chunks = True)
+            fitted_calcium_trace.create_dataset(seed_id, data = sig[i], dtype='float', chunks = True)
+            fitted_trace.create_dataset(seed_id, data = cur_C[i], dtype='float', chunks = True)
+            fitted_spikes.create_dataset(seed_id, data = cur_S[i], dtype='float', chunks = True)
 
     # Close cluster
     client.close()

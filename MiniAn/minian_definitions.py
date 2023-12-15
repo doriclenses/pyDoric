@@ -85,9 +85,10 @@ class Preview:
         SIGNAL           = "Signal"
 
         FITTED_CALCIUM_TRACE = "FittedCalciumTrace"
-        FITTED_SIGNAL        = "FittedSignal"
+        FITTED_TRACE         = "FittedTrace"
         FITTED_SPIKES        = "FittedSpikes"
-        RAW_SIGNAL           = "RawSignal"
+        RAW_TRACE            = "RawSignal"
+        TEMPORAL_PENALY      = "TemporalPenalty"
 
     class Dataset:
         SEEDS           = "Seeds"
@@ -99,6 +100,8 @@ class Preview:
         MERGED      = "Merged"
         REFINED     = "Refined"
         SEED_COUNT  = "SeedCount"
+        SEED_IDS    = "SeedIDs"
+        SEEDS       = "Seeds"
 
     class Type:
         INIT_PREVIEW        = "InitializationPreview"
