@@ -189,14 +189,12 @@ def cross_register(
     ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
     ref_images_path = utils.clean_path(caiman_parameters.params_cross_reg["h5path_images"])
     with h5py.File(ref_filepath, 'r') as file_:
-        AC_ref = np.array(file_[f"{ref_images_path}/{caiman_parameters.dataname}"])
+        AC_ref = np.array(file_[f"{ref_images_path}/{caiman_parameters.dataname}"]).astype(float)
         A_ref, roi_ids_ref = get_footprints(file_, ref_rois_path, AC_ref.shape)
 
     # Concatenate max proj of images (AC and AC_ref)
-    shape = (shape[1], shape[2], shape[0]);
-    AC = (A.dot(C)).reshape(shape, order='F')  # reshaping from caiman shape (2D) to image shape (3D)
+    AC = (A.dot(C)).reshape((shape[1], shape[2], shape[0]), order='F')  # reshaping from caiman shape (2D) to image shape (3D)
     AC_max  = AC.max(axis = 2)
-    AC_ref = AC_ref.astype(float)
     AC_ref_max = AC_ref.max(axis = 2)
     templates = [AC_ref_max, AC_max]
 
