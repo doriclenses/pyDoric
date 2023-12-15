@@ -87,7 +87,7 @@ class Preview:
         FITTED_CALCIUM_TRACE = "FittedCalciumTrace"
         FITTED_TRACE         = "FittedTrace"
         FITTED_SPIKES        = "FittedSpikes"
-        RAW_TRACE            = "RawSignal"
+        RAW_TRACE            = "RawTrace"
         TEMPORAL_PENALY      = "TemporalPenalty"
 
     class Dataset:
