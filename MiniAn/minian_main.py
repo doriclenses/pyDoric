@@ -219,9 +219,6 @@ def penalties_preview(minian_params):
     Y_hw_chk = minian_ds["Y_hw_chk"]
     Y_fm_chk = minian_ds["Y_fm_chk"]
 
-    print("Y_hw_chk", Y_hw_chk)
-    print("Y_fm_chk", Y_fm_chk)
-
     file_, chk, _ = load_chunk(intpath, subset, minian_params)
     seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
