@@ -248,6 +248,9 @@ def penalties_preview(minian_params):
     print("A_proj", A_proj)
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
+        if mn_defs.Preview.Dataset.SPATIAL_PENALTY in h5file:
+            del h5file[mn_defs.Preview.Dataset.SPATIAL_PENALTY]
+
         spatial_penalty = h5file.create_dataset(mn_defs.Preview.Dataset.SPATIAL_PENALTY, data = np.array(A_proj).reshape((height, width, 1)), dtype='float', chunks=(height,width,1), maxshape=(height,width,None))
         spatial_penalty.attrs[mn_defs.Preview.Attribute.SEEDS] = np.array(A_save["unit_id"]).tolist()
 
@@ -274,6 +277,9 @@ def penalties_preview(minian_params):
     sig = (cur_C + cur_b0 + cur_c0).compute()
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
+        if mn_defs.Preview.Group.TEMPORAL_PENALTY in h5file:
+            del h5file[mn_defs.Preview.Group.TEMPORAL_PENALTY]
+
         temporal_penalty = h5file.create_group(mn_defs.Preview.Group.TEMPORAL_PENALTY)
         temporal_penalty.create_dataset(defs.DoricFile.Dataset.TIME, data = time_, dtype='float', chunks = True)
         temporal_penalty.attrs[mn_defs.Preview.Attribute.SEED_IDS] = np.array(YrA["unit_id"]).tolist()
