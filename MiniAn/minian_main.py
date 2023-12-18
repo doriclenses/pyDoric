@@ -218,10 +218,21 @@ def penalties_preview(minian_params):
     Y_fm_chk = minian_ds["Y_fm_chk"]
 
     file_, chk, _ = load_chunk(intpath, subset, minian_params)
-    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
-
-    time_ = np.array(file_[f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
     file_.close()
+
+    with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'r') as hdf5_file:
+        initialization_group = hdf5_file[mn_defs.Preview.Group.INITIALIZATION]
+        seeds_dataset = initialization_group[mn_defs.Preview.Dataset.SEEDS]
+        mask_mrg      = list(seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED])
+        seeds         = pd.DataFrame({
+            "width": np.array(seeds_dataset)[0,:],
+            "height": np.array(seeds_dataset)[1,:],
+            "mask_mrg":[k in mask_mrg for k in range(seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT])]
+        })
+
+        time_ = np.array(hdf5_file[f"{mn_defs.Preview.Group.NOISE_FREQ}/{defs.DoricFile.Dataset.TIME}"])
+
+    print("Seeds", seeds)
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
