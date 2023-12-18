@@ -128,8 +128,6 @@ def preview(minian_params):
     elif minian_params.preview_params[defs.Parameters.Preview.PREVIEW_TYPE] == mn_defs.Preview.Type.PENALTIES_PREVIEW:
         penalties_preview(minian_params)
 
-    return 1
-
 
 def init_preview(minian_params):
     """
