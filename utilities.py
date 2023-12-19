@@ -443,7 +443,7 @@ def def_chunk_size(data_shape):
         if durantion < chunk_size:
             chunk_size = durantion
 
-        return  (chunk_size,)
+        return chunk_size
 
 
 def clean_path(path):
