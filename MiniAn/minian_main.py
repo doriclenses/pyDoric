@@ -211,14 +211,13 @@ def penalties_preview(minian_params):
     client = Client(cluster)
 
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    subset = {"frame": slice(*minian_params.preview_params[defs.Parameters.Preview.RANGE])}
 
     minian_ds  = open_minian(intpath)
     Y_hw_chk = minian_ds["Y_hw_chk"]
     Y_fm_chk = minian_ds["Y_fm_chk"]
 
-    file_, chk, _ = load_chunk(intpath, subset, minian_params)
-    file_.close()
+    varr   = load_doric_to_xarray(**minian_params.params_load_doric, close_file = True)
+    chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'r') as hdf5_file:
         initialization_group = hdf5_file[mn_defs.Preview.Group.INITIALIZATION]
