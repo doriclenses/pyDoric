@@ -101,7 +101,6 @@ class Preview:
         REFINED     = "Refined"
         SEED_COUNT  = "SeedCount"
         SEED_IDS    = "SeedIDs"
-        SEEDS       = "Seeds"
 
     class Type:
         INIT_PREVIEW        = "InitializationPreview"

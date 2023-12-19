@@ -254,7 +254,7 @@ def penalties_preview(minian_params):
             del h5file[mn_defs.Preview.Dataset.SPATIAL_PENALTY]
 
         spatial_penalty = h5file.create_dataset(mn_defs.Preview.Dataset.SPATIAL_PENALTY, data = np.array(A_proj).reshape((height, width, 1)), dtype='float', chunks=(height,width,1), maxshape=(height,width,None))
-        spatial_penalty.attrs[mn_defs.Preview.Attribute.SEEDS] = np.array(A_save["unit_id"]).tolist()
+        spatial_penalty.attrs[mn_defs.Preview.Attribute.SEED_IDS] = np.array(A_save["unit_id"]).tolist()
 
     A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_params.params_update_spatial)
     C_new = save_minian((C.sel(unit_id=mask) * norm_fac).rename("C_new"), intpath, overwrite=True)
