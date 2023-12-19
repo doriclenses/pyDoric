@@ -543,6 +543,7 @@ def load_doric_to_xarray(
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
     post_process: Optional[Callable] = None,
+    close_file: bool = False
 ) -> xr.DataArray:
 
     """
@@ -599,6 +600,9 @@ def load_doric_to_xarray(
                                 "width" : np.arange(varr.sizes["width"]),
                                 "frame" : np.arange(varr.sizes["frame"]) + 1, #Frame number start a 1 not 0
                                 })
+    if close_file:
+        file_.close()
+        return varr
 
     return varr, file_
 
