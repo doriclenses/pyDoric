@@ -215,8 +215,9 @@ def penalties_preview(minian_params):
     minian_ds  = open_minian(intpath)
     Y_hw_chk = minian_ds["Y_hw_chk"]
     Y_fm_chk = minian_ds["Y_fm_chk"]
+    varr     = minian_ds["varr"]
 
-    varr   = load_doric_to_xarray(**minian_params.params_load_doric, close_file = True)
+    #varr   = load_doric_to_xarray(**minian_params.params_load_doric, close_file = True)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'r') as hdf5_file:
