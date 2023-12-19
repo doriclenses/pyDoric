@@ -224,15 +224,13 @@ def penalties_preview(minian_params):
         initialization_group = hdf5_file[mn_defs.Preview.Group.INITIALIZATION]
         seeds_dataset = initialization_group[mn_defs.Preview.Dataset.SEEDS]
         mask_mrg      = list(seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED])
-        seeds         = pd.DataFrame({
-            "width": np.array(seeds_dataset)[0,:],
-            "height": np.array(seeds_dataset)[1,:],
-            "mask_mrg":[k in mask_mrg for k in range(seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT])]
+        seeds = pd.DataFrame({
+            "width": np.array(seeds_dataset)[:,0],
+            "height": np.array(seeds_dataset)[:,1],
+            "mask_mrg": [k in mask_mrg for k in np.arange(seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT]) + 1]
         })
 
         time_ = np.array(hdf5_file[f"{mn_defs.Preview.Group.NOISE_FREQ}/{defs.DoricFile.Dataset.TIME}"])
-
-    print("Seeds", seeds)
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
@@ -250,8 +248,6 @@ def penalties_preview(minian_params):
     A_proj = A_save.sum("unit_id")
     width  = A_proj.shape[1]
     height = A_proj.shape[0]
-
-    print("A_proj", A_proj)
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
         if mn_defs.Preview.Dataset.SPATIAL_PENALTY in h5file:
