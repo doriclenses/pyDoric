@@ -106,7 +106,7 @@ class Parameters:
         FILEPATH            = "PreviewFilepath"
         RANGE               = "PreviewRange"
         TEMPORAL_DOWNSAMPLE = "TemporalDownsample"
-
+        PREVIEW_TYPE        = "PreviewType"
 
 
 class Messages:

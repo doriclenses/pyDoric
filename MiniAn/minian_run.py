@@ -19,11 +19,11 @@ import minian_definitions as mn_defs
 from multiprocessing import freeze_support
 freeze_support()
 
-danse_parameters = {}
+danse_params = {}
 
 try:
     for arg in sys.argv[1:]:
-        danse_parameters = eval(arg)
+        danse_params = eval(arg)
 
 except SyntaxError:
     utils.print_to_intercept(mn_defs.Messages.ADVANCED_BAD_TYPE)
@@ -34,9 +34,9 @@ except Exception as error:
     sys.exit()
 
 if __name__ == "__main__":
-    minian_params = mn_params.MinianParameters(danse_parameters)
+    minian_params = mn_params.MinianParameters(danse_params)
 
-    if minian_params.preview_parameters:
+    if minian_params.preview_params:
         mn_main.preview(minian_params)
     else:
         mn_main.main(minian_params)
