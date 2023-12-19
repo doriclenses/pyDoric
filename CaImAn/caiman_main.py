@@ -271,10 +271,11 @@ def save_caiman_to_doric(
     shape = np.array(Y).shape
     shape = (shape[1],shape[2], shape[0])
 
-    AC = (A.dot(C)).reshape(shape, order='F').transpose((-1, 0, 1))
-    Y  = Y.reshape(shape, order='F').transpose((-1, 0, 1))
+    # Before saving, the arrays have to be reshaped with Fortran order and shape(Height, Width, Time), then transposed to (Time, Height, Width)
+    AC = (A.dot(C)).reshape(shape, order = 'F').transpose((2, 0, 1))
+    Y  = Y.reshape(shape, order = 'F').transpose((2, 0, 1))
     A = A.toarray()
-    A = A.reshape((shape[0], shape[1], -1), order='F').transpose((-1, 0, 1))
+    A = A.reshape((shape[0], shape[1], -1), order = 'F').transpose((2, 0, 1))
 
     res = Y - AC
 
