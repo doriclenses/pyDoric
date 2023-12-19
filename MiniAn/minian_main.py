@@ -224,10 +224,11 @@ def penalties_preview(minian_params):
         initialization_group = hdf5_file[mn_defs.Preview.Group.INITIALIZATION]
         seeds_dataset = initialization_group[mn_defs.Preview.Dataset.SEEDS]
         mask_mrg      = list(seeds_dataset.attrs[mn_defs.Preview.Attribute.MERGED])
+        seed_count    = seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT]
         seeds = pd.DataFrame({
             "width": np.array(seeds_dataset)[:,0],
             "height": np.array(seeds_dataset)[:,1],
-            "mask_mrg": [k in mask_mrg for k in np.arange(seeds_dataset.attrs[mn_defs.Preview.Attribute.SEED_COUNT]) + 1]
+            "mask_mrg": [k in mask_mrg for k in np.arange(seed_count)]
         })
 
         time_ = np.array(hdf5_file[f"{mn_defs.Preview.Group.NOISE_FREQ}/{defs.DoricFile.Dataset.TIME}"])
