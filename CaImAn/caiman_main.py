@@ -13,6 +13,7 @@ import utilities as utils
 import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
+from caiman.base.rois import register_multisession
 
 # Import for CaimAn lib
 import caiman as cm
@@ -46,6 +47,13 @@ def main(caiman_params):
 
     estimates, images = cnmf(n_processes, dview, fname_new, caiman_params)
 
+    # CaimAn Cross register
+    registered_ids = cross_register(
+                        estimates.A[:,estimates.idx_components],
+                        estimates.C[estimates.idx_components,:],
+                        np.array(images).shape,
+                        caiman_params)
+
     print(cm_defs.Messages.SAVING_DATA, flush=True)
     file_ = h5py.File(caiman_params.paths[defs.Parameters.Path.FILEPATH], 'r')
 
@@ -75,10 +83,10 @@ def main(caiman_params):
             params_source = params_source_data,
             saveimages = True,
             saveresiduals = True,
-            savespikes = True)
+            savespikes = True,
+            ids = registered_ids)
 
     cm.stop_server(dview=dview)
-
 
 
 def preview(caiman_params: cm_params.CaimanParameters):
@@ -165,6 +173,70 @@ def cnmf(n_processes, dview, fname_new, caiman_params):
     return cnm.estimates, images
 
 
+def cross_register(
+    A: np.ndarray,
+    C: np.ndarray,
+    shape,
+    caiman_parameters
+) -> List[int]:
+
+    if not caiman_parameters.params_cross_reg:
+        return
+    print(cm_defs.Messages.CROSS_REGISTRATING , flush=True)
+
+    # Load reference images (AC_ref) and ROI footprints (A_ref)
+    ref_filepath = caiman_parameters.params_cross_reg["fname"]
+    ref_rois_path  = caiman_parameters.params_cross_reg["h5path_roi"]
+    ref_images_path = utils.clean_path(caiman_parameters.params_cross_reg["h5path_images"])
+    with h5py.File(ref_filepath, 'r') as file_:
+        AC_ref = np.array(file_[f"{ref_images_path}/{caiman_parameters.dataname}"]).astype(float)
+        A_ref, roi_ids_ref = get_footprints(file_, ref_rois_path, AC_ref.shape)
+
+    # Concatenate max proj of images (AC and AC_ref)
+    AC = (A.dot(C)).reshape((shape[1], shape[2], shape[0]), order='F')  # reshaping from caiman shape (2D) to image shape (3D)
+    AC_max  = AC.max(axis = 2)
+    AC_ref_max = AC_ref.max(axis = 2)
+    templates = [AC_ref_max, AC_max]
+
+    # Concatenate footprints (A and A_ref)
+    A_ref = A_ref.transpose(1, 2, 0).reshape((-1, A_ref.shape[0]), order='F')  # reshape to caiman shape (2D)
+    A  = A.toarray()   
+    spatial = [A, A_ref]
+
+    _, assignments, _ = register_multisession(A=spatial, dims=AC_max.shape, templates=templates)
+
+    # Update unit ids of the current spatial componenets A
+    ids = [0] * A.shape[1]
+    ref_id_max = int(max(roi_ids_ref)) + 1
+    for i in range(assignments.shape[0]):
+        current = assignments[i,0]
+        ref = assignments[i,1]
+        if np.isfinite(current) and np.isfinite(ref):
+            ids[i] = int(roi_ids_ref[int(ref)])
+        elif np.isfinite(current):
+            ids[i] = ref_id_max
+            ref_id_max += 1
+
+    return ids
+
+
+def get_footprints(file_, rois_h5path, refShape):
+
+    roi_names =  list(file_.get(rois_h5path))
+    roi_ids = np.zeros((len(roi_names) - 1))
+    footprints = np.zeros(((len(roi_names) - 1), refShape[0], refShape[0]), np.float64)
+
+    for i in range(len(roi_names) - 1):
+        attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
+        roi_ids[i] = int(attrs["ID"])
+        coords = np.array(attrs["Coordinates"])
+        mask = np.zeros((refShape[0], refShape[0]), np.float64)
+        cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
+        footprints[i, :, :] = mask
+
+    return footprints, roi_ids
+
+
 def save_caiman_to_doric(
     Y: np.ndarray,
     A: np.ndarray,
@@ -181,7 +253,8 @@ def save_caiman_to_doric(
     params_source: Optional[dict] = {},
     saveimages: bool = True,
     saveresiduals: bool = True,
-    savespikes: bool = True
+    savespikes: bool = True,
+    ids = None
 ) -> str:
     """
     Save CaImAn results to .doric file:
@@ -235,7 +308,7 @@ def save_caiman_to_doric(
         print(cm_defs.Messages.SAVE_ROI_SIG, flush = True)
         rois_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
-        utils.save_roi_signals(C, A, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"})
+        utils.save_roi_signals(C, A, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"}, roi_ids = ids)
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
@@ -264,5 +337,3 @@ def save_caiman_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
     print(cm_defs.Messages.SAVE_TO.format(path = vname), flush = True)
-
-

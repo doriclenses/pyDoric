@@ -212,11 +212,17 @@ def save_roi_signals(
         Bits depth of images
 
     """
-
     path = clean_path(path)
 
     for i, footprint in enumerate(footprints):
         coords = footprint_to_coords(footprint)
+
+        if roi_ids is None:
+            id_ = i + 1
+        else:
+            id_ = roi_ids[i]
+
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
 
         if roi_ids is None:
             id_ = i + 1
@@ -252,7 +258,6 @@ def save_signal(
         del f[path]
 
     f.create_dataset(path, data=signal, dtype="float64", chunks=def_chunk_size(signal.shape), maxshape=None)
-
 
     if attrs is not None:
         save_attributes(attrs, f, path)
@@ -438,7 +443,7 @@ def def_chunk_size(data_shape):
         if durantion < chunk_size:
             chunk_size = durantion
 
-        return  chunk_size
+        return  (chunk_size,)
 
 
 def clean_path(path):
