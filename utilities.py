@@ -247,6 +247,19 @@ def save_roi_signals(
     save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
 
+def save_spike_signals(
+    signals: np.ndarray,
+    time_: np.array,
+    f: h5py.File,
+    path: str,
+    attrs_add: Optional[dict] = None,
+    spike_ids: List[int] = None
+    ):
+
+    path = clean_path(path)
+
+
+
 def save_signal(
     signal: np.array,
     f: h5py.File,
