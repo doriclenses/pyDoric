@@ -327,7 +327,7 @@ def save_caiman_to_doric(
             print(cm_defs.Messages.SAVE_SPIKES, flush = True)
             spikes_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
-            utils.save_spike_signals(S > 0, time_, f, spikes_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"}, spike_ids = ids)
+            utils.save_spike_signals(S, time_, f, spikes_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"}, spike_ids = ids)
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
