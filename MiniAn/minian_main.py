@@ -784,11 +784,6 @@ def save_minian_to_doric(
     res = Y - AC # residual images
 
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
-    names = []
-    usernames = []
-    for i in A.coords["unit_id"].values:
-        names.append("ROI"+str(i).zfill(4))
-        usernames.append("ROI {0}".format(i))
 
     with h5py.File(vname, 'a') as f:
 
@@ -837,7 +832,7 @@ def save_minian_to_doric(
             print(mn_defs.Messages.SAVE_SPIKES, flush=True)
             spikes_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
-            utils.save_signals(S.values > 0, time_, f, spikes_datapath, names, usernames, range_min=0, range_max=1)
+            utils.save_spike_signals(S.values > 0, time_, f, spikes_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}, spike_ids=A.coords["unit_id"].values))
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
