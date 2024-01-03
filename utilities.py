@@ -251,6 +251,26 @@ def save_spike_signals(
 
     path = clean_path(path)
 
+    for i, signal in enumerate(signals):
+
+        if spike_ids is None:
+            id_ = i + 1
+        else:
+            id_ = spike_ids[i]
+
+        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+
+        attrs = {
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_)
+        }
+
+        if attrs_add is not None:
+            attrs = {**attrs, **attrs_add}
+
+        save_signal(signal, f, f"{path}/{dataset_name}", attrs)
+
+    save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
 
 def save_signal(
