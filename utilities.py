@@ -249,6 +249,11 @@ def save_spike_signals(
     spike_ids: List[int] = None
     ):
 
+    """
+    Saves Soike signals, time vector.
+
+    """
+
     path = clean_path(path)
 
     for i, signal in enumerate(signals):
