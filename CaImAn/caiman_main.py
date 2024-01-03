@@ -200,7 +200,7 @@ def cross_register(
 
     # Concatenate footprints (A and A_ref)
     A_ref = A_ref.transpose(1, 2, 0).reshape((-1, A_ref.shape[0]), order='F')  # reshape to caiman shape (2D)
-    A  = A.toarray()   
+    A  = A.toarray()
     spatial = [A, A_ref]
 
     _, assignments, _ = register_multisession(A=spatial, dims=AC_max.shape, templates=templates)
@@ -280,11 +280,6 @@ def save_caiman_to_doric(
     res = Y - AC
 
     print(cm_defs.Messages.GEN_ROI_NAMES, flush = True)
-    names = []
-    usernames = []
-    for i in range(len(C)):
-        names.append("ROI"+str(i+1).zfill(4))
-        usernames.append(f"ROI {i+1}")
 
     with h5py.File(vname, 'a') as f:
 
@@ -332,7 +327,7 @@ def save_caiman_to_doric(
             print(cm_defs.Messages.SAVE_SPIKES, flush = True)
             spikes_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
-            utils.save_signals(S > 0, time_, f, spikes_datapath, names, usernames, range_min=0, range_max=1)
+            utils.save_spike_signals(S > 0, time_, f, spikes_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"}, roi_ids = ids)
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
