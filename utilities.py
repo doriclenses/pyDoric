@@ -190,8 +190,11 @@ def save_roi_signals(
     time_: np.array,
     f: h5py.File,
     path: str,
-    attrs_add: Optional[dict] = None,
-    roi_ids: List[int] = None
+    add_common_att: Optional[dict] = None,
+    ids: List[int] = None,
+    dataset_names: List[int] = None,
+    usernames: List[int] = None,
+    names: List[int] = None
     ):
 
     """
@@ -217,23 +220,26 @@ def save_roi_signals(
     for i, footprint in enumerate(footprints):
         coords = footprint_to_coords(footprint)
 
-        if roi_ids is None:
+        if ids is None:
             id_ = i + 1
         else:
-            id_ = roi_ids[i]
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+            id_ = ids[i]
 
         attrs = {
             defs.DoricFile.Attribute.ROI.ID:           id_,
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
             defs.DoricFile.Attribute.ROI.COORDS:       coords,
-            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_)
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_) if names is None else names[i],
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_) if usernames is None else usernames[i]
         }
 
-        if attrs_add is not None:
-            attrs = {**attrs, **attrs_add}
+        if add_common_att is not None:
+            attrs = {**attrs, **add_common_att}
+
+        if dataset_names is None:
+            dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+        else:
+            dataset_name = dataset_names[i]
 
         save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
 
@@ -245,33 +251,34 @@ def save_spike_signals(
     time_: np.array,
     f: h5py.File,
     path: str,
-    attrs_add: Optional[dict] = None,
-    spike_ids: List[int] = None
+    add_common_att: Optional[dict] = None,
+    dataset_names: List[int] = None,
+    usernames: List[int] = None,
+    names: List[int] = None
     ):
 
     """
-    Saves Soike signals, time vector.
+    Saves Spike signals, time vector.
 
     """
 
     path = clean_path(path)
 
     for i, signal in enumerate(signals):
+        id_ = i + 1
 
-        if spike_ids is None:
-            id_ = i + 1
+        if dataset_names is None:
+            dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
         else:
-            id_ = spike_ids[i]
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+            dataset_name = dataset_names[i]
 
         attrs = {
-            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_)
+            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_) if names is None else names[i],
+            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_) if usernames is None else usernames[i]
         }
 
-        if attrs_add is not None:
-            attrs = {**attrs, **attrs_add}
+        if add_common_att is not None:
+            attrs = {**attrs, **add_common_att}
 
         save_signal(signal, f, f"{path}/{dataset_name}", attrs)
 
