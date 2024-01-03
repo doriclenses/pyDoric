@@ -283,20 +283,7 @@ def save_caiman_to_doric(
 
     with h5py.File(vname, 'a') as f:
 
-        operationCount = ""
-        if vpath in f:
-            operations = [ name for name in f[vpath] if cm_defs.DoricFile.Group.ROISIGNALS in name ]
-            if len(operations) > 0:
-                operationCount = str(len(operations))
-                for operation in operations:
-                    operationAttrs = utils.load_attributes(f, f"{vpath}/{operation}")
-                    if utils.merge_params(params_doric, params_source) == operationAttrs:
-                        if len(operation) == len(cm_defs.DoricFile.Group.ROISIGNALS):
-                            operationCount = ""
-                        else:
-                            operationCount = operation[-1]
-
-                        break
+        operationCount = utils.operation_count(vpath, f, cm_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
