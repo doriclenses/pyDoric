@@ -224,13 +224,6 @@ def save_roi_signals(
 
         dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
 
-        if roi_ids is None:
-            id_ = i + 1
-        else:
-            id_ = roi_ids[i]
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
-
         attrs = {
             defs.DoricFile.Attribute.ROI.ID:           id_,
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
