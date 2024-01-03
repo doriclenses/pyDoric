@@ -486,3 +486,29 @@ def clean_path(path):
         path = path[:-1]
 
     return path
+
+
+def operation_count(path, file_, operation_name, params_doric, params_source):
+
+    count = ""
+    if path not in file_:
+        return count
+
+    operations = [ name for name in file_[path] if operation_name in name ]
+    if len(operations) < 0:
+        return count
+
+    count = str(len(operations))
+    for operation in operations:
+        operation_attrs = load_attributes(file_, f"{path}/{operation}")
+        if merge_params(params_doric, params_source) != operation_attrs:
+            continue
+
+        if(len(operation) == len(operation_name)):
+            count = ""
+        else:
+            count = operation[-1]
+
+        break
+
+    return count

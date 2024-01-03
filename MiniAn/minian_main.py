@@ -788,20 +788,7 @@ def save_minian_to_doric(
     with h5py.File(vname, 'a') as f:
 
         # Check if MiniAn results already exist
-        operationCount = ""
-        if vpath in f:
-            operations = [ name for name in f[vpath] if mn_defs.DoricFile.Group.ROISIGNALS in name ]
-            if len(operations) > 0:
-                operationCount = str(len(operations))
-                for operation in operations:
-                    operationAttrs = utils.load_attributes(f, f"{vpath}/{operation}")
-                    if utils.merge_params(params_doric, params_source) == operationAttrs:
-                        if(len(operation) == len(mn_defs.DoricFile.Group.ROISIGNALS)):
-                            operationCount = ""
-                        else:
-                            operationCount = operation[-1]
-
-                        break
+        operationCount = utils.operation_count(vpath, f, mn_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
