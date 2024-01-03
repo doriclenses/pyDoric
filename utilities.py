@@ -502,7 +502,7 @@ def operation_count(path, file_, operation_name, params_doric, params_source):
         return count
 
     operations = [ name for name in file_[path] if operation_name in name ]
-    if len(operations) < 0:
+    if len(operations) == 0:
         return count
 
     count = str(len(operations))

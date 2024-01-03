@@ -802,7 +802,7 @@ def save_minian_to_doric(
         attrs_add = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
         utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
                                 add_common_att = attrs_add,
-                                ids_           = roi_ids,
+                                ids            = roi_ids,
                                 dataset_names  = roi_dataset_names,
                                 usernames      = roi_usernames,
                                 names          = roi_names)
