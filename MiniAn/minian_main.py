@@ -784,10 +784,9 @@ def save_minian_to_doric(
     res = Y - AC # residual images
 
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
-    roi_ids           = A.coords["unit_id"].values
-    roi_dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in roi_ids]
-    roi_usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in roi_ids]
-    roi_names         = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in roi_ids]
+    ids           = A.coords["unit_id"].values
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in roi_ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in roi_ids]
 
     with h5py.File(vname, 'a') as f:
 
@@ -799,13 +798,12 @@ def save_minian_to_doric(
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
         rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
-        attrs_add = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+        attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
         utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
-                                add_common_att = attrs_add,
-                                ids            = roi_ids,
-                                dataset_names  = roi_dataset_names,
-                                usernames      = roi_usernames,
-                                names          = roi_names)
+                                ids            = ids,
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                attrs          = attrs)
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
@@ -830,11 +828,10 @@ def save_minian_to_doric(
             spikes_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
             attrs_add = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
-            utils.save_spike_signals(S.values, time_, f, spikes_datapath,
-                                        add_common_att = attrs_add,
-                                        dataset_names  = roi_dataset_names,
-                                        usernames      = roi_usernames,
-                                        names          = roi_names)
+            utils.save_signals(S.values, time_, f, spikes_datapath,
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                attrs          = attrs)
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
