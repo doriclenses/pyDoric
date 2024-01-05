@@ -785,8 +785,8 @@ def save_minian_to_doric(
 
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
     ids           = A.coords["unit_id"].values
-    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in roi_ids]
-    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in roi_ids]
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
     with h5py.File(vname, 'a') as f:
 

@@ -281,8 +281,8 @@ def save_caiman_to_doric(
 
     print(cm_defs.Messages.GEN_ROI_NAMES, flush = True)
     ids           = ids if ids is not None else [i+1 for i in range(len(C))]
-    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in roi_ids]
-    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in roi_ids]
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
     with h5py.File(vname, 'a') as f:
 
