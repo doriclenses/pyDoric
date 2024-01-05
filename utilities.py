@@ -190,8 +190,10 @@ def save_roi_signals(
     time_: np.array,
     f: h5py.File,
     path: str,
-    attrs_add: Optional[dict] = None,
-    roi_ids: List[int] = None
+    ids: List[int] = None,
+    dataset_names: List[int] = None,
+    usernames: List[int] = None,
+    attrs: Optional[dict] = None
     ):
 
     """
@@ -215,34 +217,44 @@ def save_roi_signals(
     path = clean_path(path)
 
     for i, footprint in enumerate(footprints):
-        coords = footprint_to_coords(footprint)
+        id_ = ids[i] if ids is not None else i + 1
 
-        if roi_ids is None:
-            id_ = i + 1
-        else:
-            id_ = roi_ids[i]
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
-
-        if roi_ids is None:
-            id_ = i + 1
-        else:
-            id_ = roi_ids[i]
-
-        dataset_name = defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
-
-        attrs = {
+        roi_attrs = {
             defs.DoricFile.Attribute.ROI.ID:           id_,
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
-            defs.DoricFile.Attribute.ROI.COORDS:       coords,
-            defs.DoricFile.Attribute.Dataset.NAME:     defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME: defs.DoricFile.Dataset.ROI.format(id_)
+            defs.DoricFile.Attribute.ROI.COORDS:       footprint_to_coords(footprint),
+            defs.DoricFile.Attribute.Dataset.NAME:     usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_)
         }
 
-        if attrs_add is not None:
-            attrs = {**attrs, **attrs_add}
+        if attrs is not None:
+            roi_attrs = {**roi_attrs, **attrs}
 
-        save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
+        dataset_name = dataset_names[i] if dataset_names is not None else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+        save_signal(signals[i], f, f"{path}/{dataset_name}", roi_attrs)
+
+    save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
+
+
+def save_signals(
+    signals: np.array,
+    time_: np.array,
+    f: h5py.File,
+    path: str,
+    dataset_names: List[str],
+    usernames: Optional[List[str]] = None,
+    attrs: Optional[dict] = None
+    ):
+
+    path = clean_path(path)
+
+    for i, name in enumerate(dataset_names):
+
+        if attrs is None:
+            attrs = {}
+        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i] if usernames is not None else name
+
+        save_signal(signals[i], f, f"{path}/{name}", attrs)
 
     save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
@@ -261,52 +273,6 @@ def save_signal(
 
     if attrs is not None:
         save_attributes(attrs, f, path)
-
-
-def save_signals(
-    signals: np.array,
-    time_: np.array,
-    f: h5py.File,
-    path: str,
-    names: List[str],
-    usernames: Optional[List[str]] = None,
-    bit_count: Optional[int] = None,
-    range_min: Optional[float] = None,
-    range_max: Optional[float] = None,
-    unit: Optional[str] = "Intensity",
-    ):
-
-    if bit_count is None and (range_min is None or range_max is None or unit is None):
-        raise ValueError("Set either bits count attribute, or range min, range max, and unit attributes.")
-
-    path = clean_path(path)
-
-    try:
-        f.create_dataset(f"{path}/{defs.DoricFile.Dataset.TIME}", data=time_, dtype="float64", chunks=def_chunk_size(time_.shape), maxshape=None)
-    except:
-        pass
-
-    for i, name in enumerate(names):
-        path_name = f"{path}/{name}"
-
-        if path_name in f:
-            del f[path_name]
-
-        f.create_dataset(path_name, data=signals[i], dtype="float64", chunks=def_chunk_size(signals[i].shape), maxshape=None)
-
-        attrs = {}
-
-        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i] if usernames is not None else name
-
-        if bit_count is not None:
-            attrs[defs.DoricFile.Attribute.Image.BIT_COUNT] = bit_count
-        else:
-            attrs[defs.DoricFile.Attribute.Signal.RANGE_MIN] = range_min
-            attrs[defs.DoricFile.Attribute.Signal.RANGE_MAX] = range_max
-            attrs[defs.DoricFile.Attribute.Signal.UNIT]      = unit
-
-        if attrs is not None:
-            save_attributes(attrs, f, path_name)
 
 
 def save_attributes(
@@ -455,3 +421,29 @@ def clean_path(path):
         path = path[:-1]
 
     return path
+
+
+def operation_count(path, file_, operation_name, params_doric, params_source):
+
+    count = ""
+    if path not in file_:
+        return count
+
+    operations = [ name for name in file_[path] if operation_name in name ]
+    if len(operations) == 0:
+        return count
+
+    count = str(len(operations))
+    for operation in operations:
+        operation_attrs = load_attributes(file_, f"{path}/{operation}")
+        if merge_params(params_doric, params_source) != operation_attrs:
+            continue
+
+        if(len(operation) == len(operation_name)):
+            count = ""
+        else:
+            count = operation[-1]
+
+        break
+
+    return count

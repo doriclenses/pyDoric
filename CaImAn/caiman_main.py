@@ -200,7 +200,7 @@ def cross_register(
 
     # Concatenate footprints (A and A_ref)
     A_ref = A_ref.transpose(1, 2, 0).reshape((-1, A_ref.shape[0]), order='F')  # reshape to caiman shape (2D)
-    A  = A.toarray()   
+    A  = A.toarray()
     spatial = [A, A_ref]
 
     _, assignments, _ = register_multisession(A=spatial, dims=AC_max.shape, templates=templates)
@@ -280,35 +280,25 @@ def save_caiman_to_doric(
     res = Y - AC
 
     print(cm_defs.Messages.GEN_ROI_NAMES, flush = True)
-    names = []
-    usernames = []
-    for i in range(len(C)):
-        names.append("ROI"+str(i+1).zfill(4))
-        usernames.append(f"ROI {i+1}")
+    ids           = ids if ids is not None else [i+1 for i in range(len(C))]
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
     with h5py.File(vname, 'a') as f:
 
-        operationCount = ""
-        if vpath in f:
-            operations = [ name for name in f[vpath] if cm_defs.DoricFile.Group.ROISIGNALS in name ]
-            if len(operations) > 0:
-                operationCount = str(len(operations))
-                for operation in operations:
-                    operationAttrs = utils.load_attributes(f, f"{vpath}/{operation}")
-                    if utils.merge_params(params_doric, params_source) == operationAttrs:
-                        if len(operation) == len(cm_defs.DoricFile.Group.ROISIGNALS):
-                            operationCount = ""
-                        else:
-                            operationCount = operation[-1]
-
-                        break
+        operationCount = utils.operation_count(vpath, f, cm_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(cm_defs.Messages.SAVE_ROI_SIG, flush = True)
         rois_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
-        utils.save_roi_signals(C, A, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"}, roi_ids = ids)
+        attrs={"RangeMin": 0, "RangeMax": 0, "Unit": "Intensity"}
+        utils.save_roi_signals(C, A, time_, f, rois_datapath,
+                                ids            = ids,
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                attrs          = attrs)
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
@@ -332,7 +322,11 @@ def save_caiman_to_doric(
             print(cm_defs.Messages.SAVE_SPIKES, flush = True)
             spikes_grouppath = f"{vpath}/{cm_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
-            utils.save_signals(S > 0, time_, f, spikes_datapath, names, usernames, range_min=0, range_max=1)
+            attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+            utils.save_signals(S, time_, f, spikes_datapath,
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                attrs          = attrs)
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 

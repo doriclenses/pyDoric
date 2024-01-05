@@ -784,36 +784,26 @@ def save_minian_to_doric(
     res = Y - AC # residual images
 
     print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
-    names = []
-    usernames = []
-    for i in A.coords["unit_id"].values:
-        names.append("ROI"+str(i).zfill(4))
-        usernames.append("ROI {0}".format(i))
+    ids           = A.coords["unit_id"].values
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
     with h5py.File(vname, 'a') as f:
 
         # Check if MiniAn results already exist
-        operationCount = ""
-        if vpath in f:
-            operations = [ name for name in f[vpath] if mn_defs.DoricFile.Group.ROISIGNALS in name ]
-            if len(operations) > 0:
-                operationCount = str(len(operations))
-                for operation in operations:
-                    operationAttrs = utils.load_attributes(f, f"{vpath}/{operation}")
-                    if utils.merge_params(params_doric, params_source) == operationAttrs:
-                        if(len(operation) == len(mn_defs.DoricFile.Group.ROISIGNALS)):
-                            operationCount = ""
-                        else:
-                            operationCount = operation[-1]
-
-                        break
+        operationCount = utils.operation_count(vpath, f, mn_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
         rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
-        utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath, attrs_add={"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}, roi_ids=A.coords["unit_id"].values)
+        attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+        utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
+                                ids            = ids,
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                attrs          = attrs)
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
@@ -837,7 +827,11 @@ def save_minian_to_doric(
             print(mn_defs.Messages.SAVE_SPIKES, flush=True)
             spikes_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
-            utils.save_signals(S.values > 0, time_, f, spikes_datapath, names, usernames, range_min=0, range_max=1)
+            attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+            utils.save_signals(S.values, time_, f, spikes_datapath,
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                attrs          = attrs)
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
