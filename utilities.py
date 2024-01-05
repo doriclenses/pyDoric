@@ -228,10 +228,10 @@ def save_roi_signals(
         }
 
         if attrs is not None:
-            attrs = {**roi_attrs, **attrs}
+            roi_attrs = {**roi_attrs, **attrs}
 
         dataset_name = dataset_names[i] if dataset_names is not None else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
-        save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
+        save_signal(signals[i], f, f"{path}/{dataset_name}", roi_attrs)
 
     save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
