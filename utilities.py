@@ -249,13 +249,12 @@ def save_signals(
     path = clean_path(path)
 
     for i, name in enumerate(dataset_names):
-        path_name = f"{path}/{name}"
 
         if attrs is None:
             attrs = {}
         attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i] if usernames is not None else name
 
-        save_signal(signals[i], f, f"{path}/{dataset_name}", attrs)
+        save_signal(signals[i], f, f"{path}/{name}", attrs)
 
     save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
