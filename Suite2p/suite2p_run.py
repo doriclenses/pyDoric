@@ -107,14 +107,10 @@ ops['tau'] = 1.25 # timescale of gcamp to use for deconvolution
 ops['nplanes'] = len(PlaneStacksName)
 print(ops)
 
-print("----------------------")
 db = {
-   # 'data_path': [os.getcwd()],
-    'data_path': filePath.split("\\")[0:-1],
+    'data_path': ["\\".join(filePath.split("\\")[0:-1])],
 }
-print("---------db-------------")
 print(db)
-
 
 ops["combined"] = False
 output_ops = suite2p.run_s2p(ops=ops, db=db)
