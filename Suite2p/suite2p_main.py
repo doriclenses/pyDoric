@@ -51,6 +51,14 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
 
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
 
+    save_suite2p_to_doric(output_ops)
+
+def preview(suite2p_params: s2p_params.Suite2pParameters):
+    print("hello preview")
+
+def save_suite2p_to_doric(
+        output_ops: dict
+):
 
     # Figure Style settings
     import matplotlib as mpl
@@ -207,6 +215,3 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
             plt.legend(bbox_to_anchor=(0.93, 2))
 
     plt.savefig("Fluorescence Traces")
-
-def preview(suite2p_params: s2p_params.Suite2pParameters):
-    print("hello preview")
