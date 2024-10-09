@@ -24,7 +24,7 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     """
     Suite2p algorithm
     """
-    filePath: str = suite2p_params.paths[defs.Parameters.Path.FILEPATH] 
+    filePath: str = suite2p_params.paths[defs.Parameters.Path.FILEPATH]
     doricFile = h5py.File(filePath, 'r')
 
     timeIdx = -1
@@ -36,18 +36,17 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
         else:
             timeIdx = min(timeIdx, nTime)
 
-    with TiffWriter(filePath + ".tif", bigtiff=True) as tifW:
+    filePathTif: str = suite2p_params.paths[defs.Parameters.Path.TMP_DIR] + "\\images.tif"
+    with TiffWriter(filePathTif, bigtiff=True) as tifW:
         for I in range(timeIdx):
             for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
                 tifW.write(doricFile[datapath][:, :, I], contiguous=True)
 
     doricFile.close()
 
-    with TiffFile(filePath + ".tif") as tifF:
+    with TiffFile(filePathTif) as tifF:
         n_time= len(tifF.pages)
         Ly, Lx = tifF.pages[0].shape
-
-    print(Lx, Ly, n_time)
 
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
 
