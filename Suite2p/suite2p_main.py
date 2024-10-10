@@ -44,10 +44,6 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
 
     doricFile.close()
 
-    with TiffFile(filePathTif) as tifF:
-        n_time= len(tifF.pages)
-        Ly, Lx = tifF.pages[0].shape
-
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
 
     save_suite2p_to_doric(output_ops)
@@ -115,46 +111,17 @@ def save_suite2p_to_doric(
 
     plt.savefig("Graphs")
 
-
-
-    # #@title Run cell to look at registered frames
-    # from ipywidgets import interact, interactive, fixed, interact_manual
-    # import ipywidgets as widgets
-    # from suite2p.io import BinaryFile
-
-    # widget = widgets.IntSlider(
-    #     value=7,
-    #     min=0,
-    #     max=10,
-    #     step=1,
-    #     description='Test:',
-    #     disabled=False,
-    #     continuous_update=False,
-    #     orientation='horizontal',
-    #     readout=True,
-    #     readout_format='d'
-    # )
-
-
-    # def plot_frame(t):
-    #     with BinaryFile(Ly=output_ops['Ly'],
-    #                 Lx=output_ops['Lx'],
-    #                 filename=output_ops['reg_file']) as f:
-    #         plt.imshow(f[t])
-
-    # interact(plot_frame, t=(0, output_ops['nframes']- 1, 1)); # zero-indexed so have to subtract 1
-
-
-
+    iscell = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(int) #specifies whether an ROI is a cell, first column is 0/1, and second column is probability that the ROI is a cell based on the default classifier
+    
     stats_file = Path(output_ops['save_path']).joinpath('stat.npy')
-    iscell = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(int)
-    stats = np.load(stats_file, allow_pickle=True)
-    print(stats[0].keys())
-
+    stats = np.load(stats_file, allow_pickle=True) #list of statistics computed for each cell
 
     n_cells = len(stats)
 
     h = np.random.rand(n_cells)
+    
+    Ly, Lx = output_ops["Ly"], output_ops["Lx"]
+
     hsvs = np.zeros((2, Ly, Lx, 3), dtype=np.float32)
 
     for i, stat in enumerate(stats):
@@ -179,38 +146,13 @@ def save_suite2p_to_doric(
     plt.imshow(rgbs[0])
     plt.title("All non-Cell ROIs");
 
-    # plt.tight_layout()
     plt.savefig("ROIS")
 
+    f_cells = np.load(Path(output_ops['save_path']).joinpath('F.npy')) #array of fluorescence traces (ROIs by timepoints)
+    f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
+    spks = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
 
-
-    f_cells = np.load(Path(output_ops['save_path']).joinpath('F.npy'))
-    f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy'))
-    spks = np.load(Path(output_ops['save_path']).joinpath('spks.npy'))
-    f_cells.shape, f_neuropils.shape, spks.shape
-
-
-    plt.figure(figsize=(20,20))
-    plt.suptitle("Fluorescence and Deconvolved Traces for Different ROIs", y=0.92);
-    rois = np.arange(len(f_cells))[::200]
-    for i, roi in enumerate(rois):
-        plt.subplot(len(rois), 1, i+1, )
-        f = f_cells[roi]
-        f_neu = f_neuropils[roi]
-        sp = spks[roi]
-        # Adjust spks range to match range of fluroescence traces
-        fmax = np.maximum(f.max(), f_neu.max())
-        fmin = np.minimum(f.min(), f_neu.min())
-        frange = fmax - fmin 
-        sp /= sp.max()
-        sp *= frange
-        plt.plot(f, label="Cell Fluorescence")
-        plt.plot(f_neu, label="Neuropil Fluorescence")
-        plt.plot(sp + fmin, label="Deconvolved")
-        plt.xticks(np.arange(0, f_cells.shape[1], f_cells.shape[1]/10))
-        plt.ylabel(f"ROI {roi}", rotation=0)
-        plt.xlabel("frame")
-        if i == 0:
-            plt.legend(bbox_to_anchor=(0.93, 2))
-
-    plt.savefig("Fluorescence Traces")
+    #FootPrint to use to save the ROIs contour in doric
+    footPrint = np.zeros((n_cells, Ly, Lx))
+    for i, stat in enumerate(stats):
+        footPrint[i, stat['ypix'], stat['xpix']] = 1
