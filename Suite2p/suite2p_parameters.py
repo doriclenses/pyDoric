@@ -23,7 +23,7 @@ class Suite2pParameters:
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
         
         self.ops = suite2p.default_ops()
-        self.ops['batch_size'] = 20 # we will decrease the batch_size in case low RAM on computer
+        self.ops['batch_size'] = 50 # we will decrease the batch_size in case low RAM on computer
         self.ops['threshold_scaling'] = 1.0 # we are increasing the threshold for finding ROIs to limit the number of non-cell ROIs found (sometimes useful in gcamp injections)
         self.ops['fs'] = 20 # sampling rate of recording, determines binning for cell detection
         self.ops['tau'] = 1.25 # timescale of gcamp to use for deconvolution
@@ -32,3 +32,19 @@ class Suite2pParameters:
         self.db = {
             'data_path': [self.paths[defs.Parameters.Path.TMP_DIR]]
         }
+
+        
+    def get_h5path_names(self):
+        """
+        Split the path to dataset into relevant names
+        """
+        
+        h5path_names = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH][0]).split('/')
+
+        data = h5path_names[0]
+        driver = h5path_names[1]
+        operation = h5path_names[2]
+        series = h5path_names[-3]
+        sensor = h5path_names[-2]
+
+        return [data, driver, operation, series, sensor]
