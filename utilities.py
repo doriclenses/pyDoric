@@ -190,7 +190,6 @@ def save_roi_signals(
     time_: np.array,
     f: h5py.File,
     path: str,
-    PlaneID: List[int] = None,
     ids: List[int] = None,
     dataset_names: List[int] = None,
     usernames: List[int] = None,
@@ -227,9 +226,6 @@ def save_roi_signals(
             defs.DoricFile.Attribute.Dataset.NAME:     usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
             defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_)
         }
-
-        if PlaneID is not None:
-            roi_attrs["PlaneID"] = PlaneID[i]
 
         if attrs is not None:
             roi_attrs = {**roi_attrs, **attrs}

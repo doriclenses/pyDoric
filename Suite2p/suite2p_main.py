@@ -4,7 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import h5py
-import typing
+from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 from tifffile import imwrite, TiffWriter, TiffFile
 
 sys.path.append("..")
@@ -44,8 +44,10 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
 
 
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
- 
-    time_ = np.array(doricFile[suite2p_params.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])[0:(nTime-1)]
+    
+    time_ = np.zeros((suite2p_params.ops['nplanes'], nTime))
+    for i in range(suite2p_params.ops['nplanes']):
+        time_[i,:] = np.array(doricFile[suite2p_params.paths[defs.Parameters.Path.H5PATH][i].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])[0:nTime]
     
     doricFile.close()
 
@@ -66,7 +68,7 @@ def preview(suite2p_params: s2p_params.Suite2pParameters):
 
 def save_suite2p_to_doric(
         output_ops: dict,
-        time_: np.array,
+        time_: np.ndarray,
         doricFileName: str,
         vpath: str,
         vdataset: str
@@ -89,7 +91,7 @@ def save_suite2p_to_doric(
     #FootPrint to use to save the ROIs contour in doric
     footPrint = np.zeros((n_cells, Ly, Lx))
     for i, stat in enumerate(stats):
-        footPrint[i, stat['ypix'], stat['xpix'] - stat['iplane']*Lx] = 1
+        footPrint[i, stat['ypix'] - int(stat['iplane']/2) * Ly, stat['xpix'] - (stat['iplane'] % 2) * Lx] = 1
 
     with h5py.File(doricFileName, 'a') as f:
         print("Saving")
@@ -98,5 +100,63 @@ def save_suite2p_to_doric(
         rois_grouppath = f"{vpath}/ROISignals"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         
-        utils.save_roi_signals(f_cells, footPrint, time_, f, rois_datapath, PlaneID=[stat['iplane'] + 1 for stat in stats])
+        save_roi_signals(f_cells, footPrint, time_, f, rois_datapath, PlaneID=[stat['iplane'] + 1 for stat in stats])
         utils.print_group_path_for_DANSE(rois_datapath)
+
+
+def save_roi_signals(
+    signals: np.ndarray,
+    footprints: np.ndarray,
+    time_: np.ndarray,
+    f: h5py.File,
+    path: str,
+    ids: List[int] = None,
+    dataset_names: List[int] = None,
+    usernames: List[int] = None,
+    attrs: Optional[dict] = None,
+    PlaneID: List[int] = None
+    ):
+
+    """
+    Saves ROI signals, time vector, and ROI coordinates.
+    Parameters
+    ----------
+    signals : np.ndarray
+        2D array of signals, with shape (n_ROI, time).
+    footprints:
+        3D array of spatial cell footprints with shape (n_ROI, height, width)
+    time_ : np.array
+        1D vector of timestamps
+    f : h5py.File
+        Opened HDF file where the information should be saved
+    path  : str
+        Group path in the HDF file
+    bit_count : int
+        Bits depth of images
+
+    """
+    path = utils.clean_path(path)
+
+    for i, footprint in enumerate(footprints):
+        id_ = ids[i] if ids is not None else i + 1
+
+        roi_attrs = {
+            defs.DoricFile.Attribute.ROI.ID:           id_,
+            defs.DoricFile.Attribute.ROI.SHAPE:        0,
+            defs.DoricFile.Attribute.ROI.COORDS:       utils.footprint_to_coords(footprint),
+            defs.DoricFile.Attribute.Dataset.NAME:     usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_)
+        }
+
+        roi_attrs["PlaneID"] = PlaneID[i]
+
+        if attrs is not None:
+            roi_attrs = {**roi_attrs, **attrs}
+
+        dataset_name = dataset_names[i] if dataset_names is not None else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+        
+        utils.save_signal(signals[i], f, f"{path}-P{PlaneID[i]}/{dataset_name}", roi_attrs)
+        timePath = f"{path}-P{PlaneID[i]}/{defs.DoricFile.Dataset.TIME}"
+        
+        if timePath not in f:
+            utils.save_signal(time_[i], f, timePath)
