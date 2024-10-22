@@ -24,14 +24,24 @@ class Suite2pParameters:
         
         self.ops = suite2p.default_ops()
         self.ops['batch_size'] = 50 # we will decrease the batch_size in case low RAM on computer
-        self.ops['threshold_scaling'] = 1.0 # we are increasing the threshold for finding ROIs to limit the number of non-cell ROIs found (sometimes useful in gcamp injections)
-        self.ops['fs'] = 20 # sampling rate of recording, determines binning for cell detection
-        self.ops['tau'] = 1.25 # timescale of gcamp to use for deconvolution
+        self.ops['threshold_scaling'] = self.params['threshold_scaling'] # we are increasing the threshold for finding ROIs to limit the number of non-cell ROIs found (sometimes useful in gcamp injections)
+        self.ops['fs'] = self.params['fs'] # sampling rate of recording, determines binning for cell detection
+        self.ops['tau'] = self.params['tau'] # timescale of gcamp to use for deconvolution
         self.ops['nplanes'] = len(self.paths[defs.Parameters.Path.H5PATH])
 
         self.db = {
             'data_path': [self.paths[defs.Parameters.Path.TMP_DIR]]
         }
+
+        # Remove advanced_sesttings function keys that are not in the minian functions list
+        self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
+        self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings if key in self.ops}
+
+        self.params[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
+
+        self.db = {**self.db, **self.advanced_settings}
+
+        print(f"ops {self.ops} db: {self.db}")
 
         
     def get_h5path_names(self):
