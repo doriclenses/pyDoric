@@ -17,6 +17,7 @@ class DoricFile:
         class Dataset:
             USERNAME = "Username"
             NAME     = "Name"
+            PLANE_ID = "PlaneID"
 
         class Group:
             OPERATIONS      = "Operations"

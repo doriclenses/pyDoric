@@ -25,11 +25,11 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     Suite2p algorithm
     """
     filePath: str = suite2p_params.paths[defs.Parameters.Path.FILEPATH]
-    doricFile = h5py.File(filePath, 'r')
+    file_ = h5py.File(filePath, 'r')
 
     nTime = -1
     for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
-        _, _, timeCount = doricFile[datapath].shape
+        _, _, timeCount = file_[datapath].shape
         
         if nTime == -1:
             nTime = timeCount
@@ -40,27 +40,28 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     with TiffWriter(filePathTif, bigtiff=True) as tifW:
         for I in range(nTime):
             for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
-                tifW.write(doricFile[datapath][:, :, I], contiguous=True)
-
+                tifW.write(file_[datapath][:, :, I], contiguous=True)
 
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
     
+    data, driver, operation, series, sensor = suite2p_params.get_h5path_names()
+    params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
+
     time_ = np.zeros((suite2p_params.ops['nplanes'], nTime))
     for i in range(suite2p_params.ops['nplanes']):
-        time_[i,:] = np.array(doricFile[suite2p_params.paths[defs.Parameters.Path.H5PATH][i].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])[0:nTime]
+        time_[i,:] = np.array(file_[suite2p_params.paths[defs.Parameters.Path.H5PATH][i].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])[0:nTime]
     
-    doricFile.close()
-
-    data, driver, operation, series, sensor = suite2p_params.get_h5path_names()
-
-    print("....Printing split path....", data, driver, operation, series, sensor)
+    file_.close()
 
     save_suite2p_to_doric(
         output_ops = output_ops,
         time_ = time_,
         doricFileName = suite2p_params.paths[defs.Parameters.Path.FILEPATH],
         vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
-        vdataset = f"{series}/{sensor}"
+        series = series,
+        sensor = sensor,
+        params_doric = suite2p_params.params,
+        params_source = params_source_data,
         )
 
 def preview(suite2p_params: s2p_params.Suite2pParameters):
@@ -71,7 +72,10 @@ def save_suite2p_to_doric(
         time_: np.ndarray,
         doricFileName: str,
         vpath: str,
-        vdataset: str
+        series: str,
+        sensor: str,
+        params_doric: dict = {},
+        params_source: dict = {}
 ):  
     output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "combined")
     
@@ -93,15 +97,32 @@ def save_suite2p_to_doric(
     for i, stat in enumerate(stats):
         footPrint[i, stat['ypix'] - int(stat['iplane']/2) * Ly, stat['xpix'] - (stat['iplane'] % 2) * Lx] = 1
 
+    print("Generating ROI names", flush = True)
+    ids           = [i + 1 for i in range(n_cells)]
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
+
     with h5py.File(doricFileName, 'a') as f:
-        print("Saving")
+        
+        # Check if Suite2p results already exist
+        operationCount = utils.operation_count(vpath, f, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
+
+        params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print("Saving ROIs", flush=True)
-        rois_grouppath = f"{vpath}/ROISignals"
-        rois_datapath  = f"{rois_grouppath}/{vdataset}"
+        rois_grouppath = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operationCount}"
+        rois_seriespath  = f"{rois_grouppath}/{series}"
+        attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+        save_roi_signals(f_cells, footPrint, time_, f, rois_seriespath, sensor,
+                         ids            = ids,
+                         dataset_names  = dataset_names,
+                         usernames      = usernames,
+                         attrs          = attrs,
+                         planeID        = [stat['iplane'] + 1 for stat in stats])
+        utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
         
-        save_roi_signals(f_cells, footPrint, time_, f, rois_datapath, PlaneID=[stat['iplane'] + 1 for stat in stats])
-        utils.print_group_path_for_DANSE(rois_datapath)
+        for planeSensor in f[rois_seriespath].keys():
+            utils.print_group_path_for_DANSE(f"{rois_seriespath}/{planeSensor}")
 
 
 def save_roi_signals(
@@ -109,12 +130,13 @@ def save_roi_signals(
     footprints: np.ndarray,
     time_: np.ndarray,
     f: h5py.File,
-    path: str,
+    seriesPath: str,
+    sensor: str,
     ids: List[int] = None,
-    dataset_names: List[int] = None,
-    usernames: List[int] = None,
+    dataset_names: List[str] = None,
+    usernames: List[str] = None,
     attrs: Optional[dict] = None,
-    PlaneID: List[int] = None
+    planeID: List[int] = None
     ):
 
     """
@@ -135,28 +157,27 @@ def save_roi_signals(
         Bits depth of images
 
     """
-    path = utils.clean_path(path)
+    path = utils.clean_path(seriesPath)
 
     for i, footprint in enumerate(footprints):
         id_ = ids[i] if ids is not None else i + 1
 
         roi_attrs = {
-            defs.DoricFile.Attribute.ROI.ID:           id_,
-            defs.DoricFile.Attribute.ROI.SHAPE:        0,
-            defs.DoricFile.Attribute.ROI.COORDS:       utils.footprint_to_coords(footprint),
-            defs.DoricFile.Attribute.Dataset.NAME:     usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_)
+            defs.DoricFile.Attribute.ROI.ID :           id_,
+            defs.DoricFile.Attribute.ROI.SHAPE :        0,
+            defs.DoricFile.Attribute.ROI.COORDS :       utils.footprint_to_coords(footprint),
+            defs.DoricFile.Attribute.Dataset.NAME :     usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME : usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.PLANE_ID : planeID[i]
         }
-
-        roi_attrs["PlaneID"] = PlaneID[i]
 
         if attrs is not None:
             roi_attrs = {**roi_attrs, **attrs}
 
         dataset_name = dataset_names[i] if dataset_names is not None else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
         
-        utils.save_signal(signals[i], f, f"{path}-P{PlaneID[i]}/{dataset_name}", roi_attrs)
-        timePath = f"{path}-P{PlaneID[i]}/{defs.DoricFile.Dataset.TIME}"
+        utils.save_signal(signals[i], f, f"{seriesPath}/{sensor}-P{planeID[i]}/{dataset_name}", roi_attrs)
+        timePath = f"{path}-P{planeID[i]}/{defs.DoricFile.Dataset.TIME}"
         
         if timePath not in f:
-            utils.save_signal(time_[i], f, timePath)
+            utils.save_signal(time_[planeID[i] - 1], f, timePath)

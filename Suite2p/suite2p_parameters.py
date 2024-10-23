@@ -41,8 +41,6 @@ class Suite2pParameters:
 
         self.db = {**self.db, **self.advanced_settings}
 
-        print(f"ops {self.ops} db: {self.db}")
-
         
     def get_h5path_names(self):
         """
