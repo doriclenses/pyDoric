@@ -32,7 +32,7 @@ except Exception as error:
     sys.exit()
 
 if __name__ == "__main__":
-    poseEstimation_params = poseEst_params.PoseEstimation(danse_params)
+    poseEstimation_params = poseEst_params.PoseEstimationParameters(danse_params)
 
     if poseEstimation_params.preview_params:
         poseEst_main.preview(poseEstimation_params)

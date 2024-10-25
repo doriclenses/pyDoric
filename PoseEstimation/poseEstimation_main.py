@@ -14,7 +14,7 @@ import poseEstimation_parameters as poseEst_params
 import poseEstimation_definitions as poseEst_defs
 
 import deeplabcut
-print("Imported DLC!")
+print("Imported DLC!", flush=True)
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
@@ -45,8 +45,8 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     #filePath: str = poseEstimation_params.paths[defs.Parameters.Path.FILEPATH]
     #doricFile = h5py.File(filePath, 'r')
 
-    path_config_file: str = poseEstimation_params.paths[defs.Parameters.Path.TMP_DIR]
-    print("configFilePath", path_config_file)
+    path_config_file: str = poseEstimation_params.paths[defs.Parameters.Path.TMP_DIR] + "/config.yaml"
+    utils.print_to_intercept("configFilePath", path_config_file, flush=True)
 
     # --------------- Create a training dataset ---------------
     deeplabcut.create_training_dataset(path_config_file)
