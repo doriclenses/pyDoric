@@ -128,7 +128,9 @@ def save_suite2p_to_doric(
         spikes_grouppath = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operationCount}"
         spikes_seriespath  = f"{spikes_grouppath}/{series}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
-        save_spikes(spks, time_, f, spikes_seriespath , sensor,
+        spikes: np.ndarray = (spks/spks) * f_cells 
+        spikes[np.isnan(spikes)] = 0
+        save_spikes(spikes, time_, f, spikes_seriespath , sensor,
                             dataset_names  = dataset_names,
                             usernames      = usernames,
                             attrs          = attrs,
