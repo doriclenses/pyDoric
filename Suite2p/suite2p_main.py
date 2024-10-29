@@ -97,7 +97,7 @@ def save_suite2p_to_doric(
     for i, stat in enumerate(stats):
         footPrint[i, stat['ypix'] - int(stat['iplane']/2) * Ly, stat['xpix'] - (stat['iplane'] % 2) * Lx] = 1
 
-    print("Generating ROI names", flush = True)
+    print(s2p_defs.Messages.ROI_NAMES, flush = True)
     ids           = [i + 1 for i in range(n_cells)]
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
@@ -109,7 +109,7 @@ def save_suite2p_to_doric(
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
-        print("Saving ROIs", flush=True)
+        print(s2p_defs.Messages.SAVING_ROIS, flush=True)
         rois_grouppath = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_seriespath  = f"{rois_grouppath}/{series}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
@@ -124,7 +124,7 @@ def save_suite2p_to_doric(
             utils.print_group_path_for_DANSE(f"{rois_seriespath}/{planeSensor}")
 
 
-        print("Saving Spikes", flush=True)
+        print(s2p_defs.Messages.SAVING_SPIKES, flush=True)
         spikes_grouppath = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operationCount}"
         spikes_seriespath  = f"{spikes_grouppath}/{series}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
