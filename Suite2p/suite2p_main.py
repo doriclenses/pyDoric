@@ -27,18 +27,9 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     filePath: str = suite2p_params.paths[defs.Parameters.Path.FILEPATH]
     file_ = h5py.File(filePath, 'r')
 
-    nTime = -1
-    for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
-        _, _, timeCount = file_[datapath].shape
-        
-        if nTime == -1:
-            nTime = timeCount
-        else:
-            nTime = min(nTime, timeCount)
-
-    filePathTif: str = suite2p_params.paths[defs.Parameters.Path.TMP_DIR] + "\\images.tif"
+    filePathTif: str = f"{suite2p_params.paths[defs.Parameters.Path.TMP_DIR]}/images.tif"
     with TiffWriter(filePathTif, bigtiff=True) as tifW:
-        for I in range(nTime):
+        for I in range(suite2p_params.timeLength):
             for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
                 tifW.write(file_[datapath][:, :, I], contiguous=True)
 
@@ -47,9 +38,9 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     data, driver, operation, series, sensor = suite2p_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
 
-    time_ = np.zeros((suite2p_params.ops['nplanes'], nTime))
+    time_ = np.zeros((suite2p_params.ops['nplanes'], suite2p_params.timeLength))
     for i in range(suite2p_params.ops['nplanes']):
-        time_[i,:] = np.array(file_[suite2p_params.paths[defs.Parameters.Path.H5PATH][i].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])[0:nTime]
+        time_[i,:] = np.array(file_[suite2p_params.paths[defs.Parameters.Path.H5PATH][i].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])[0:suite2p_params.timeLength]
     
     file_.close()
 
@@ -65,7 +56,7 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
         )
 
 def preview(suite2p_params: s2p_params.Suite2pParameters):
-    print("hello preview")
+    print("Preview")
 
 def save_suite2p_to_doric(
         output_ops: dict,

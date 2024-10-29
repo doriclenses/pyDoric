@@ -1,6 +1,7 @@
 import os
 import sys
 import inspect
+import h5py
 import numpy as np
 
 sys.path.append("..")
@@ -11,16 +12,15 @@ import suite2p_definitions as s2p_defs
 import suite2p
 
 class Suite2pParameters:
-
     """
     Parameters used in suite2p library
     """
 
     def __init__(self, danse_params: dict):
-        
         self.paths: dict          = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
+        self.timeLength: int      = self.get_time_length()
         
         self.ops = suite2p.default_ops()
         self.ops['batch_size'] = 50 # we will decrease the batch_size in case low RAM on computer
@@ -28,10 +28,9 @@ class Suite2pParameters:
         self.ops['fs'] = self.params['fs'] # sampling rate of recording, determines binning for cell detection
         self.ops['tau'] = self.params['tau'] # timescale of gcamp to use for deconvolution
         self.ops['nplanes'] = len(self.paths[defs.Parameters.Path.H5PATH])
+        self.ops['data_path'] = [self.paths[defs.Parameters.Path.TMP_DIR]]
 
-        self.db = {
-            'data_path': [self.paths[defs.Parameters.Path.TMP_DIR]]
-        }
+        # self.db = {'data_path': [self.paths[defs.Parameters.Path.TMP_DIR]]}
 
         # Remove advanced_sesttings function keys that are not in the minian functions list
         self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
@@ -39,8 +38,8 @@ class Suite2pParameters:
 
         self.params[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
-        self.db = {**self.db, **self.advanced_settings}
-
+        # self.db = {**self.db, **self.advanced_settings}
+        self.db = self.advanced_settings
         
     def get_h5path_names(self):
         """
@@ -56,3 +55,16 @@ class Suite2pParameters:
         sensor = h5path_names[-2]
 
         return [data, driver, operation, series, sensor]
+
+    def get_time_length(self):
+        nTime = -1
+        with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
+            for datapath in self.paths[defs.Parameters.Path.H5PATH]:
+                _, _, timeCount = file_[datapath].shape
+                
+                if nTime == -1:
+                    nTime = timeCount
+                else:
+                    nTime = min(nTime, timeCount)
+
+        return nTime
