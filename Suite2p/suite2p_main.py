@@ -147,11 +147,11 @@ def save_roi_signals(
     f: h5py.File,
     seriesPath: str,
     sensor: str,
-    ids: List[int] = None,
-    dataset_names: List[str] = None,
-    usernames: List[str] = None,
-    attrs: Optional[dict] = None,
-    planeID: List[int] = None
+    ids: List[int] = [],
+    dataset_names: List[str] = [],
+    usernames: List[str] = [],
+    attrs: Optional[dict] = {},
+    planeID: List[int] = []
     ):
 
     """
@@ -175,21 +175,21 @@ def save_roi_signals(
     seriesPath = utils.clean_path(seriesPath)
 
     for i, footprint in enumerate(footprints):
-        id_ = ids[i] if ids is not None else i + 1
+        id_ = ids[i] if ids else i + 1
 
         roi_attrs = {
             defs.DoricFile.Attribute.ROI.ID :           id_,
             defs.DoricFile.Attribute.ROI.SHAPE :        0,
             defs.DoricFile.Attribute.ROI.COORDS :       utils.footprint_to_coords(footprint),
-            defs.DoricFile.Attribute.Dataset.NAME :     usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME : usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.NAME :     usernames[i] if usernames else defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME : usernames[i] if usernames else defs.DoricFile.Dataset.ROI.format(id_),
             defs.DoricFile.Attribute.Dataset.PLANE_ID : planeID[i]
         }
 
-        if attrs is not None:
+        if attrs:
             roi_attrs = {**roi_attrs, **attrs}
 
-        dataset_name = dataset_names[i] if dataset_names is not None else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+        dataset_name = dataset_names[i] if dataset_names else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
         
         sensorPath = f"{seriesPath}/{sensor}-P{planeID[i]}"
         utils.save_signal(signals[i], f, f"{sensorPath}/{dataset_name}", roi_attrs)
