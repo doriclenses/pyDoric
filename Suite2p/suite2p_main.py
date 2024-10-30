@@ -34,14 +34,14 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
                 tifW.write(file_[datapath][:, :, I], contiguous=True)
 
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
-    
+
     data, driver, operation, series, sensor = suite2p_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
 
     time_ = np.zeros((suite2p_params.ops['nplanes'], suite2p_params.timeLength))
     for i in range(suite2p_params.ops['nplanes']):
         time_[i,:] = np.array(file_[suite2p_params.paths[defs.Parameters.Path.H5PATH][i].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])[0:suite2p_params.timeLength]
-    
+
     file_.close()
 
     save_suite2p_to_doric(
@@ -55,8 +55,10 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
         params_source = params_source_data,
         )
 
+
 def preview(suite2p_params: s2p_params.Suite2pParameters):
     print("Preview")
+
 
 def save_suite2p_to_doric(
         output_ops: dict,
@@ -67,19 +69,17 @@ def save_suite2p_to_doric(
         sensor: str,
         params_doric: dict = {},
         params_source: dict = {}
-):  
+):
     output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "combined")
-    
-    iscell = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(int) #specifies whether an ROI is a cell, first column is 0/1, and second column is probability that the ROI is a cell based on the default classifier
+
+    iscell     = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(int) #specifies whether an ROI is a cell, first column is 0/1, and second column is probability that the ROI is a cell based on the default classifier
     stats_file = Path(output_ops['save_path']).joinpath('stat.npy')
-    stats = np.load(stats_file, allow_pickle=True) #list of statistics computed for each cell
+    stats      = np.load(stats_file, allow_pickle=True) #list of statistics computed for each cell
+    f_cells     = np.load(Path(output_ops['save_path']).joinpath('F.npy')) #array of fluorescence traces (ROIs by timepoints)
+    f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
+    spks        = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
 
     n_cells = len(stats)
-
-    f_cells = np.load(Path(output_ops['save_path']).joinpath('F.npy')) #array of fluorescence traces (ROIs by timepoints)
-    f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
-    spks = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
-
     Ly = output_ops["Ly"]
     Lx = output_ops["Lx"]
 
@@ -94,14 +94,13 @@ def save_suite2p_to_doric(
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
     with h5py.File(doricFileName, 'a') as f:
-        
         # Check if Suite2p results already exist
         operationCount = utils.operation_count(vpath, f, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(s2p_defs.Messages.SAVING_ROIS, flush=True)
-        rois_grouppath = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operationCount}"
+        rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_seriespath  = f"{rois_grouppath}/{series}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
         save_roi_signals(f_cells, footPrint, time_, f, rois_seriespath, sensor,
@@ -114,9 +113,8 @@ def save_suite2p_to_doric(
         for planeSensor in f[rois_seriespath].keys():
             utils.print_group_path_for_DANSE(f"{rois_seriespath}/{planeSensor}")
 
-
         print(s2p_defs.Messages.SAVING_SPIKES, flush=True)
-        spikes_grouppath = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operationCount}"
+        spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operationCount}"
         spikes_seriespath  = f"{spikes_grouppath}/{series}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
         spikes = correctSpikesValues(spks, f_cells)
@@ -187,16 +185,17 @@ def save_roi_signals(
             roi_attrs = {**roi_attrs, **attrs}
 
         dataset_name = dataset_names[i] if dataset_names else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
-        
+
         sensorPath = f"{seriesPath}/{sensor}-P{planeID[i]}"
+        timePath   = f"{sensorPath}/{defs.DoricFile.Dataset.TIME}"
+
         utils.save_signal(signals[i], f, f"{sensorPath}/{dataset_name}", roi_attrs)
-        timePath = f"{sensorPath}/{defs.DoricFile.Dataset.TIME}"
-        
         if timePath not in f:
             utils.save_signal(time_[planeID[i] - 1], f, timePath)
 
+
 def save_spikes(
-        spks: np.ndarray,
+        spikes: np.ndarray,
         time_: np.ndarray,
         f:  h5py.File,
         seriesPath: str,
@@ -208,11 +207,11 @@ def save_spikes(
 ):
     seriesPath = utils.clean_path(seriesPath)
 
-    for i, spike in enumerate(spks):
-        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i]
-
+    for i, spike in enumerate(spikes):
         sensorPath = f"{seriesPath}/{sensor}-P{planeID[i]}"
+        timePath   = f"{sensorPath}/{defs.DoricFile.Dataset.TIME}"
+
+        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i]
         utils.save_signal(spike, f, f"{sensorPath}/{dataset_names[i]}", attrs)
-        timePath = f"{sensorPath}/{defs.DoricFile.Dataset.TIME}"
         if timePath not in f:
             utils.save_signal(time_[planeID[i] - 1], f, timePath)
