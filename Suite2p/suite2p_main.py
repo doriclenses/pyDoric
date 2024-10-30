@@ -119,8 +119,7 @@ def save_suite2p_to_doric(
         spikes_grouppath = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operationCount}"
         spikes_seriespath  = f"{spikes_grouppath}/{series}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
-        spikes: np.ndarray = (spks/spks) * f_cells 
-        spikes[np.isnan(spikes)] = 0
+        spikes = correctSpikesValues(spks, f_cells)
         save_spikes(spikes, time_, f, spikes_seriespath , sensor,
                             dataset_names  = dataset_names,
                             usernames      = usernames,
@@ -129,6 +128,13 @@ def save_suite2p_to_doric(
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
         for planeSensor in f[spikes_seriespath].keys():
             utils.print_group_path_for_DANSE(f"{spikes_seriespath}/{planeSensor}")
+
+
+def correctSpikesValues(spks:np.ndarray, f_cells:np.ndarray)->np.ndarray:
+        spikes: np.ndarray = (spks/spks) * f_cells
+        spikes[np.isnan(spikes)] = 0
+
+        return spikes
 
 
 def save_roi_signals(
