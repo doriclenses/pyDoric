@@ -1,8 +1,8 @@
-import os
+#import os
 import sys
-import inspect
+#import inspect
 import h5py
-import numpy as np
+#import numpy as np
 
 sys.path.append("..")
 import utilities as utils
@@ -48,11 +48,11 @@ class Suite2pParameters:
         
         h5path_names = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH][0]).split('/')
 
-        data = h5path_names[0]
-        driver = h5path_names[1]
+        data      = h5path_names[0]
+        driver    = h5path_names[1]
         operation = h5path_names[2]
-        series = h5path_names[-3]
-        sensor = h5path_names[-2]
+        series    = h5path_names[-3]
+        sensor    = h5path_names[-2]
 
         return [data, driver, operation, series, sensor]
 

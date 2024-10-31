@@ -1,11 +1,11 @@
-import os, requests
+import os
 import sys
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import h5py
-from typing import Any, Dict, List, Optional, Tuple, Union, Callable
-from tifffile import imwrite, TiffWriter, TiffFile
+from typing import Optional
+from tifffile import TiffWriter
 
 sys.path.append("..")
 import utilities as utils
@@ -72,9 +72,8 @@ def save_suite2p_to_doric(
 ):
     output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "combined")
 
-    iscell     = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(int) #specifies whether an ROI is a cell, first column is 0/1, and second column is probability that the ROI is a cell based on the default classifier
-    stats_file = Path(output_ops['save_path']).joinpath('stat.npy')
-    stats      = np.load(stats_file, allow_pickle=True) #list of statistics computed for each cell
+    iscell      = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(int) #specifies whether an ROI is a cell, first column is 0/1, and second column is probability that the ROI is a cell based on the default classifier
+    stats       = np.load(Path(output_ops['save_path']).joinpath('stat.npy'), allow_pickle=True) #list of statistics computed for each cell
     f_cells     = np.load(Path(output_ops['save_path']).joinpath('F.npy')) #array of fluorescence traces (ROIs by timepoints)
     f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
     spks        = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
@@ -142,30 +141,15 @@ def save_roi_signals(
     f: h5py.File,
     seriesPath: str,
     sensor: str,
-    ids: List[int] = [],
-    dataset_names: List[str] = [],
-    usernames: List[str] = [],
+    ids: list[int] = [],
+    dataset_names: list[str] = [],
+    usernames: list[str] = [],
     attrs: Optional[dict] = {},
-    planeID: List[int] = []
+    planeID: list[int] = []
     ):
 
     """
     Saves ROI signals, time vector, and ROI coordinates.
-    Parameters
-    ----------
-    signals : np.ndarray
-        2D array of signals, with shape (n_ROI, time).
-    footprints:
-        3D array of spatial cell footprints with shape (n_ROI, height, width)
-    time_ : np.array
-        1D vector of timestamps
-    f : h5py.File
-        Opened HDF file where the information should be saved
-    path  : str
-        Group path in the HDF file
-    bit_count : int
-        Bits depth of images
-
     """
     seriesPath = utils.clean_path(seriesPath)
 
@@ -200,10 +184,10 @@ def save_spikes(
         f:  h5py.File,
         seriesPath: str,
         sensor: str,
-        dataset_names: List[str],
-        usernames: List[str],
+        dataset_names: list[str],
+        usernames: list[str],
         attrs: dict,
-        planeID: List[int]
+        planeID: list[int]
 ):
     seriesPath = utils.clean_path(seriesPath)
 
