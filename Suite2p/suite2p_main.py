@@ -105,7 +105,7 @@ def save_suite2p_to_doric(
         print(s2p_defs.Messages.SAVING_ROIS, flush=True)
         rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_seriespath  = f"{rois_grouppath}/{series}"
-        attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+        attrs = {"Unit": "AU"}
         save_roi_signals(f_cells, footPrint, time_, f, rois_seriespath, sensor,
                          ids            = ids,
                          dataset_names  = dataset_names,
@@ -119,7 +119,7 @@ def save_suite2p_to_doric(
         print(s2p_defs.Messages.SAVING_SPIKES, flush=True)
         spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operationCount}"
         spikes_seriespath  = f"{spikes_grouppath}/{series}"
-        attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+        attrs = {"Unit": "AU"}
         spikes = correctSpikesValues(spks, f_cells)
         save_spikes(spikes, time_, f, spikes_seriespath , sensor,
                             dataset_names  = dataset_names,
