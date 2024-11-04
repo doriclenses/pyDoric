@@ -23,14 +23,12 @@ class Suite2pParameters:
         self.timeLength: int      = self.get_time_length()
         
         self.ops = suite2p.default_ops()
-        self.ops['batch_size'] = 50 # we will decrease the batch_size in case low RAM on computer
-        self.ops['threshold_scaling'] = self.params['threshold_scaling'] # we are increasing the threshold for finding ROIs to limit the number of non-cell ROIs found (sometimes useful in gcamp injections)
-        self.ops['fs'] = self.params['fs'] # sampling rate of recording, determines binning for cell detection
-        self.ops['tau'] = self.params['tau'] # timescale of gcamp to use for deconvolution
-        self.ops['nplanes'] = len(self.paths[defs.Parameters.Path.H5PATH])
-        self.ops['data_path'] = [self.paths[defs.Parameters.Path.TMP_DIR]]
+        self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
+        self.ops['threshold_scaling'] = self.params['Threshold'] # Threshold for ROIs detection
+        self.ops['tau']               = self.params['DecayTime'] # Timescale of gcamp to use for deconvolution
+        self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
+        self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
 
-        # self.db = {'data_path': [self.paths[defs.Parameters.Path.TMP_DIR]]}
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
             frequency = len(time_)/time_[-1]
@@ -43,7 +41,6 @@ class Suite2pParameters:
 
         self.params[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
-        # self.db = {**self.db, **self.advanced_settings}
         self.db = self.advanced_settings
         
     def get_h5path_names(self):
