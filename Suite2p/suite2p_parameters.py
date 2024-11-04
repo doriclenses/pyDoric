@@ -2,7 +2,7 @@
 import sys
 #import inspect
 import h5py
-#import numpy as np
+import numpy as np
 
 sys.path.append("..")
 import utilities as utils
@@ -31,6 +31,11 @@ class Suite2pParameters:
         self.ops['data_path'] = [self.paths[defs.Parameters.Path.TMP_DIR]]
 
         # self.db = {'data_path': [self.paths[defs.Parameters.Path.TMP_DIR]]}
+        with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
+            time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
+            frequency = len(time_)/time_[-1]
+
+        self.ops['fs'] = frequency
 
         # Remove advanced_sesttings function keys that are not in the minian functions list
         self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
