@@ -15,7 +15,7 @@ class DoricFile:
     """
 
     class Group:
-        ROISIGNALS  = "suite2pROISignals"
-        IMAGES      = "suite2pImages"
-        RESIDUALS   = "suite2pResidualImages"
-        SPIKES      = "suite2pSpikes"
+        ROISIGNALS  = "Suite2pROISignals"
+        IMAGES      = "Suite2pImages"
+        RESIDUALS   = "Suite2pResidualImages"
+        SPIKES      = "Suite2pSpikes"
