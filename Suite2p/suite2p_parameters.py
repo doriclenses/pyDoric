@@ -59,14 +59,14 @@ class Suite2pParameters:
         return [data, driver, operation, series, sensor]
 
     def get_time_length(self):
-        nTime = -1
+        time_count = -1
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             for datapath in self.paths[defs.Parameters.Path.H5PATH]:
                 _, _, time_count = file_[datapath].shape
                 
-                if nTime == -1:
-                    nTime = time_count
+                if time_count == -1:
+                    time_count = time_count
                 else:
-                    nTime = min(nTime, time_count)
+                    time_count = min(time_count, time_count)
 
-        return nTime
+        return time_count
