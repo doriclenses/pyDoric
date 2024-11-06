@@ -20,7 +20,7 @@ class Suite2pParameters:
         self.paths: dict          = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
-        self.timeLength: int      = self.get_time_length()
+        self.time_length: int      = self.get_time_length()
         
         self.ops = suite2p.default_ops()
         self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
@@ -62,11 +62,11 @@ class Suite2pParameters:
         nTime = -1
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             for datapath in self.paths[defs.Parameters.Path.H5PATH]:
-                _, _, timeCount = file_[datapath].shape
+                _, _, time_count = file_[datapath].shape
                 
                 if nTime == -1:
-                    nTime = timeCount
+                    nTime = time_count
                 else:
-                    nTime = min(nTime, timeCount)
+                    nTime = min(nTime, time_count)
 
         return nTime
