@@ -22,3 +22,4 @@ class PoseEstimationParameters:
         self.paths: dict          = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
+        #self.positions: dict      = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
