@@ -150,8 +150,8 @@ def save_suite2p_to_doric(
 
 
 def correctSpikesValues(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
-    spikes = (spks/spks) * f_cells
-    spikes[np.isnan(spikes)] = 0
+    spikes = np.zeros(spks.shape)
+    spikes[spks > 0] = f_cells[spks > 0]
 
     return spikes
 
