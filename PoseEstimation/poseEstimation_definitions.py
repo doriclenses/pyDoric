@@ -16,4 +16,7 @@ class Parameters:
         """
         Parameters of danse Find Cells operation
         """
-        POSITIONS = "PosePositions"
+        POSITIONS    = "PosePositions"
+        PROJECT_NAME = "ProjectName"
+        PROJECT_PATH = "ProjectPath"
+        SCORER       = "Scorer"

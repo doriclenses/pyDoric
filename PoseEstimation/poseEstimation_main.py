@@ -7,6 +7,8 @@ import typing
 from pathlib import Path
 import matplotlib.pyplot as plt
 from tifffile import imwrite, TiffWriter, TiffFile
+import yaml
+from datetime import datetime
 
 sys.path.append("..")
 import utilities as utils
@@ -45,11 +47,21 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     """
     #filePath: str = poseEstimation_params.paths[defs.Parameters.Path.FILEPATH]
     #doricFile = h5py.File(filePath, 'r')
-    tempDir: str    = poseEstimation_params.paths[defs.Parameters.Path.TMP_DIR]
-    positions: dict = poseEstimation_params.params[poseEst_defs.Parameters.danse.POSITIONS]
+    tempDir: str       = poseEstimation_params.paths[defs.Parameters.Path.TMP_DIR]
+    positions: dict    = poseEstimation_params.params[poseEst_defs.Parameters.danse.POSITIONS]
+    ProjectPath        = poseEstimation_params.params[poseEst_defs.Parameters.danse.PROJECT_PATH]
+    Task               = poseEstimation_params.params[poseEst_defs.Parameters.danse.PROJECT_NAME]
+    scorer             = poseEstimation_params.params[poseEst_defs.Parameters.danse.SCORER]
+    Project_folderName = Task + '-' + scorer + '-' + datetime.now().strftime("%Y-%m-%d")
+    Project_fullPath   = os.path.join(ProjectPath, Project_folderName)
+
+    os.makedirs(Project_fullPath)
+
+    # --------------- Read the config file ---------------
+    path_config_file: str = createConfigFile(scorer, Task, positions, Project_fullPath)
+    utils.print_to_intercept(path_config_file)
 
     # --------------- Create hdf file for labeled data ---------------
-    scorer = "Doric"
     cols = []
     rows = len(positions[list(positions.keys())[0]])
     data:list = [[] for _ in range(rows)]
@@ -69,13 +81,13 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
                                       ,)
     df = pd.DataFrame(data, columns=columns)
     df.index = Axis1
+    
+    labeledDataPath  = os.path.join(Project_fullPath, "labeled-data")
+    if not os.path.exists(labeledDataPath):
+        os.makedirs(labeledDataPath)
 
-    file_path = tempDir + "/CollectedData.h5"
+    file_path = labeledDataPath + "/CollectedData.h5"
     df.to_hdf(file_path, key='df', mode='w')
-
-    # --------------- Read the config file ---------------
-    path_config_file: str = poseEstimation_params.paths[defs.Parameters.Path.TMP_DIR] + "/config.yaml"
-    utils.print_to_intercept(path_config_file)
 
     # --------------- Create a training dataset ---------------
     deeplabcut.create_training_dataset(path_config_file)
