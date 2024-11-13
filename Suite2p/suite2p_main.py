@@ -72,7 +72,10 @@ def save_suite2p_to_doric(
     params_source: dict = {},
     plane_IDs: list[int] = []
 ):
-    output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "combined")
+    if len(plane_IDs) > 1:
+        output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "combined")
+    else:
+        output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "plane0")
 
     iscell      = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(bool) #specifies whether an ROI is a cell
     stats       = np.load(Path(output_ops['save_path']).joinpath('stat.npy'), allow_pickle=True) #list of statistics computed for each cell
@@ -88,6 +91,10 @@ def save_suite2p_to_doric(
     Ly = output_ops["Ly"]
     Lx = output_ops["Lx"]
     spikes = correct_spikes_values(spks, f_cells)
+
+    if len(plane_IDs) == 1:
+        for stat in stats:
+            stat['iplane'] = 0
     
     #FootPrint to use to save the ROIs contour in doric
     footprints = np.zeros((n_cells, Ly, Lx))
