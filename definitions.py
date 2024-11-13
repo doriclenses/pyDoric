@@ -59,9 +59,10 @@ class Parameters:
         Main keys to distinguish different parameters
         """
 
-        PARAMETERS = "Parameters"
-        PATHS      = "Paths"
-        PREVIEW    = "Preview"
+        PARAMETERS    = "Parameters"
+        PATHS         = "Paths"
+        PREVIEW       = "Preview"
+        IS_MICROSCOPE = "IsMicroscope"
 
 
     class Path:

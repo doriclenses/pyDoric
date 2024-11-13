@@ -45,15 +45,15 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     file_.close()
 
     save_suite2p_to_doric(
-        output_ops = output_ops,
-        time_ = time_,
+        output_ops      = output_ops,
+        time_           = time_,
         doric_file_name = suite2p_params.paths[defs.Parameters.Path.FILEPATH],
-        vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
-        series = series,
-        sensor = sensor,
-        params_doric = suite2p_params.params,
-        params_source = params_source_data,
-        plane_IDs = [int(datapath[-1]) for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]]
+        vpath           = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+        series          = series,
+        sensor          = sensor,
+        params_doric    = suite2p_params.params,
+        params_source   = params_source_data,
+        plane_IDs       = [int(datapath[-1]) for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]] if not suite2p_params.is_microscope else [-1]
         )
 
 
@@ -116,22 +116,30 @@ def save_suite2p_to_doric(
         cell_indexs = [i for i, stat in enumerate(stats) if stat["iplane"] == plane_index]
 
         attrs = {"Unit": "AU",
-                defs.DoricFile.Attribute.Dataset.PLANE_ID : plane_ID}
+                 defs.DoricFile.Attribute.Dataset.PLANE_ID: plane_ID}
         
+        rois_path   = f"{rois_seriespath}/{sensor}-P{plane_ID}"
+        spikes_path = f"{spikes_seriespath}/{sensor}-P{plane_ID}"
+
+        if plane_ID == -1:
+            rois_path   = f"{rois_seriespath}/{sensor}"
+            spikes_path = f"{spikes_seriespath}/{sensor}"
+            del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
+            
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                 footprints    = footprints[cell_indexs, :, :],
                                 time_         = time_[plane_index],
                                 file_         = file_,
-                                path          = f"{rois_seriespath}/{sensor}-P{plane_ID}",
+                                path          = rois_path,
                                 ids           = [ids[i] for i in cell_indexs],
                                 dataset_names = [dataset_names[i] for i in cell_indexs],
                                 usernames     = [usernames[i] for i in cell_indexs],
                                 attrs         = attrs)
-
+            
         utils.save_signals(signals        = spikes[cell_indexs, :],
                             time_         = time_[plane_index],
                             file_         = file_,
-                            path          = f"{spikes_seriespath}/{sensor}-P{plane_ID}",
+                            path          = spikes_path,
                             dataset_names = [dataset_names[i] for i in cell_indexs],
                             usernames     = [usernames[i] for i in cell_indexs],
                             attrs         = attrs)

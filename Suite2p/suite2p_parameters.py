@@ -20,6 +20,7 @@ class Suite2pParameters:
         self.paths: dict          = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
+        self.is_microscope: bool  = danse_params.get(defs.Parameters.Main.IS_MICROSCOPE, False)
         self.time_length: int     = self.get_time_length()
         
         self.ops = suite2p.default_ops()
@@ -35,14 +36,14 @@ class Suite2pParameters:
 
         self.ops['fs'] = frequency
 
-        # Remove advanced_sesttings function keys that are not in the minian functions list
+        # Remove advanced_settings function keys that are not in the minian functions list
         self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
         self.advanced_settings = {key: self.advanced_settings[key] for key in self.advanced_settings if key in self.ops}
 
         self.params[defs.Parameters.danse.ADVANCED_SETTINGS] = self.advanced_settings.copy()
 
         self.db = self.advanced_settings
-        
+
     def get_h5path_names(self):
         """
         Split the path to dataset into relevant names
