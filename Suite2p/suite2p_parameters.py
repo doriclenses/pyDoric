@@ -31,7 +31,7 @@ class Suite2pParameters:
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
-            frequency = len(time_)/time_[-1]
+            frequency = len(time_)/(time_[-1] - time_[0])
 
         self.ops['fs'] = frequency
 
