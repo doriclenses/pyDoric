@@ -20,7 +20,7 @@ class Suite2pParameters:
         self.paths: dict          = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
-        self.time_length: int      = self.get_time_length()
+        self.time_length: int     = self.get_time_length()
         
         self.ops = suite2p.default_ops()
         self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
