@@ -98,3 +98,74 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
 
 def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
+
+def createConfigFile(Scorer, Task, positions, project_fullPath):
+    filepath        = project_fullPath + "/config.yaml"
+
+    yaml_content = {
+        # Project definitions (do not edit)
+        'Task'  : Task,
+        'Scorer': Scorer,
+        'Date'  : datetime.now().strftime("%b%d"),
+        'multianimalproject': 'false',
+        'identity': '',
+
+        # Project path (change when moving around)
+        'project_path': project_fullPath,
+
+        # Default DeepLabCut engine to use for shuffle creation (either pytorch or tensorflow)
+        'engine': 'pytorch',
+
+        # Annotation data set configuration (and individual video cropping parameters)
+        'video_sets': {
+            'C:/Users/MARK05/Desktop/DLC/Testingkapil-KS-2024-10-17/videos/LHA86_avoidance.mp4': {'crop': '0, 640, 0, 480'},
+            'C:/Users/MARK05/Desktop/DLC/Testingkapil-KS-2024-10-17/videos/m3v1mp4.mp4': {'crop': '0, 640, 0, 480'}
+        },
+        'bodyparts': list(positions.keys()),
+        # Fraction of video to start/stop when extracting frames for labeling/refinement
+        'start': 0,
+        'stop': 1,
+        'numframes2pick': 20,
+
+        # Plotting configuration
+        'skeleton': list(positions.keys()),
+
+        'skeleton_color': 'black',
+        'pcutoff': 0.6,
+        'dotsize': 12,
+        'alphavalue': 0.7,
+        'colormap': 'rainbow',
+
+        # Training,Evaluation and Analysis configuration
+        'TrainingFraction':
+        - 0.95,
+        'iteration': 0,
+        'default_net_type': 'resnet_50',
+        'default_augmenter': 'default',
+        'snapshotindex': -1,
+        'detector_snapshotindex': -1,
+        'batch_size': 8,
+        'detector_batch_size': 1,
+
+        # Cropping Parameters (for analysis and outlier frame detection)
+        'cropping': False,
+        #f cropping is true for analysis, then set the values here:
+        'x1': 0,
+        'x2': 640,
+        'y1': 277,
+        'y2': 624,
+
+        # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+        'corner2move2': [50,50],
+        'move2corner': True,
+
+        # Conversion tables to fine-tune SuperAnimal weights
+        'SuperAnimalConversionTables': ''
+    }
+
+    # Create and write to the .yaml file 
+    with open(filepath, 'w') as file: 
+        yaml.dump(yaml_content, file, default_flow_style=False)
+        print("YAML file created successfully at", filepath)
+
+    return filepath
