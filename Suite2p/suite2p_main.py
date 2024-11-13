@@ -99,56 +99,57 @@ def save_suite2p_to_doric(
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
-    with h5py.File(doric_file_name, 'a') as file_:
-        # Check if Suite2p results already exist
-        operation_count = utils.operation_count(vpath, file_, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
+    file_ = h5py.File(doric_file_name, 'a')
+    # Check if Suite2p results already exist
+    operation_count = utils.operation_count(vpath, file_, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
-        params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operation_count
+    params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operation_count
 
-        rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS + operation_count}"
-        rois_seriespath  = f"{rois_grouppath}/{series}"
+    rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS + operation_count}"
+    rois_seriespath  = f"{rois_grouppath}/{series}"
 
-        spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operation_count}"
-        spikes_seriespath  = f"{spikes_grouppath}/{series}"
+    spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operation_count}"
+    spikes_seriespath  = f"{spikes_grouppath}/{series}"
 
-        print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
-        for plane_index, plane_ID in enumerate(plane_IDs):
-            cell_indexs = [i for i, stat in enumerate(stats) if stat["iplane"] == plane_index]
+    print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
+    for plane_index, plane_ID in enumerate(plane_IDs):
+        cell_indexs = [i for i, stat in enumerate(stats) if stat["iplane"] == plane_index]
 
-            attrs = {"Unit": "AU",
-                     defs.DoricFile.Attribute.Dataset.PLANE_ID : plane_ID}
-            
-            utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
-                                   footprints    = footprints[cell_indexs, :, :],
-                                   time_         = time_[plane_index],
-                                   file_         = file_,
-                                   path          = f"{rois_seriespath}/{sensor}-P{plane_ID}",
-                                   ids           = [ids[i] for i in cell_indexs],
-                                   dataset_names = [dataset_names[i] for i in cell_indexs],
-                                   usernames     = [usernames[i] for i in cell_indexs],
-                                   attrs         = attrs)
+        attrs = {"Unit": "AU",
+                defs.DoricFile.Attribute.Dataset.PLANE_ID : plane_ID}
         
-            attrs = {"Unit": "AU",
-                     defs.DoricFile.Attribute.Dataset.PLANE_ID : plane_ID}
+        utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
+                                footprints    = footprints[cell_indexs, :, :],
+                                time_         = time_[plane_index],
+                                file_         = file_,
+                                path          = f"{rois_seriespath}/{sensor}-P{plane_ID}",
+                                ids           = [ids[i] for i in cell_indexs],
+                                dataset_names = [dataset_names[i] for i in cell_indexs],
+                                usernames     = [usernames[i] for i in cell_indexs],
+                                attrs         = attrs)
 
-            utils.save_signals(signals = spikes[cell_indexs, :],
-                               time_   = time_[plane_index],
-                               file_   = file_,
-                               path    = f"{spikes_seriespath}/{sensor}-P{plane_ID}",
-                               dataset_names = [dataset_names[i] for i in cell_indexs],
-                               usernames     = [usernames[i] for i in cell_indexs],
-                               attrs         = attrs)
-
-        utils.save_attributes(utils.merge_params(params_doric, params_source), file_, rois_grouppath)
+        utils.save_signals(signals        = spikes[cell_indexs, :],
+                            time_         = time_[plane_index],
+                            file_         = file_,
+                            path          = f"{spikes_seriespath}/{sensor}-P{plane_ID}",
+                            dataset_names = [dataset_names[i] for i in cell_indexs],
+                            usernames     = [usernames[i] for i in cell_indexs],
+                            attrs         = attrs)
+    
+    utils.save_attributes(utils.merge_params(params_doric, params_source), file_, rois_grouppath)
+    if rois_seriespath in file_:
         for plane_sensor in file_[rois_seriespath].keys():
             utils.print_group_path_for_DANSE(f"{rois_seriespath}/{plane_sensor}")
-            
-        utils.save_attributes(utils.merge_params(params_doric, params_source), file_, spikes_grouppath)
+        
+    utils.save_attributes(utils.merge_params(params_doric, params_source), file_, spikes_grouppath)
+    if spikes_seriespath in file_:
         for plane_sensor in file_[spikes_seriespath].keys():
             utils.print_group_path_for_DANSE(f"{spikes_seriespath}/{plane_sensor}")
 
+    file_.close()
 
-def correctSpikesValues(spks:np.ndarray, f_cells:np.ndarray)->np.ndarray:
+
+def correctSpikesValues(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
     spikes = (spks/spks) * f_cells
     spikes[np.isnan(spikes)] = 0
 
