@@ -87,7 +87,7 @@ def save_suite2p_to_doric(
     n_cells = len(stats)
     Ly = output_ops["Ly"]
     Lx = output_ops["Lx"]
-    spikes = correctSpikesValues(spks, f_cells)
+    spikes = correct_spikes_values(spks, f_cells)
     
     #FootPrint to use to save the ROIs contour in doric
     footprints = np.zeros((n_cells, Ly, Lx))
@@ -149,7 +149,7 @@ def save_suite2p_to_doric(
     file_.close()
 
 
-def correctSpikesValues(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
+def correct_spikes_values(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
     spikes = np.zeros(spks.shape)
     spikes[spks > 0] = f_cells[spks > 0]
 
