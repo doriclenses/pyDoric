@@ -187,13 +187,13 @@ def save_images(
 def save_roi_signals(
     signals: np.ndarray,
     footprints: np.ndarray,
-    time_: np.array,
-    f: h5py.File,
+    time_: np.ndarray,
+    file_: h5py.File,
     path: str,
-    ids: List[int] = None,
-    dataset_names: List[int] = None,
-    usernames: List[int] = None,
-    attrs: Optional[dict] = None
+    ids: list[int] = [],
+    dataset_names: list[str] = [],
+    usernames: list[str] = [],
+    attrs: Optional[dict] = {}
     ):
 
     """
@@ -217,46 +217,43 @@ def save_roi_signals(
     path = clean_path(path)
 
     for i, footprint in enumerate(footprints):
-        id_ = ids[i] if ids is not None else i + 1
+        id_ = ids[i] if ids else i + 1
 
         roi_attrs = {
             defs.DoricFile.Attribute.ROI.ID:           id_,
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
             defs.DoricFile.Attribute.ROI.COORDS:       footprint_to_coords(footprint),
-            defs.DoricFile.Attribute.Dataset.NAME:     usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_),
-            defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames is not None else defs.DoricFile.Dataset.ROI.format(id_)
+            defs.DoricFile.Attribute.Dataset.NAME:     usernames[i] if usernames else defs.DoricFile.Dataset.ROI.format(id_),
+            defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames else defs.DoricFile.Dataset.ROI.format(id_)
         }
 
-        if attrs is not None:
+        if attrs:
             roi_attrs = {**roi_attrs, **attrs}
 
-        dataset_name = dataset_names[i] if dataset_names is not None else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
-        save_signal(signals[i], f, f"{path}/{dataset_name}", roi_attrs)
+        dataset_name = dataset_names[i] if dataset_names else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
+        save_signal(signals[i], file_, f"{path}/{dataset_name}", roi_attrs)
 
-    save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
+    save_signal(time_, file_, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
 
 def save_signals(
-    signals: np.array,
-    time_: np.array,
-    f: h5py.File,
+    signals: np.ndarray,
+    time_: np.ndarray,
+    file_: h5py.File,
     path: str,
-    dataset_names: List[str],
-    usernames: Optional[List[str]] = None,
-    attrs: Optional[dict] = None
+    dataset_names: list[str],
+    usernames: Optional[list[str]] = [],
+    attrs: Optional[dict] = {}
     ):
 
     path = clean_path(path)
 
     for i, name in enumerate(dataset_names):
+        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i] if usernames else name
 
-        if attrs is None:
-            attrs = {}
-        attrs[defs.DoricFile.Attribute.Dataset.USERNAME] = usernames[i] if usernames is not None else name
+        save_signal(signals[i], file_, f"{path}/{name}", attrs)
 
-        save_signal(signals[i], f, f"{path}/{name}", attrs)
-
-    save_signal(time_, f, f"{path}/{defs.DoricFile.Dataset.TIME}")
+    save_signal(time_, file_, f"{path}/{defs.DoricFile.Dataset.TIME}")
 
 
 def save_signal(
