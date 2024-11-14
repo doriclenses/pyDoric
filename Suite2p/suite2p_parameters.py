@@ -24,8 +24,8 @@ class Suite2pParameters:
         
         self.ops = suite2p.default_ops()
         self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
-        self.ops['threshold_scaling'] = self.params['Threshold'] # Threshold for ROIs detection
-        self.ops['tau']               = self.params['DecayTime'] # Timescale of gcamp to use for deconvolution
+        self.ops['threshold_scaling'] = self.params['ROIsThreshold'] # Threshold for ROIs detection
+        self.ops['tau']               = self.params['BiosensorDecayTime'] # Timescale of gcamp to use for deconvolution
         self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
         self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
 
