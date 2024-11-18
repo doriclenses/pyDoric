@@ -84,16 +84,13 @@ def main(minian_params):
     # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = minian_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[minian_params.paths[defs.Parameters.Path.H5PATH]]:
-        attrs = utils.load_attributes(file_, f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.IMAGE_STACK}")
-    else:
-        attrs = utils.load_attributes(file_, f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}")
+    attrs = utils.load_attributes(file_, minian_params.paths[defs.Parameters.Path.H5PATH])
 
     if minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
         minian_params.params[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
-
-    time_ = np.array(file_[f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    
+    time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+    time_ = np.array(file_[time_path])
 
     file_.close()
 
@@ -151,7 +148,8 @@ def init_preview(minian_params):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
 
-    time_ = np.array(file_[f"{minian_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+    time_ = np.array(file_[time_path])
 
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
@@ -544,7 +542,7 @@ def load_doric_to_xarray(
     downsample_strategy="subset",
     post_process: Optional[Callable] = None,
     close_file: bool = False
-) -> xr.DataArray:
+):
 
     """
     Loads images stack from HDF as xarray
@@ -554,12 +552,7 @@ def load_doric_to_xarray(
 
     h5path = utils.clean_path(h5path)
 
-    if defs.DoricFile.Dataset.IMAGE_STACK in file_[h5path]:
-        file_image_stack = file_[f"{h5path}/{defs.DoricFile.Dataset.IMAGE_STACK}"]
-    else:
-        file_image_stack= file_[f"{h5path}/{defs.DoricFile.Deprecated.Dataset.IMAGES_STACK}"]
-
-    varr = da.array.from_array(file_image_stack)
+    varr = da.array.from_array(h5path)
 
     varr = xr.DataArray(
             varr,
@@ -730,7 +723,7 @@ def save_minian_to_doric(
     saveimages: bool = True,
     saveresiduals: bool = True,
     savespikes: bool = True
-) -> str:
+):
     """
     Save MiniAn results to .doric file:
     MiniAnImages - `AC` representing cellular activities as computed by :func:`minian.cnmf.compute_AtC`
