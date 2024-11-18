@@ -27,8 +27,7 @@ class CaimanParameters:
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             images = np.array(file_[self.paths[defs.Parameters.Path.H5PATH]])
 
-            time_path = self.paths[defs.Parameters.Path.H5PATH]
-            time_path.replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+            time_path = self.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
             freq    = utils.get_frequency(file_, time_path)
             dims, T = utils.get_dims(file_, self.paths[defs.Parameters.Path.H5PATH])
 

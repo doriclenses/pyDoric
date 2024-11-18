@@ -60,8 +60,7 @@ def main(caiman_params):
     data, driver, operation, series, sensor = caiman_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
     attrs = utils.load_attributes(file_, caiman_params.paths[defs.Parameters.Path.H5PATH])
-    time_path = caiman_params.paths[defs.Parameters.Path.H5PATH]
-    time_path.replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+    time_path = caiman_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
     time_ = np.array(file_[time_path])
 
     file_.close()
