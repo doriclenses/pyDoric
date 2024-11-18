@@ -551,8 +551,10 @@ def load_doric_to_xarray(
     file_ = h5py.File(fname, 'r')
 
     h5path = utils.clean_path(h5path)
+    
+    file_image_stack = file_[h5path]
 
-    varr = da.array.from_array(h5path)
+    varr = da.array.from_array(file_image_stack)
 
     varr = xr.DataArray(
             varr,
