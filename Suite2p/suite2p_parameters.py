@@ -22,7 +22,7 @@ class Suite2pParameters:
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
         self.time_length: int     = self.get_time_length()
         
-        self.ops = suite2p.default_ops()
+        self.ops = suite2p.default_ops() # https://suite2p.readthedocs.io/en/latest/settings.html#
         # Suite2p Main Settings
         self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
         self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
