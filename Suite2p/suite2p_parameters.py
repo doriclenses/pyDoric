@@ -29,8 +29,8 @@ class Suite2pParameters:
         self.ops['tau']               = self.params['BiosensorDecayTime'] # Timescale of GCaMP to use for deconvolution
 
         # Suite2p Registration Settings
-        self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
-        self.ops['smooth_sigma']      = 4  # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
+        self.ops['batch_size']        = 500 # Decrease the batch_size in case low RAM on computer
+        self.ops['smooth_sigma']      = 4   # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
     
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['ROIsThreshold'] # Threshold for ROIs detection
