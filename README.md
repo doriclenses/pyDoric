@@ -9,7 +9,7 @@ This repository contains python scripts and [Pyinstaller](https://pyinstaller.or
 Start a command prompt in Minian environment and go to the git directory.
 
 ```
-cd PATHTOGITFOLDER
+cd PATHTOGITFOLDER/Deploy
 ```
 
 run the command pyinstaller
@@ -26,7 +26,7 @@ pyinstaller pack_minian_run.spec
 Start a command prompt in Caiman environment and go to the git directory.
 
 ```
-cd PATHTOGITFOLDER
+cd PATHTOGITFOLDER/Deploy
 ```
 
 then run pyinstaller
