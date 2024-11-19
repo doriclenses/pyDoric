@@ -59,8 +59,9 @@ def main(caiman_params):
 
     data, driver, operation, series, sensor = caiman_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    attrs = utils.load_attributes(file_, f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{caiman_params.dataname}")
-    time_ = np.array(file_[f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}"])
+    attrs = utils.load_attributes(file_, caiman_params.paths[defs.Parameters.Path.H5PATH])
+    time_path = caiman_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+    time_ = np.array(file_[time_path])
 
     file_.close()
 
@@ -97,7 +98,7 @@ def preview(caiman_params: cm_params.CaimanParameters):
     video_start_frame, video_stop_frame   = caiman_params.preview_params[defs.Parameters.Preview.RANGE]
 
     with h5py.File(caiman_params.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
-        images = np.array(file_[f"{caiman_params.paths[defs.Parameters.Path.H5PATH]}/{caiman_params.dataname}"])
+        images = np.array(file_[caiman_params.paths[defs.Parameters.Path.H5PATH]])
 
     images = images[:, :, (video_start_frame-1):video_stop_frame]
     images = images[:, :, ::caiman_params.preview_params[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE]]
@@ -255,7 +256,7 @@ def save_caiman_to_doric(
     saveresiduals: bool = True,
     savespikes: bool = True,
     ids = None
-) -> str:
+):
     """
     Save CaImAn results to .doric file:
 

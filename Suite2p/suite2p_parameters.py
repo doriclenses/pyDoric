@@ -23,12 +23,28 @@ class Suite2pParameters:
         self.time_length: int     = self.get_time_length()
         self.is_microscope: bool  = (self.paths[defs.Parameters.Path.H5PATH][0].split('/')[-1] == defs.DoricFile.Deprecated.Dataset.IMAGES_STACK)
         
-        self.ops = suite2p.default_ops()
-        self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
-        self.ops['threshold_scaling'] = self.params['Threshold'] # Threshold for ROIs detection
-        self.ops['tau']               = self.params['DecayTime'] # Timescale of gcamp to use for deconvolution
-        self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
+        self.ops = suite2p.default_ops() # https://suite2p.readthedocs.io/en/latest/settings.html#
+        # Suite2p Main Settings
         self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
+        self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
+        self.ops['tau']               = self.params['DecayTime'] # Timescale of GCaMP to use for deconvolution
+
+        # Suite2p Registration Settings
+        self.ops['batch_size']        = 100 # Decrease the batch_size in case low RAM on computer
+        self.ops['smooth_sigma']      = 4   # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
+    
+        # Suite2p 1P registration
+        self.ops['1Preg']             = True # High-pass spatial filtering and tapering, which help with 1P registration
+        self.ops['spatial_hp_reg']    = 42   # Window in pixels for spatial high-pass filtering before registration
+        self.ops['pre_smooth']        = self.params['CellDiameter'] # STD of Gaussian smoothing, which is applied before spatial high-pass filtering
+
+        # Suite2p ROI Detection Settings
+        self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
+
+        # Suite2p Cellpose Detection
+        self.ops['anatomical_only']   = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
+        self.ops['diameter']          = self.params['CellDiameter'] # Diameter that will be used for Cellpose
+        self.ops['flow_threshold']    = 0.4 # Flow threshold that will be used for cellpose
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])

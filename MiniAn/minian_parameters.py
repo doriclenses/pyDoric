@@ -26,14 +26,15 @@ class MinianParameters:
         self.params                   = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params           = danse_params.get(defs.Parameters.Main.PREVIEW, {})
 
-        self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
+        self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH][0])
 
         os.environ["OMP_NUM_THREADS"]       = "1"
         os.environ["MKL_NUM_THREADS"]       = "1"
         os.environ["OPENBLAS_NUM_THREADS"]  = "1"
         os.environ["MINIAN_INTERMEDIATE"]   = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
-        self.freq = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}")
+        time_path = self.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+        self.freq = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], time_path)
 
         neuron_diameter = np.array([self.params[defs.Parameters.danse.NEURO_DIAM_MIN], self.params[defs.Parameters.danse.NEURO_DIAM_MAX]])
         neuron_diameter = neuron_diameter / self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
@@ -299,13 +300,13 @@ class MinianParameters:
         Split the path to dataset into relevant names
         """
 
-        h5path_names = self.paths[defs.Parameters.Path.H5PATH].split('/')
+        h5path_names = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH]).split('/')
 
-        data = h5path_names[0]
-        driver = h5path_names[1]
+        data      = h5path_names[0]
+        driver    = h5path_names[1]
         operation = h5path_names[2]
-        series = h5path_names[-2]
-        sensor = h5path_names[-1]
+        series    = h5path_names[-3]
+        sensor    = h5path_names[-2]
 
         return [data, driver, operation, series, sensor]
 
