@@ -32,6 +32,11 @@ class Suite2pParameters:
         self.ops['batch_size']        = 500 # Decrease the batch_size in case low RAM on computer
         self.ops['smooth_sigma']      = 4   # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
     
+        # Suite2p 1P registration
+        self.ops['1Preg']             = True # High-pass spatial filtering and tapering, which help with 1P registration
+        self.ops['spatial_hp_reg']    = 42   # Window in pixels for spatial high-pass filtering before registration
+        self.ops['pre_smooth']        = 4    # STD of Gaussian smoothing, which is applied before spatial high-pass filtering
+
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['ROIsThreshold'] # Threshold for ROIs detection
 
