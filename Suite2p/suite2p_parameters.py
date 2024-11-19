@@ -26,7 +26,7 @@ class Suite2pParameters:
         # Suite2p Main Settings
         self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
         self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
-        self.ops['tau']               = self.params['BiosensorDecayTime'] # Timescale of GCaMP to use for deconvolution
+        self.ops['tau']               = self.params['DecayTime'] # Timescale of GCaMP to use for deconvolution
 
         # Suite2p Registration Settings
         self.ops['batch_size']        = 500 # Decrease the batch_size in case low RAM on computer
@@ -38,11 +38,11 @@ class Suite2pParameters:
         self.ops['pre_smooth']        = 4    # STD of Gaussian smoothing, which is applied before spatial high-pass filtering
 
         # Suite2p ROI Detection Settings
-        self.ops['threshold_scaling'] = self.params['ROIsThreshold'] # Threshold for ROIs detection
+        self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
 
         # Suite2p Cellpose Detection
         self.ops['anatomical_only']   = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
-        self.ops['diameter']          = self.params['Diameter'] # Diameter that will be used for Cellpose
+        self.ops['diameter']          = self.params['CellDiameter'] # Diameter that will be used for Cellpose
         self.ops['flow_threshold']    = 0.4 # Flow threshold that will be used for cellpose
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
