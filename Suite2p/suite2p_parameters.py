@@ -23,11 +23,17 @@ class Suite2pParameters:
         self.time_length: int      = self.get_time_length()
         
         self.ops = suite2p.default_ops()
-        self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
         self.ops['threshold_scaling'] = self.params['ROIsThreshold'] # Threshold for ROIs detection
         self.ops['tau']               = self.params['BiosensorDecayTime'] # Timescale of gcamp to use for deconvolution
+        self.ops['diameter']          = self.params['Diameter'] # (cellpose)
+
         self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
         self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
+
+        self.ops['batch_size']        = 50 # Decrease the batch_size in case low RAM on computer
+        self.ops['anatomical_only']   = 3   # (cellpose)
+        self.ops['flow_threshold']    = 0.4 # (cellpose)
+        self.ops['smooth_sigma']      = 4   # (registration)
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
