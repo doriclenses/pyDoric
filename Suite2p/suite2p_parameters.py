@@ -21,7 +21,7 @@ class Suite2pParameters:
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
         self.time_length: int     = self.get_time_length()
-        self.is_microscope: bool  = (self.paths[defs.Parameters.Path.H5PATH][0].split('/')[-1] == defs.DoricFile.Deprecated.Dataset.IMAGES_STACK)
+        self.is_microscope: bool  = danse_params.pop(defs.Parameters.Main.IS_MICROSCOPE, False)
         
         self.ops = suite2p.default_ops() # https://suite2p.readthedocs.io/en/latest/settings.html#
         # Suite2p Main Settings
