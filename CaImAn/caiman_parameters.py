@@ -22,15 +22,14 @@ class CaimanParameters:
         self.params = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params = danse_params.get(defs.Parameters.Main.PREVIEW, {})
 
-        self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH])
+        self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH][0])
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
-            self.dataname  = defs.DoricFile.Dataset.IMAGE_STACK if defs.DoricFile.Dataset.IMAGE_STACK in file_[self.paths[defs.Parameters.Path.H5PATH]] else defs.DoricFile.Deprecated.Dataset.IMAGES_STACK
+            images = np.array(file_[self.paths[defs.Parameters.Path.H5PATH]])
 
-            images = np.array(file_[f"{self.paths[defs.Parameters.Path.H5PATH]}/{self.dataname}"])
-
-            freq    = utils.get_frequency(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{defs.DoricFile.Dataset.TIME}")
-            dims, T = utils.get_dims(file_, f"{self.paths[defs.Parameters.Path.H5PATH]}/{self.dataname}")
+            time_path = self.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+            freq    = utils.get_frequency(file_, time_path)
+            dims, T = utils.get_dims(file_, self.paths[defs.Parameters.Path.H5PATH])
 
         neuron_diameter = tuple([self.params[defs.Parameters.danse.NEURO_DIAM_MIN], self.params[defs.Parameters.danse.NEURO_DIAM_MAX]])
 
@@ -95,13 +94,13 @@ class CaimanParameters:
         Split the path to dataset into relevant names
         """
 
-        h5path_names = self.paths[defs.Parameters.Path.H5PATH].split('/')
+        h5path_names = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH]).split('/')
 
-        data = h5path_names[0]
-        driver = h5path_names[1]
+        data      = h5path_names[0]
+        driver    = h5path_names[1]
         operation = h5path_names[2]
-        series = h5path_names[-2]
-        sensor = h5path_names[-1]
+        series    = h5path_names[-3]
+        sensor    = h5path_names[-2]
 
         return [data, driver, operation, series, sensor]
 
