@@ -134,22 +134,22 @@ def save_suite2p_to_doric(
             del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
             
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
-                                footprints    = footprints[cell_indexs, :, :],
-                                time_         = time_[plane_index],
-                                file_         = file_,
-                                path          = rois_path,
-                                ids           = [ids[i] for i in cell_indexs],
-                                dataset_names = [dataset_names[i] for i in cell_indexs],
-                                usernames     = [usernames[i] for i in cell_indexs],
-                                attrs         = attrs)
+                               footprints    = footprints[cell_indexs, :, :],
+                               time_         = time_[plane_index],
+                               file_         = file_,
+                               path          = rois_path,
+                               ids           = [ids[i] for i in cell_indexs],
+                               dataset_names = [dataset_names[i] for i in cell_indexs],
+                               usernames     = [usernames[i] for i in cell_indexs],
+                               attrs         = attrs)
             
         utils.save_signals(signals        = spikes[cell_indexs, :],
-                            time_         = time_[plane_index],
-                            file_         = file_,
-                            path          = spikes_path,
-                            dataset_names = [dataset_names[i] for i in cell_indexs],
-                            usernames     = [usernames[i] for i in cell_indexs],
-                            attrs         = attrs)
+                           time_         = time_[plane_index],
+                           file_         = file_,
+                           path          = spikes_path,
+                           dataset_names = [dataset_names[i] for i in cell_indexs],
+                           usernames     = [usernames[i] for i in cell_indexs],
+                           attrs         = attrs)
     
     utils.save_attributes(utils.merge_params(params_doric, params_source), file_, rois_grouppath)
     if rois_seriespath in file_:
