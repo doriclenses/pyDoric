@@ -40,7 +40,7 @@ pyinstaller pack_caiman_run.spec
 
 [Install Suite2p](https://suite2p.readthedocs.io/en/latest/installation.html) and Pyinstaller in the same anaconda environment.
 
-Start a command prompt in Caiman environment and go to the git directory.
+Start a command prompt in Suite2p environment and go to the git directory.
 
 ```
 cd PATHTOGITFOLDER/Deploy
