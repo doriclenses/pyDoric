@@ -51,3 +51,20 @@ then run pyinstaller
 ```
 pyinstaller pack_suite2p_run.spec
 ```
+
+## DeepLabCut
+---
+
+[Install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html) and Pyinstaller in the same anaconda environment.
+
+Start a command prompt in DeepLabCut environment and go to the git directory.
+
+```
+cd PATHTOGITFOLDER/Deploy
+```
+
+run the command pyinstaller
+
+```
+pyinstaller pack_poseEstimation_run.spec
+```
