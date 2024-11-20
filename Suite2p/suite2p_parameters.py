@@ -26,7 +26,7 @@ class Suite2pParameters:
         # Suite2p Main Settings
         self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
         self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
-        self.ops['tau']               = self.params['DecayTime'] # Timescale of GCaMP to use for deconvolution
+        self.ops['tau']               = self.params['BiosensorDecayTime'] # Timescale of GCaMP to use for deconvolution
 
         # Suite2p Registration Settings
         self.ops['batch_size']        = 100 # Decrease the batch_size in case low RAM on computer
