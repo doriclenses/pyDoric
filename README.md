@@ -18,12 +18,12 @@ run the command pyinstaller
 pyinstaller pack_minian_run.spec
 ```
 
-## Caiman
+## CaImAn
 ---
 
-[Install CaImAn](https://caiman.readthedocs.io/en/latest/Installation.html) and Pyinstaller in the same anaconda environment and set up caimanmanager to get **caiman_data** folder. ⚠️Then copy **caiman_data** folder into the folder where Caiman will be compiled (git folder)
+[Install CaImAn](https://caiman.readthedocs.io/en/latest/Installation.html) and Pyinstaller in the same anaconda environment and set up caimanmanager to get **caiman_data** folder. ⚠️Then copy **caiman_data** folder into the folder where CaImAn will be compiled (git folder)
 
-Start a command prompt in Caiman environment and go to the git directory.
+Start a command prompt in CaImAn environment and go to the git directory.
 
 ```
 cd PATHTOGITFOLDER/Deploy
