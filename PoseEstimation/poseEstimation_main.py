@@ -44,32 +44,8 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     updateConfigFile(path_config_file, bodyPartNames)
 
     # --------------- Create hdf file for labeled data ---------------
-    cols = []
-    rows = len(positions[list(positions.keys())[0]])
-    data:list = [[] for _ in range(rows)]
-
-    for pose in positions:
-        cols.extend([(scorer, pose, 'x'),(scorer, pose, 'y')])
-        for i in range(len(positions[pose])):
-            data[i] += positions[pose][list(positions[pose].keys())[i]]
-
-    columns = pd.MultiIndex.from_tuples(cols
-    , names = ['scorer','bodypart', 'coords'])
-
-    axisLeft = []
-    for img in positions[next(iter(positions))].keys():
-        axisLeft.extend([('labeled-data', 'LHA86_avoidance', img)])
-    Axis1 = pd.MultiIndex.from_tuples(axisLeft
-                                      ,)
-    df = pd.DataFrame(data, columns=columns)
-    df.index = Axis1
-    
-    labeledDataPath  = os.path.join(Project_fullPath, "labeled-data")
-    if not os.path.exists(labeledDataPath):
-        os.makedirs(labeledDataPath)
-
-    file_path = labeledDataPath + "/CollectedData.h5"
-    df.to_hdf(file_path, key='df', mode='w')
+    videoName = os.path.splitext(video)[0]
+    createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, experimenter, poseEstimation_params, videoName.rsplit("/", 1)[1])
 
     # --------------- Create a training dataset ---------------
     deeplabcut.create_training_dataset(path_config_file)
@@ -92,6 +68,36 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
 
 def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
+
+def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, experimenter, poseEstimation_params, videoName):
+    cols = []
+    rows = len(extractedFrames)
+    data:list = [[] for _ in range(rows)]
+
+    for pose in bodyPartNames:
+        name = pose + poseEst_defs.Parameters.danse.BODY_PART_COORDS
+        cols.extend([(experimenter, pose, 'x'),(experimenter, pose, 'y')])
+        for i in range(len(extractedFrames)):
+            data[i] += poseEstimation_params.params[name][i]
+
+    columns = pd.MultiIndex.from_tuples(cols
+     , names = ['scorer','bodyparts', 'coords'])
+
+    axisLeft = []
+    for frameNum in extractedFrames:
+        axisLeft.extend([('labeled-data', videoName, frameNum)])
+    Axis1 = pd.MultiIndex.from_tuples(axisLeft
+                                       ,)
+    df = pd.DataFrame(data, columns=columns)
+    df.index = Axis1
+
+    pathParts = path_config_file.rsplit("\\", 1)
+    labeledDataPath = os.path.join(pathParts[0], "labeled-data", videoName)  
+    if not os.path.exists(labeledDataPath):
+        os.makedirs(labeledDataPath)
+
+    file_path = labeledDataPath + "/CollectedData_"  + experimenter + ".h5"
+    df.to_hdf(file_path, key='df', mode='w')
 
 def updateConfigFile(path_config_file, bodyPartNames):
     # Load the YAML file
