@@ -41,6 +41,7 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
 
     path_config_file = deeplabcut.create_new_project(task, experimenter, [video], projectFolder, copy_videos = False)
     # path_config_file: str = createConfigFile(scorer, Task, positions, Project_fullPath)
+    updateConfigFile(path_config_file, bodyPartNames)
 
     # --------------- Create hdf file for labeled data ---------------
     cols = []
@@ -91,4 +92,17 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
 
 def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
+
+def updateConfigFile(path_config_file, bodyPartNames):
+    # Load the YAML file
+    with open(path_config_file, 'r') as file:
+        data = yaml.safe_load(file)
+
+    # Modify the specific text   
+    data['bodyparts'] = bodyPartNames
+    data['skeleton']  = [bodyPartNames]
+
+    # Save the modified YAML back to the file
+    with open(path_config_file, 'w') as file:
+        yaml.safe_dump(data, file, default_flow_style=False)
 
