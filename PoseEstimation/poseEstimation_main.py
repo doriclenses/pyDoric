@@ -30,19 +30,17 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     """
     #filePath: str = poseEstimation_params.paths[defs.Parameters.Path.FILEPATH]
     #doricFile = h5py.File(filePath, 'r')
-    tempDir: str       = poseEstimation_params.paths[defs.Parameters.Path.TMP_DIR]
-    positions: dict    = poseEstimation_params.params[poseEst_defs.Parameters.danse.POSITIONS]
-    ProjectPath        = poseEstimation_params.params[poseEst_defs.Parameters.danse.PROJECT_PATH]
-    Task               = poseEstimation_params.params[poseEst_defs.Parameters.danse.PROJECT_NAME]
-    scorer             = poseEstimation_params.params[poseEst_defs.Parameters.danse.SCORER]
-    Project_folderName = Task + '-' + scorer + '-' + datetime.now().strftime("%Y-%m-%d")
-    Project_fullPath   = os.path.join(ProjectPath, Project_folderName)
+    projectFolder   = poseEstimation_params.params[poseEst_defs.Parameters.danse.PROJECT_FOLDER]
+    bodyPartNames   = poseEstimation_params.params[poseEst_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
+    extractedFrames = poseEstimation_params.params[poseEst_defs.Parameters.danse.EXTRACTED_FRAMES]
+    
+    # --------------- Create Project folder and config file ---------------
+    task: str        = "DLC" 
+    experimenter:str = "doric"
+    video: str       = poseEstimation_params.paths[poseEst_defs.Parameters.danse.VIDEO_PATH]
 
-    os.makedirs(Project_fullPath)
-
-    # --------------- Read the config file ---------------
-    path_config_file: str = createConfigFile(scorer, Task, positions, Project_fullPath)
-    utils.print_to_intercept(path_config_file)
+    path_config_file = deeplabcut.create_new_project(task, experimenter, [video], projectFolder, copy_videos = False)
+    # path_config_file: str = createConfigFile(scorer, Task, positions, Project_fullPath)
 
     # --------------- Create hdf file for labeled data ---------------
     cols = []
