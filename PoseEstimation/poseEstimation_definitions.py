@@ -16,7 +16,9 @@ class Parameters:
         """
         Parameters of danse Find Cells operation
         """
-        POSITIONS    = "PosePositions"
-        PROJECT_NAME = "ProjectName"
-        PROJECT_PATH = "ProjectPath"
-        SCORER       = "Scorer"
+        PROJECT_NAME      = "ProjectName"
+        PROJECT_FOLDER    = "ProjectFolder"
+        BODY_PART_NAMES   = "BodyPartNames"
+        BODY_PART_COORDS  = "Coordinates"
+        EXTRACTED_FRAMES  = "ExtractedFrames"
+        VIDEO_PATH        = "VideoPath"

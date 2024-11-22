@@ -34,9 +34,9 @@ except Exception as error:
 if __name__ == "__main__":
     poseEstimation_params = poseEst_params.PoseEstimationParameters(danse_params)
 
-    if poseEstimation_params.preview_params:
-        poseEst_main.preview(poseEstimation_params)
-    else:
-        poseEst_main.main(poseEstimation_params)
+    # if poseEstimation_params.preview_params:
+    # poseEst_main.preview(poseEstimation_params)
+    # else:
+    poseEst_main.main(poseEstimation_params)
 
     print(poseEst_defs.Messages.PROCESS_DONE, flush=True)
