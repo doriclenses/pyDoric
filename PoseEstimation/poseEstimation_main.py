@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from tifffile import imwrite, TiffWriter, TiffFile
 import yaml
 import cv2
+import copy
 from datetime import datetime
 
 sys.path.append("..")
@@ -120,10 +121,9 @@ def updateConfigFile(path_config_file, bodyPartNames):
         data = yaml.safe_load(file)
 
     # Modify the specific text   
-    data['bodyparts'] = bodyPartNames
-    data['skeleton']  = [bodyPartNames]
+    data['bodyparts'] = copy.deepcopy(bodyPartNames)
+    data['skeleton']  = copy.deepcopy([bodyPartNames])
 
     # Save the modified YAML back to the file
     with open(path_config_file, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
-
