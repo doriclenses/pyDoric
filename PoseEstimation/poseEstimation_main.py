@@ -8,6 +8,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from tifffile import imwrite, TiffWriter, TiffFile
 import yaml
+import cv2
 from datetime import datetime
 
 sys.path.append("..")
@@ -82,20 +83,36 @@ def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, exper
      , names = ['scorer','bodyparts', 'coords'])
 
     axisLeft = []
-    for frameNum in extractedFrames:
-        axisLeft.extend([('labeled-data', videoName, frameNum)])
+    for frameNum in [int(item) for item in extractedFrames]:
+        axisLeft.extend([('labeled-data', videoName, f'img{frameNum}.png')])
     Axis1 = pd.MultiIndex.from_tuples(axisLeft
                                        ,)
     df = pd.DataFrame(data, columns=columns)
     df.index = Axis1
 
     pathParts = path_config_file.rsplit("\\", 1)
-    labeledDataPath = os.path.join(pathParts[0], "labeled-data", videoName)  
+    labeledDataPath = os.path.join(pathParts[0], "labeled-data", videoName)
     if not os.path.exists(labeledDataPath):
         os.makedirs(labeledDataPath)
 
+    path: str = poseEstimation_params.paths[poseEst_defs.Parameters.danse.VIDEO_PATH]
+    cap = cv2.VideoCapture(path)
+
+    frame_count = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break 
+        if frame_count in [int(item) for item in extractedFrames]:
+            # Save the frame as a PNG file
+            frame_filename = f'{labeledDataPath}/img{frame_count}.png'
+            cv2.imwrite(frame_filename, frame)
+        frame_count += 1 
+    cap.release() 
+    cv2.destroyAllWindows()
+
     file_path = labeledDataPath + "/CollectedData_"  + experimenter + ".h5"
-    df.to_hdf(file_path, key='df', mode='w')
+    df.to_hdf(file_path, key='keypoints', mode='w')
 
 def updateConfigFile(path_config_file, bodyPartNames):
     # Load the YAML file
