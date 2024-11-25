@@ -39,8 +39,7 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     experimenter:str = "doric"
     video: str       = poseEstimation_params.paths[poseEst_defs.Parameters.danse.VIDEO_PATH]
 
-    path_config_file = deeplabcut.create_new_project(task, experimenter, [video], projectFolder, copy_videos = False)
-    # path_config_file: str = createConfigFile(scorer, Task, positions, Project_fullPath)
+    path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video], projectFolder, copy_videos = False)
     updateConfigFile(path_config_file, bodyPartNames)
 
     # --------------- Create hdf file for labeled data ---------------
@@ -57,14 +56,13 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     deeplabcut.evaluate_network(path_config_file, plotting=True)
 
     # --------------- Start Analyzing videos ---------------
-    videofile_path = 'C:/Users/MARK05/Desktop/DLC/test'
-    deeplabcut.analyze_videos(path_config_file, videofile_path, videotype='.avi')
+    deeplabcut.analyze_videos(path_config_file, [video])
 
     # --------------- Create labeled video ---------------
-    deeplabcut.create_labeled_video(path_config_file,videofile_path)
+    deeplabcut.create_labeled_video(path_config_file, [video])
 
     # --------------- Plot the trajectories of the analyzed videos ---------------
-    deeplabcut.plot_trajectories(path_config_file,videofile_path)
+    deeplabcut.plot_trajectories(path_config_file, [video])
 
 def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
