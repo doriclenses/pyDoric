@@ -19,6 +19,7 @@ class Parameters:
         PROJECT_NAME      = "ProjectName"
         PROJECT_FOLDER    = "ProjectFolder"
         BODY_PART_NAMES   = "BodyPartNames"
-        BODY_PART_COORDS  = "Coordinates"
+        BODY_PART_COLORS  = "BodyPartColors"
+        COORDINATES       = "Coordinates"
         EXTRACTED_FRAMES  = "ExtractedFrames"
         VIDEO_PATH        = "VideoPath"
