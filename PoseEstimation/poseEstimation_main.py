@@ -47,14 +47,18 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     # --------------- Create Project folder and config file ---------------
     task: str        = "DLC" 
     experimenter:str = "doric"
-    video: str       = poseEstimation_params.paths[poseEst_defs.Parameters.danse.VIDEO_PATH]
 
-    path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video], projectFolder, copy_videos = False)
+    file_ = h5py.File(filePath, 'a')
+    attributes = utils.load_attributes(file_, datapath)
+    key = [key for key in attributes if poseEst_defs.Parameters.danse.VIDEO_FILEPATH in key]   
+    videoPath: str = attributes[key[0]]
+    # file_.close
+
+    path_config_file: str = deeplabcut.create_new_project(task, experimenter, [videoPath], projectFolder, copy_videos = False)
     updateConfigFile(path_config_file, bodyPartNames)
 
     # --------------- Create hdf file for labeled data ---------------
-    videoName = os.path.splitext(video)[0]
-    createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, experimenter, poseEstimation_params, videoName.rsplit("/", 1)[1])
+    createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, experimenter, poseEstimation_params, videoPath)
 
     # --------------- Create a training dataset ---------------
     deeplabcut.create_training_dataset(path_config_file)
@@ -67,10 +71,10 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
 
     # --------------- Start Analyzing videos ---------------
     path_output = path_config_file.rsplit("\\", 1)[0]
-    deeplabcut.analyze_videos(path_config_file, [video], destfolder = path_output)
+    deeplabcut.analyze_videos(path_config_file, [videoPath], destfolder = path_output)
 
     # --------------- Saving data ---------------
-    saveCoordsToDoric(filePath, datapath, path_output, extractedFrames, bodyPartNames, projectFolder, bodyPartColors, Operations, 
+    saveCoordsToDoric(file_, datapath, path_output, extractedFrames, bodyPartNames, projectFolder, bodyPartColors, Operations, 
                       trainingCoordinates, groupNames = poseEstimation_params.get_h5path_names())
     
     msg = ("************Process Completed*************************")
@@ -79,10 +83,12 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
 def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
 
-def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, experimenter, poseEstimation_params, videoName):
+def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, experimenter, poseEstimation_params, videoPath):
     cols = []
     rows = len(extractedFrames)
     data:list = [[] for _ in range(rows)]
+    path_withoutExt = os.path.splitext(videoPath)[0]
+    videoName = path_withoutExt.rsplit("/", 1)[1]
 
     for pose in bodyPartNames:
         name = pose + poseEst_defs.Parameters.danse.COORDINATES
@@ -106,9 +112,7 @@ def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, exper
     if not os.path.exists(labeledDataPath):
         os.makedirs(labeledDataPath)
 
-    path: str = poseEstimation_params.paths[poseEst_defs.Parameters.danse.VIDEO_PATH]
-    cap = cv2.VideoCapture(path)
-
+    cap = cv2.VideoCapture(videoPath)
     frame_count = 0
     while cap.isOpened():
         ret, frame = cap.read()
@@ -138,10 +142,8 @@ def updateConfigFile(path_config_file, bodyPartNames):
     with open(path_config_file, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
 
-def saveCoordsToDoric(filePath, datapath, path_output, extractedFrames, bodyPartNames, projectFolder, bodyPartColors, Operations, trainingCoordinates, groupNames):
-    file_ = h5py.File(filePath, 'a')
+def saveCoordsToDoric(file_, datapath, path_output, extractedFrames, bodyPartNames, projectFolder, bodyPartColors, Operations, trainingCoordinates, groupNames):
     data, driver, operation, series, sensor = groupNames
-
     groupAttrs: dict = {}
     groupAttrs[defs.DoricFile.Attribute.Group.OPERATIONS]      = Operations
     groupAttrs['VideoDatapath']                                = datapath

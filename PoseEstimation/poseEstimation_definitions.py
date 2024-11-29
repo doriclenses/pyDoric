@@ -22,4 +22,4 @@ class Parameters:
         BODY_PART_COLORS  = "BodyPartColors"
         COORDINATES       = "Coordinates"
         EXTRACTED_FRAMES  = "ExtractedFrames"
-        VIDEO_PATH        = "VideoPath"
+        VIDEO_FILEPATH    = "VideoFilepath"
