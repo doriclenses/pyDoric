@@ -67,7 +67,7 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     deeplabcut.train_network(path_config_file)
 
     # --------------- Start evaluating ---------------
-    deeplabcut.evaluate_network(path_config_file, plotting=True)
+    deeplabcut.evaluate_network(path_config_file)
 
     # --------------- Start Analyzing videos ---------------
     path_output = path_config_file.rsplit("\\", 1)[0]
