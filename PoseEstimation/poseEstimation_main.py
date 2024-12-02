@@ -96,14 +96,11 @@ def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, exper
         for i in range(len(extractedFrames)):
             data[i] += poseEstimation_params.params[name][i]
 
-    columns = pd.MultiIndex.from_tuples(cols
-     , names = ['scorer','bodyparts', 'coords'])
-
+    columns  = pd.MultiIndex.from_tuples(cols, names = ['scorer','bodyparts', 'coords'])
     axisLeft = []
     for frameNum in [int(item) for item in extractedFrames]:
         axisLeft.extend([('labeled-data', videoName, f'img{frameNum}.png')])
-    Axis1 = pd.MultiIndex.from_tuples(axisLeft
-                                       ,)
+    Axis1 = pd.MultiIndex.from_tuples(axisLeft)
     df = pd.DataFrame(data, columns=columns)
     df.index = Axis1
 
@@ -126,7 +123,7 @@ def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, exper
     cap.release() 
     cv2.destroyAllWindows()
 
-    file_path = labeledDataPath + "/CollectedData_"  + experimenter + ".h5"
+    file_path = f'{labeledDataPath}/CollectedData_{experimenter}.h5'
     df.to_hdf(file_path, key='keypoints', mode='w')
 
 def updateConfigFile(path_config_file, bodyPartNames):
