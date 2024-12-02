@@ -76,9 +76,6 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     # --------------- Saving data ---------------
     saveCoordsToDoric(file_, datapath, path_output, extractedFrames, bodyPartNames, projectFolder, bodyPartColors, Operations, 
                       trainingCoordinates, groupNames = poseEstimation_params.get_h5path_names())
-    
-    msg = ("************Process Completed*************************")
-    utils.print_to_intercept(msg)
 
 def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
