@@ -84,7 +84,7 @@ def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
 
 def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, experimenter, poseEstimation_params, videoPath):
-    cols = []
+    header = []
     rows = len(extractedFrames)
     data:list = [[] for _ in range(rows)]
     path_withoutExt = os.path.splitext(videoPath)[0]
@@ -92,17 +92,17 @@ def createlabeledDataHDF(path_config_file, extractedFrames, bodyPartNames, exper
 
     for pose in bodyPartNames:
         name = pose + poseEst_defs.Parameters.danse.COORDINATES
-        cols.extend([(experimenter, pose, 'x'),(experimenter, pose, 'y')])
+        header.extend([(experimenter, pose, 'x'),(experimenter, pose, 'y')])
         for i in range(len(extractedFrames)):
             data[i] += poseEstimation_params.params[name][i]
 
-    columns  = pd.MultiIndex.from_tuples(cols, names = ['scorer','bodyparts', 'coords'])
+    columns  = pd.MultiIndex.from_tuples(header, names = ['scorer', 'bodyparts', 'coords'])
     axisLeft = []
     for frameNum in [int(item) for item in extractedFrames]:
         axisLeft.extend([('labeled-data', videoName, f'img{frameNum}.png')])
-    Axis1 = pd.MultiIndex.from_tuples(axisLeft)
+    axis1 = pd.MultiIndex.from_tuples(axisLeft)
     df = pd.DataFrame(data, columns=columns)
-    df.index = Axis1
+    df.index = axis1
 
     pathParts = path_config_file.rsplit("\\", 1)
     labeledDataPath = os.path.join(pathParts[0], "labeled-data", videoName)
