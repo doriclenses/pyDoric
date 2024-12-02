@@ -39,47 +39,50 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     bodypart_names       = poseEstimation_params.params[poseEst_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     bodypart_colors      = poseEstimation_params.params[poseEst_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
     extracted_frames     = poseEstimation_params.params[poseEst_defs.Parameters.danse.EXTRACTED_FRAMES]
-    training_coordinates = {}
-    for bodypart in bodypart_names:
-        label = bodypart + poseEst_defs.Parameters.danse.COORDINATES
-        training_coordinates[label] = poseEstimation_params.params[label]
 
-    # --------------- Create Project folder and config file ---------------
-    task: str        = "DLC" 
-    experimenter:str = "doric"
-    file_ = h5py.File(filepath, 'a')
-    attributes = utils.load_attributes(file_, datapath)
-    key = [key for key in attributes if poseEst_defs.Parameters.danse.VIDEO_FILEPATH in key]   
-    video_path: str = attributes[key[0]]
-    path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video_path], project_folder, copy_videos = False)
-    updateConfigFile(path_config_file, bodypart_names)
-
-    createlabeledDataHDF(path_config_file, extracted_frames, bodypart_names, experimenter, poseEstimation_params, video_path)
+    [file_, video_path, path_config_file, training_coordinates] = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, poseEstimation_params)
     deeplabcut.create_training_dataset(path_config_file)
     deeplabcut.train_network(path_config_file)
     deeplabcut.evaluate_network(path_config_file)
-
+ 
     path_output = path_config_file.rsplit("\\", 1)[0]
     deeplabcut.analyze_videos(path_config_file, [video_path], destfolder = path_output)
 
-    saveCoordsToDoric(file_, datapath, path_output, extracted_frames, bodypart_names, project_folder, bodypart_colors, operations, 
-                      training_coordinates, groupNames = poseEstimation_params.get_h5path_names())
+    save_coords_to_doric(file_, datapath, path_output, extracted_frames, bodypart_names, project_folder, bodypart_colors, operations, 
+                         training_coordinates, groupNames = poseEstimation_params.get_h5path_names())
 
 def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     print("hello preview")
 
-def createlabeledDataHDF(path_config_file, extracted_frames, bodypart_names, experimenter, poseEstimation_params, video_path):
-    header = []
-    rows = len(extracted_frames)
-    data:list = [[] for _ in range(rows)]
-    path_withoutExt = os.path.splitext(video_path)[0]
-    video_name = path_withoutExt.rsplit("/", 1)[1]
+def create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, poseEstimation_params):
+    task         = os.path.splitext(os.path.basename(filepath))[0] 
+    experimenter = "danse"
+    file_        = h5py.File(filepath, 'a')
+    attributes   = utils.load_attributes(file_, datapath)
+    key          = [key for key in attributes if poseEst_defs.Parameters.danse.VIDEO_FILEPATH in key]   
+    video_path   = attributes[key[0]]
 
+    path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video_path], project_folder, copy_videos = False)
+    update_config_file(path_config_file, bodypart_names)
+
+    training_coordinates = create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, poseEstimation_params, video_path)
+
+    return [file_, video_path, path_config_file, training_coordinates]
+
+def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, poseEstimation_params, video_path):
+    header          = []
+    rows            = len(extracted_frames)
+    data:list       = [[] for _ in range(rows)]
+    path_withoutExt = os.path.splitext(video_path)[0]
+    video_name      = path_withoutExt.rsplit("/", 1)[1]
+
+    training_coordinates = {}
     for pose in bodypart_names:
-        name = pose + poseEst_defs.Parameters.danse.COORDINATES
         header.extend([(experimenter, pose, 'x'),(experimenter, pose, 'y')])
+        label = pose + poseEst_defs.Parameters.danse.COORDINATES
         for i in range(len(extracted_frames)):
-            data[i] += poseEstimation_params.params[name][i]
+            data[i] += poseEstimation_params.params[label][i]
+        training_coordinates[label] = poseEstimation_params.params[label]
 
     columns  = pd.MultiIndex.from_tuples(header, names = ['scorer', 'bodyparts', 'coords'])
     axis_left = []
@@ -111,7 +114,9 @@ def createlabeledDataHDF(path_config_file, extracted_frames, bodypart_names, exp
     file_path = f'{labeled_datapath}/CollectedData_{experimenter}.h5'
     df.to_hdf(file_path, key='keypoints', mode='w')
 
-def updateConfigFile(path_config_file, bodypart_names):
+    return training_coordinates
+
+def update_config_file(path_config_file, bodypart_names):
     # Load the YAML file
     with open(path_config_file, 'r') as file:
         data = yaml.safe_load(file)
@@ -124,7 +129,7 @@ def updateConfigFile(path_config_file, bodypart_names):
     with open(path_config_file, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
 
-def saveCoordsToDoric(file_, datapath, path_output, extracted_frames, bodypart_names, project_folder, bodypart_colors, operations, training_coordinates, groupNames):
+def save_coords_to_doric(file_, datapath, path_output, extracted_frames, bodypart_names, project_folder, bodypart_colors, operations, training_coordinates, groupNames):
     data, driver, operation, series, sensor = groupNames
     groupAttrs: dict = {}
     groupAttrs[defs.DoricFile.Attribute.Group.OPERATIONS]      = operations
