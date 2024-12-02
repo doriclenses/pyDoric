@@ -47,32 +47,21 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     # --------------- Create Project folder and config file ---------------
     task: str        = "DLC" 
     experimenter:str = "doric"
-
     file_ = h5py.File(filepath, 'a')
     attributes = utils.load_attributes(file_, datapath)
     key = [key for key in attributes if poseEst_defs.Parameters.danse.VIDEO_FILEPATH in key]   
     video_path: str = attributes[key[0]]
-
     path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video_path], project_folder, copy_videos = False)
     updateConfigFile(path_config_file, bodypart_names)
 
-    # --------------- Create hdf file for labeled data ---------------
     createlabeledDataHDF(path_config_file, extracted_frames, bodypart_names, experimenter, poseEstimation_params, video_path)
-
-    # --------------- Create a training dataset ---------------
     deeplabcut.create_training_dataset(path_config_file)
-
-    # --------------- Start training ---------------
     deeplabcut.train_network(path_config_file)
-
-    # --------------- Start evaluating ---------------
     deeplabcut.evaluate_network(path_config_file)
 
-    # --------------- Start Analyzing videos ---------------
     path_output = path_config_file.rsplit("\\", 1)[0]
     deeplabcut.analyze_videos(path_config_file, [video_path], destfolder = path_output)
 
-    # --------------- Saving data ---------------
     saveCoordsToDoric(file_, datapath, path_output, extracted_frames, bodypart_names, project_folder, bodypart_colors, operations, 
                       training_coordinates, groupNames = poseEstimation_params.get_h5path_names())
 
