@@ -156,17 +156,17 @@ def saveCoordsToDoric(file_, datapath, path_output, extractedFrames, bodyPartNam
     data_coords = pd.read_hdf(file_path)
     operation_path = f'{driver}/Coordinates/{series}/{sensor}PoseEstimation'
 
-    for i in range(len(bodyPartNames)):
-        coords = data_coords.loc[:, pd.IndexSlice[:, bodyPartNames[i],['x','y']]]
+    for index, bodyPart in enumerate(bodyPartNames):
+        coords = data_coords.loc[:, pd.IndexSlice[:, bodyPart, ['x','y']]]
         coords_df = pd.DataFrame(coords.values)
-        dataset_path = f'{operation_path}/{bodyPartNames[i]}'
+        dataset_path = f'{operation_path}/{bodyPart}'
 
         if dataset_path in file_: 
             del file_[dataset_path] # Remove existing dataset if it exists 
         file_.create_dataset(dataset_path, data=coords_df, dtype = 'int32', chunks=utils.def_chunk_size(coords_df.shape), maxshape=(h5py.UNLIMITED, 2))
         attrs = {
-            "Username": bodyPartNames[i],
-            "Color":    bodyPartColors[i]
+            "Username": bodyPart,
+            "Color":    bodyPartColors[index]
         }
 
         timePath = f'{driver}/Coordinates/{series}/{sensor}PoseEstimation/Time'
