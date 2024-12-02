@@ -27,7 +27,7 @@ class Suite2pParameters:
         # Suite2p Main Settings
         self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
         self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
-        self.ops['tau']               = self.params['DecayTime'] # Timescale of GCaMP to use for deconvolution
+        self.ops['tau']               = self.params['BiosensorDecayTime'] # Timescale of GCaMP to use for deconvolution
 
         # Suite2p Registration Settings
         self.ops['batch_size']        = 100 # Decrease the batch_size in case low RAM on computer
@@ -36,7 +36,7 @@ class Suite2pParameters:
         # Suite2p 1P registration
         self.ops['1Preg']             = True # High-pass spatial filtering and tapering, which help with 1P registration
         self.ops['spatial_hp_reg']    = 42   # Window in pixels for spatial high-pass filtering before registration
-        self.ops['pre_smooth']        = self.params['CellDiameter'] # STD of Gaussian smoothing, which is applied before spatial high-pass filtering
+        self.ops['pre_smooth']        = self.params['CellDiameter'] - self.params['CellDiameter'] % 2 # STD of Gaussian smoothing, which is applied before spatial high-pass filtering (need to be even)
 
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
