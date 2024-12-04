@@ -6,12 +6,12 @@ import numpy as np
 sys.path.append("..")
 import utilities as utils
 import definitions as defs
-import poseEstimation_definitions as poseEst_defs
+import DeepLabCut.deeplabcut_definitions as poseEst_defs
 
 import deeplabcut
 print("Imported DLC!")
 
-class PoseEstimationParameters:
+class DeepLabCutParameters:
 
     """
     Parameters used in deepLabCut library

@@ -16,8 +16,8 @@ import glob
 sys.path.append("..")
 import utilities as utils
 import definitions as defs
-import poseEstimation_parameters as poseEst_params
-import poseEstimation_definitions as poseEst_defs
+import DeepLabCut.deeplabcut_parameters as dlc_params
+import DeepLabCut.deeplabcut_definitions as dlc_defs
 
 import deeplabcut
 print("Imported DLC!", flush=True)
@@ -26,21 +26,21 @@ print("Imported DLC!", flush=True)
 from multiprocessing import freeze_support
 freeze_support()
 
-def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
+def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     """
     DeepLabCut algorithm
     """
     # --------------- Read danse parameters ---------------
-    operations: str      = poseEstimation_params.params[defs.DoricFile.Attribute.Group.OPERATIONS]
-    filepath: str        = poseEstimation_params.paths[defs.Parameters.Path.FILEPATH]
-    datapath: str        = poseEstimation_params.paths[defs.Parameters.Path.H5PATH]
-    project_folder: str  = poseEstimation_params.params[poseEst_defs.Parameters.danse.PROJECT_FOLDER]
-    bodypart_names       = poseEstimation_params.params[poseEst_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    bodypart_colors      = poseEstimation_params.params[poseEst_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
-    extracted_frames     = poseEstimation_params.params[poseEst_defs.Parameters.danse.EXTRACTED_FRAMES]
+    operations: str      = deeplabcut_params.params[defs.DoricFile.Attribute.Group.OPERATIONS]
+    filepath: str        = deeplabcut_params.paths[defs.Parameters.Path.FILEPATH]
+    datapath: str        = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
+    project_folder: str  = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
+    bodypart_names       = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
+    bodypart_colors      = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
+    extracted_frames     = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
 
-    [file_, video_path, path_config_file, training_coordinates] = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, poseEstimation_params)
+    [file_, video_path, path_config_file, training_coordinates] = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params)
     deeplabcut.create_training_dataset(path_config_file)
     deeplabcut.train_network(path_config_file)
     deeplabcut.evaluate_network(path_config_file)
@@ -49,17 +49,17 @@ def main(poseEstimation_params: poseEst_params.PoseEstimationParameters):
     deeplabcut.analyze_videos(path_config_file, [video_path], destfolder = path_output)
 
     save_coords_to_doric(file_, datapath, path_output, extracted_frames, bodypart_names, project_folder, bodypart_colors, operations, 
-                         training_coordinates, groupNames = poseEstimation_params.get_h5path_names())
+                         training_coordinates, groupNames = deeplabcut_params.get_h5path_names())
 
-def preview(poseEstimation_params: poseEst_params.PoseEstimationParameters):
+def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
     print("hello preview")
 
-def create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, poseEstimation_params):
+def create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params):
     task         = os.path.splitext(os.path.basename(filepath))[0] 
     experimenter = "danse"
     file_        = h5py.File(filepath, 'a')
     attributes   = utils.load_attributes(file_, datapath)
-    relativePath = attributes[poseEst_defs.Parameters.danse.RELATIVE_FILEPATH]
+    relativePath = attributes[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
     dir          = os.path.dirname(filepath)
     video_path   = os.path.join(dir, relativePath)
     video_path   = video_path.replace("\\", "/")
@@ -67,11 +67,11 @@ def create_project(filepath, datapath, project_folder, bodypart_names, extracted
     path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video_path], project_folder, copy_videos = False)
     update_config_file(path_config_file, bodypart_names)
 
-    training_coordinates = create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, poseEstimation_params, video_path)
+    training_coordinates = create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path)
 
     return [file_, video_path, path_config_file, training_coordinates]
 
-def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, poseEstimation_params, video_path):
+def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path):
     header          = []
     rows            = len(extracted_frames)
     data:list       = [[] for _ in range(rows)]
@@ -81,10 +81,10 @@ def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, 
     training_coordinates = {}
     for pose in bodypart_names:
         header.extend([(experimenter, pose, 'x'),(experimenter, pose, 'y')])
-        label = pose + poseEst_defs.Parameters.danse.COORDINATES
+        label = pose + dlc_defs.Parameters.danse.COORDINATES
         for i in range(len(extracted_frames)):
-            data[i] += poseEstimation_params.params[label][i]
-        training_coordinates[label] = poseEstimation_params.params[label]
+            data[i] += deeplabcut_params.params[label][i]
+        training_coordinates[label] = deeplabcut_params.params[label]
 
     columns  = pd.MultiIndex.from_tuples(header, names = ['scorer', 'bodyparts', 'coords'])
     axis_left = []
@@ -136,8 +136,8 @@ def save_coords_to_doric(file_, datapath, path_output, extracted_frames, bodypar
     groupAttrs: dict = {}
     groupAttrs[defs.DoricFile.Attribute.Group.OPERATIONS]      = operations
     groupAttrs['VideoDatapath']                                = datapath
-    groupAttrs[poseEst_defs.Parameters.danse.EXTRACTED_FRAMES] = extracted_frames
-    groupAttrs[poseEst_defs.Parameters.danse.PROJECT_FOLDER]   = project_folder
+    groupAttrs[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = extracted_frames
+    groupAttrs[dlc_defs.Parameters.danse.PROJECT_FOLDER]   = project_folder
     for key in training_coordinates:
         groupAttrs[key] = training_coordinates[key]
 

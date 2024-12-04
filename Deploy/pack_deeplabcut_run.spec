@@ -18,8 +18,8 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 excludes = ["tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter"]
 
-a_poseEstimation = Analysis(
-    ['../PoseEstimation/poseEstimation_run.py'],
+a_deeplabcut = Analysis(
+    ['../DeepLabCut/deeplabcut_run.py'],
     pathex=['../'],
     binaries=binaries,
     datas=datas,
@@ -33,13 +33,13 @@ a_poseEstimation = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
-pyz_poseEstimation = PYZ(a_poseEstimation.pure, a_poseEstimation.zipped_data, cipher=block_cipher)
+pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=block_cipher)
 
-exe_poseEstimation = EXE(
-    pyz_poseEstimation,
-    a_poseEstimation.scripts,
+exe_deeplabcut = EXE(
+    pyz_deeplabcut,
+    a_deeplabcut.scripts,
     [],
-    name='poseEstimation',
+    name='deeplabcut',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -55,14 +55,14 @@ exe_poseEstimation = EXE(
 )
 
 coll = COLLECT(
-    exe_poseEstimation,
-    a_poseEstimation.binaries,
-    a_poseEstimation.zipfiles,
-    a_poseEstimation.datas,
+    exe_deeplabcut,
+    a_deeplabcut.binaries,
+    a_deeplabcut.zipfiles,
+    a_deeplabcut.datas,
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='poseEstimation',
+    name='deeplabcut',
 )
 
 
