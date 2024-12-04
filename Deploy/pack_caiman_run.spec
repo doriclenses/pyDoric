@@ -33,6 +33,8 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 datas += [( '../CaImAn/caiman_data/model', 'caiman_data/model')]
 
+excludes = ["IPython", "PyQt5", "Markdown", "jupyter", "panel", "matplotlib"]
+
 #binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
 
 a_caimAn = Analysis(
