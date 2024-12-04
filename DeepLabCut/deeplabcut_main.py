@@ -1,16 +1,12 @@
-import os, requests
+import os
 import sys
 import numpy as np
 import pandas as pd
 import h5py
-import typing
 from pathlib import Path
-import matplotlib.pyplot as plt
-from tifffile import imwrite, TiffWriter, TiffFile
 import yaml
 import cv2
 import copy
-from datetime import datetime
 import glob
 
 sys.path.append("..")
@@ -20,7 +16,6 @@ import DeepLabCut.deeplabcut_parameters as dlc_params
 import DeepLabCut.deeplabcut_definitions as dlc_defs
 
 import deeplabcut
-print("Imported DLC!", flush=True)
 
 # Import for PyInstaller
 from multiprocessing import freeze_support

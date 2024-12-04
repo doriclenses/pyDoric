@@ -1,11 +1,4 @@
-# Import miscellaneous and utilities librarys
-import os
 import sys
-import tempfile
-import numpy as np
-
-# needed but not directly used
-import h5py
 
 sys.path.append("..")
 import utilities                  as utils

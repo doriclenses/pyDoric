@@ -1,15 +1,8 @@
-import os
 import sys
-import inspect
-import numpy as np
-
 sys.path.append("..")
 import utilities as utils
 import definitions as defs
 import DeepLabCut.deeplabcut_definitions as poseEst_defs
-
-import deeplabcut
-print("Imported DLC!")
 
 class DeepLabCutParameters:
 
