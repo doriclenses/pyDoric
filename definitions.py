@@ -17,6 +17,7 @@ class DoricFile:
         class Dataset:
             USERNAME = "Username"
             NAME     = "Name"
+            PLANE_ID = "PlaneID"
 
         class Group:
             OPERATIONS      = "Operations"
@@ -58,9 +59,10 @@ class Parameters:
         Main keys to distinguish different parameters
         """
 
-        PARAMETERS = "Parameters"
-        PATHS      = "Paths"
-        PREVIEW    = "Preview"
+        PARAMETERS    = "Parameters"
+        PATHS         = "Paths"
+        PREVIEW       = "Preview"
+        IS_MICROSCOPE = "IsMicroscope"
 
 
     class Path:
