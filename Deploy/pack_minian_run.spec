@@ -26,7 +26,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
 
-excludes = ["IPython", "PyQt5", "Markdown", "jupyter"]
+excludes = ["IPython", "PyQt5", "Markdown", "jupyter", "panel", "matplotlib"]
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],

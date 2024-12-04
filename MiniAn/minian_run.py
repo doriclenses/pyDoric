@@ -5,6 +5,11 @@ import tempfile
 import numpy as np
 from dask.distributed import Client, LocalCluster
 
+# Make unneeded package a dummy package so they can be removing during pyinstaller
+from unittest.mock import Mock
+sys.modules['panel']      = Mock()
+sys.modules['matplotlib'] = Mock()
+
 # needed but not directly used
 import h5py
 import xarray as xr
