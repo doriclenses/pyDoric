@@ -23,3 +23,4 @@ class Parameters:
         COORDINATES       = "Coordinates"
         EXTRACTED_FRAMES  = "ExtractedFrames"
         VIDEO_FILEPATH    = "VideoFilepath"
+        RELATIVE_FILEPATH = "RelativeFilePath"

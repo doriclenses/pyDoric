@@ -59,8 +59,10 @@ def create_project(filepath, datapath, project_folder, bodypart_names, extracted
     experimenter = "danse"
     file_        = h5py.File(filepath, 'a')
     attributes   = utils.load_attributes(file_, datapath)
-    key          = [key for key in attributes if poseEst_defs.Parameters.danse.VIDEO_FILEPATH in key]   
-    video_path   = attributes[key[0]]
+    relativePath = attributes[poseEst_defs.Parameters.danse.RELATIVE_FILEPATH]
+    dir          = os.path.dirname(filepath)
+    video_path   = os.path.join(dir, relativePath)
+    video_path   = video_path.replace("\\", "/")
 
     path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video_path], project_folder, copy_videos = False)
     update_config_file(path_config_file, bodypart_names)
