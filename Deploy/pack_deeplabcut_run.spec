@@ -16,7 +16,7 @@ excludes        = []
 tmp_ret = collect_all('deeplabcut')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-excludes = ["tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter"]
+excludes = ["tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter", "napari", "napari_deeplabcut", "napari_console", "npe2", "napari_plugin_engine", "napari_svg", "matplotlib"]
 
 a_deeplabcut = Analysis(
     ['../DeepLabCut/deeplabcut_run.py'],
