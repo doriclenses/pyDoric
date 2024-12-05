@@ -27,15 +27,13 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     DeepLabCut algorithm
     """
     # --------------- Read danse parameters ---------------
-    operations: str      = deeplabcut_params.params[defs.DoricFile.Attribute.Group.OPERATIONS]
     filepath: str        = deeplabcut_params.paths[defs.Parameters.Path.FILEPATH]
     datapath: str        = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
     project_folder: str  = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
     bodypart_names       = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    bodypart_colors      = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
     extracted_frames     = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
 
-    file_, video_path, path_config_file = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params)
+    video_path, path_config_file = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params)
     deeplabcut.create_training_dataset(path_config_file)
     deeplabcut.train_network(path_config_file)
     deeplabcut.evaluate_network(path_config_file)
@@ -43,7 +41,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     path_output = path_config_file.rsplit("\\", 1)[0]
     deeplabcut.analyze_videos(path_config_file, [video_path], destfolder = path_output)
 
-    save_coords_to_doric(file_, datapath, path_output, deeplabcut_params,
+    save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params,
                          group_names = deeplabcut_params.get_h5path_names()) 
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -52,8 +50,9 @@ def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
 def create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params):
     task          = os.path.splitext(os.path.basename(filepath))[0] 
     experimenter  = "danse"
-    file_         = h5py.File(filepath, 'a')
+    file_         = h5py.File(filepath, 'r')
     attributes    = utils.load_attributes(file_, datapath)
+    file_.close()
     relative_path = attributes[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
     dir           = os.path.dirname(filepath)
     video_path    = os.path.join(dir, relative_path)
@@ -64,7 +63,7 @@ def create_project(filepath, datapath, project_folder, bodypart_names, extracted
 
     create_labeled_data(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path)
 
-    return file_, video_path, path_config_file
+    return video_path, path_config_file
 
 def create_labeled_data(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path):
     #--------------- Create labeled-data folder ---------------
@@ -124,7 +123,8 @@ def update_config_file(path_config_file, bodypart_names):
     with open(path_config_file, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
 
-def save_coords_to_doric(file_, datapath, path_output, deeplabcut_params, group_names):
+def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, group_names):
+    file_           = h5py.File(filepath, 'a')
     bodypart_names  = deeplabcut_params.params.pop(dlc_defs.Parameters.danse.BODY_PART_NAMES).split(', ')
     bodypart_colors = deeplabcut_params.params.pop(dlc_defs.Parameters.danse.BODY_PART_COLORS).split(', ')
     deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
