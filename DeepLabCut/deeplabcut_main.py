@@ -130,21 +130,21 @@ def update_config_file(path_config_file, bodypart_names):
         yaml.safe_dump(data, file, default_flow_style=False)
 
 def save_coords_to_doric(file_, datapath, path_output, extracted_frames, bodypart_names, project_folder, bodypart_colors, operations, training_coordinates, groupNames):
-    data, driver, operation, series, sensor = groupNames
-    groupAttrs: dict = {}
-    groupAttrs[defs.DoricFile.Attribute.Group.OPERATIONS]      = operations
-    groupAttrs['VideoDatapath']                                = datapath
-    groupAttrs[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = extracted_frames
-    groupAttrs[dlc_defs.Parameters.danse.PROJECT_FOLDER]   = project_folder
+    data, group, operation, series, videoName = groupNames
+    operation_attrs: dict = {}
+    operation_attrs[defs.DoricFile.Attribute.Group.OPERATIONS]  = operations
+    operation_attrs[dlc_defs.Parameters.danse.VIDEO_DATAPATH]   = datapath
+    operation_attrs[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = extracted_frames
+    operation_attrs[dlc_defs.Parameters.danse.PROJECT_FOLDER]   = project_folder
     for key in training_coordinates:
-        groupAttrs[key] = training_coordinates[key]
+        operation_attrs[key] = training_coordinates[key]
 
     time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
 
     h5_files = glob.glob(os.path.join(path_output, '*.h5'))
     file_path = h5_files[0]
     data_coords = pd.read_hdf(file_path)
-    operation_path = f'{driver}/Coordinates/{series}/{sensor}PoseEstimation'
+    operation_path = f'{group}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}'
 
     for index, bodypart in enumerate(bodypart_names):
         coords = data_coords.loc[:, pd.IndexSlice[:, bodypart, ['x','y']]]
@@ -155,15 +155,15 @@ def save_coords_to_doric(file_, datapath, path_output, extracted_frames, bodypar
             del file_[dataset_path] # Remove existing dataset if it exists 
         file_.create_dataset(dataset_path, data=coords_df, dtype = 'int32', chunks=utils.def_chunk_size(coords_df.shape), maxshape=(h5py.UNLIMITED, 2))
         attrs = {
-            "Username": bodypart,
-            "Color":    bodypart_colors[index]
+            defs.DoricFile.Attribute.Dataset.USERNAME: bodypart,
+            defs.DoricFile.Attribute.ROI.COLOR       : bodypart_colors[index]
         }
 
-        timePath = f'{driver}/Coordinates/{series}/{sensor}PoseEstimation/Time'
+        timePath = f'{group}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}/{defs.DoricFile.Dataset.TIME}'
         if timePath not in file_:
             file_.create_dataset(timePath, data=time_)
 
         utils.save_attributes(attrs, file_, dataset_path)
 
-    utils.save_attributes(utils.merge_params(params_current = groupAttrs), file_, operation_path)
+    utils.save_attributes(utils.merge_params(params_current = operation_attrs), file_, operation_path)
     file_.close()

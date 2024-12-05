@@ -14,13 +14,19 @@ class Parameters:
     class danse:
 
         """
-        Parameters of danse Find Cells operation
+        Parameters of danse Pose Estimation operation
         """
-        PROJECT_NAME      = "ProjectName"
         PROJECT_FOLDER    = "ProjectFolder"
         BODY_PART_NAMES   = "BodyPartNames"
         BODY_PART_COLORS  = "BodyPartColors"
         COORDINATES       = "Coordinates"
         EXTRACTED_FRAMES  = "ExtractedFrames"
-        VIDEO_FILEPATH    = "VideoFilepath"
         RELATIVE_FILEPATH = "RelativeFilePath"
+        VIDEO_DATAPATH    = "VideoDatapath"
+        
+class DoricFile:
+
+    class Group:
+        POSE_ESTIMATION = "PoseEstimation"
+
+
