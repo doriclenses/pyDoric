@@ -35,7 +35,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     bodypart_colors      = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
     extracted_frames     = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
 
-    [file_, video_path, path_config_file, training_coordinates] = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params)
+    file_, video_path, path_config_file, training_coordinates = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params)
     deeplabcut.create_training_dataset(path_config_file)
     deeplabcut.train_network(path_config_file)
     deeplabcut.evaluate_network(path_config_file)
@@ -64,7 +64,7 @@ def create_project(filepath, datapath, project_folder, bodypart_names, extracted
 
     training_coordinates = create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path)
 
-    return [file_, video_path, path_config_file, training_coordinates]
+    return file_, video_path, path_config_file, training_coordinates
 
 def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path):
     header          = []
