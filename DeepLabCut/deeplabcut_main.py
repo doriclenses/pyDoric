@@ -62,17 +62,23 @@ def create_project(filepath, datapath, project_folder, bodypart_names, extracted
     path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video_path], project_folder, copy_videos = False)
     update_config_file(path_config_file, bodypart_names)
 
-    training_coordinates = create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path)
+    training_coordinates = create_labeled_data(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path)
 
     return file_, video_path, path_config_file, training_coordinates
 
-def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path):
-    header          = []
-    rows            = len(extracted_frames)
-    data:list       = [[] for _ in range(rows)]
+def create_labeled_data(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path):
+    #--------------- Create labeled-data folder ---------------
     path_withoutExt = os.path.splitext(video_path)[0]
     video_name      = path_withoutExt.rsplit("/", 1)[1]
+    pathParts = path_config_file.rsplit("\\", 1)
+    labeled_datapath = os.path.join(pathParts[0], "labeled-data", video_name)
+    if not os.path.exists(labeled_datapath):
+        os.makedirs(labeled_datapath)
 
+    #--------------- Create a pandas DataFrame with body part coordinates (x, y) ---------------
+    header    = []
+    rows      = len(extracted_frames)
+    data:list = [[] for _ in range(rows)]
     training_coordinates = {}
     for pose in bodypart_names:
         header.extend([(experimenter, pose, 'x'),(experimenter, pose, 'y')])
@@ -89,11 +95,11 @@ def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, 
     df = pd.DataFrame(data, columns=columns)
     df.index = axis1
 
-    pathParts = path_config_file.rsplit("\\", 1)
-    labeled_datapath = os.path.join(pathParts[0], "labeled-data", video_name)
-    if not os.path.exists(labeled_datapath):
-        os.makedirs(labeled_datapath)
+    #--------------- Save dataframe as a hdf file ---------------
+    file_path = f'{labeled_datapath}/CollectedData_{experimenter}.h5'
+    df.to_hdf(file_path, key='keypoints', mode='w')
 
+    #--------------- Save extracted images (used for labeling bodyparts) as .png ---------------
     cap = cv2.VideoCapture(video_path)
     frame_count = 0
     while cap.isOpened():
@@ -107,9 +113,6 @@ def create_labeled_data_HDF(path_config_file, extracted_frames, bodypart_names, 
         frame_count += 1 
     cap.release() 
     cv2.destroyAllWindows()
-
-    file_path = f'{labeled_datapath}/CollectedData_{experimenter}.h5'
-    df.to_hdf(file_path, key='keypoints', mode='w')
 
     return training_coordinates
 
