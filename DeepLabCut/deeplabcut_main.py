@@ -122,8 +122,7 @@ def update_config_file(path_config_file, bodypart_names):
         data = yaml.safe_load(file)
 
     # Modify the specific text   
-    data['bodyparts'] = copy.deepcopy(bodypart_names)
-    data['skeleton']  = copy.deepcopy([bodypart_names])
+    data['bodyparts'] = bodypart_names
 
     # Save the modified YAML back to the file
     with open(path_config_file, 'w') as file:
