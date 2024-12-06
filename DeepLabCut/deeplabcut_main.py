@@ -3,10 +3,9 @@ import sys
 import numpy as np
 import pandas as pd
 import h5py
-from pathlib import Path
+# from pathlib import Path
 import yaml
 import cv2
-import copy
 import glob
 
 sys.path.append("..")
@@ -48,10 +47,10 @@ def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
     print("hello preview")
 
 def create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params):
-    task          = os.path.splitext(os.path.basename(filepath))[0] 
-    experimenter  = "danse"
-    file_         = h5py.File(filepath, 'r')
-    attributes    = utils.load_attributes(file_, datapath)
+    task = os.path.splitext(os.path.basename(filepath))[0] 
+    experimenter = "danse"
+    file_ = h5py.File(filepath, 'r')
+    attributes = utils.load_attributes(file_, datapath)
     file_.close()
     relative_path = attributes[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
     dir           = os.path.dirname(filepath)
@@ -67,8 +66,8 @@ def create_project(filepath, datapath, project_folder, bodypart_names, extracted
 
 def create_labeled_data(path_config_file, extracted_frames, bodypart_names, experimenter, deeplabcut_params, video_path):
     #--------------- Create labeled-data folder ---------------
-    path_withoutExt = os.path.splitext(video_path)[0]
-    video_name      = path_withoutExt.rsplit("/", 1)[1]
+    path_without_ext = os.path.splitext(video_path)[0]
+    video_name = path_without_ext.rsplit("/", 1)[1]
     pathParts = path_config_file.rsplit("\\", 1)
     labeled_datapath = os.path.join(pathParts[0], "labeled-data", video_name)
     if not os.path.exists(labeled_datapath):
