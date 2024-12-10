@@ -57,6 +57,8 @@ pyinstaller pack_suite2p_run.spec
 
 [Install CUDA v12.4 or higher](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_network)
 
+[Install cuDNN v9.1](https://developer.nvidia.com/cudnn-9-1-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
+
 [Install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html) and Pyinstaller in the same anaconda environment.
 
 Start a command prompt in DeepLabCut environment and go to the git directory.
