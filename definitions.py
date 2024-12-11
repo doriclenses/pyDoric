@@ -12,6 +12,7 @@ class DoricFile:
         IMAGE_STACK = "ImageStack"
         TIME        = "Time"
         ROI         = "ROI{0}"
+        COORDINATES = "Coordinates{0}"
 
     class Attribute:
 
