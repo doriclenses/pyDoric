@@ -133,7 +133,13 @@ def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, gro
     h5_files = glob.glob(os.path.join(path_output, '*.h5'))
     file_path = h5_files[0]
     data_coords = pd.read_hdf(file_path)
-    operation_path = f'{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}'
+    vpath: str = f"{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
+    vpath      = utils.clean_path(vpath)
+    operationName = f"{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
+
+    operationCount = utils.operation_count(vpath, file_, operationName, deeplabcut_params.params, {})
+    deeplabcut_params.params[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
+    operation_path = f'{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{operationName+operationCount}'
 
     for index, bodypart in enumerate(bodypart_names):
         coords = data_coords.loc[:, pd.IndexSlice[:, bodypart, ['x','y']]]
