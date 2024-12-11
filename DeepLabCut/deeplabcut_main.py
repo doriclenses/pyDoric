@@ -100,10 +100,9 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
         os.makedirs(labeled_datapath)
 
     # Create pandas dataframe with body part coordinates
-    rowCount = len(extracted_frames)
-    data = [[] for _ in range(rowCount)]
-    for i in range(len(rowCount)):
-        data[i] += [params.params[bodypart_name+dlc_defs.Parameters.danse.COORDINATES][i] for bodypart_name in bodypart_names]
+    data = []
+    for i in range(len(extracted_frames)):
+        data.append([params[bodypart_name+dlc_defs.Parameters.danse.COORDINATES][i] for bodypart_name in bodypart_names])
 
     indecies = [[('labeled-data', video_name, f'img{frame}.png')] for frame in extracted_frames]
     header1  = [[(experimenter, bodypart_name, 'x'), (experimenter, bodypart_name, 'y')] for bodypart_name in bodypart_names]
