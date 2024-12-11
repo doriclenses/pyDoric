@@ -148,7 +148,7 @@ def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, gro
             defs.DoricFile.Attribute.ROI.COLOR       : bodypart_colors[index]
         }
 
-        time_path = f'{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}/{defs.DoricFile.Dataset.TIME}'
+        time_path = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
         if time_path not in file_:
             file_.create_dataset(time_path, data=time_)
 
