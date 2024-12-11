@@ -123,6 +123,7 @@ def update_config_file(path_config_file, bodypart_names):
         yaml.safe_dump(data, file, default_flow_style=False)
 
 def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, group_names):
+    print(dlc_defs.Messages.SAVING_TO_DORIC, flush=True)
     file_           = h5py.File(filepath, 'a')
     bodypart_names  = deeplabcut_params.params.pop(dlc_defs.Parameters.danse.BODY_PART_NAMES).split(', ')
     bodypart_colors = deeplabcut_params.params.pop(dlc_defs.Parameters.danse.BODY_PART_COLORS).split(', ')
@@ -139,7 +140,7 @@ def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, gro
 
     operationCount = utils.operation_count(vpath, file_, operationName, deeplabcut_params.params, {})
     deeplabcut_params.params[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
-    operation_path = f'{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{operationName+operationCount}'
+    operation_path = f'{vpath}/{operationName+operationCount}'
 
     for index, bodypart in enumerate(bodypart_names):
         coords = data_coords.loc[:, pd.IndexSlice[:, bodypart, ['x','y']]]
@@ -151,7 +152,7 @@ def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, gro
         file_.create_dataset(dataset_path, data=coords_df, dtype = 'int32', chunks=utils.def_chunk_size(coords_df.shape), maxshape=(h5py.UNLIMITED, 2))
         attrs = {
             defs.DoricFile.Attribute.Dataset.USERNAME: bodypart,
-            defs.DoricFile.Attribute.ROI.COLOR       : bodypart_colors[index]
+            defs.DoricFile.Attribute.Dataset.COLOR   : bodypart_colors[index]
         }
 
         time_path = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
@@ -161,4 +162,5 @@ def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, gro
         utils.save_attributes(attrs, file_, dataset_path)
 
     utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
+    utils.print_group_path_for_DANSE(operation_path)
     file_.close()

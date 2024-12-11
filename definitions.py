@@ -19,6 +19,7 @@ class DoricFile:
             USERNAME = "Username"
             NAME     = "Name"
             PLANE_ID = "PlaneID"
+            COLOR    = "Color"
 
         class Group:
             OPERATIONS      = "Operations"
@@ -34,7 +35,6 @@ class DoricFile:
             ID     = "ID"
             COORDS = "Coordinates"
             SHAPE  = "Shape"
-            COLOR  = "Color"
 
         class Signal:
             RANGE_MIN = "RangeMin"
