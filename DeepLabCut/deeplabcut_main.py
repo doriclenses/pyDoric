@@ -142,7 +142,7 @@ def save_coords_to_doric(filepath, datapath, path_output_path, params, group_nam
     file_ = h5py.File(filepath, 'a')
 
     # Define correct path for saving operaion results
-    group_path      = f"{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
+    group_path      = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
     operation_name  = f"{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
     operation_count = utils.operation_count(group_path, file_, operation_name, params, {})    
     operation_path  = f'{group_path}/{operationName+operation_count}'
