@@ -142,13 +142,14 @@ def save_coords_to_doric(filepath, datapath, path_output_path, params, group_nam
     file_ = h5py.File(filepath, 'a')
 
     # Define correct path for saving operaion results
-    group_path      = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
-    operation_name  = f"{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
+    _, _, _, series, video_name = group_names
+    group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
+    
+    operation_name  = f"{video_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
     operation_count = utils.operation_count(group_path, file_, operation_name, params, {})    
     operation_path  = f'{group_path}/{operationName+operation_count}'
     
     # Save time
-    _, _, _, series, videoName = group_names
     time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
     time_path = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
     if time_path not in file_:
