@@ -39,10 +39,8 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     deeplabcut.evaluate_network(config_file_path)
  
     # Analyze video and save the result
-    path_output = config_file_path.rsplit("\\", 1)[0]
-    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = path_output)
-
-    save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params.params,
+    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path))
+    save_coords_to_doric(filepath, datapath, os.path.dirname(config_file_path), deeplabcut_params.params,
                          group_names = deeplabcut_params.get_h5path_names()) 
 
 
@@ -131,7 +129,7 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
 
 
 
-def save_coords_to_doric(filepath, datapath, path_output_path, params, group_names):
+def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
