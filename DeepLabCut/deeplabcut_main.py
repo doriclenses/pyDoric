@@ -3,7 +3,6 @@ import sys
 import numpy as np
 import pandas as pd
 import h5py
-# from pathlib import Path
 import yaml
 import cv2
 import glob
