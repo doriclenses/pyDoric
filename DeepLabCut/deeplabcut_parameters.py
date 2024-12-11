@@ -12,10 +12,9 @@ class DeepLabCutParameters:
 
     def __init__(self, danse_params: dict):
         
-        self.paths: dict          = danse_params.get(defs.Parameters.Main.PATHS, {})
-        self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
-        #self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
-
+        self.paths: dict  = danse_params.get(defs.Parameters.Main.PATHS, {})
+        self.params: dict = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
+        
     def get_h5path_names(self):
 
         """
