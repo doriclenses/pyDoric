@@ -54,7 +54,7 @@ def create_project(filepath, datapath, project_folder, bodypart_names, extracted
     file_.close()
     relative_path = attributes[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
     dir           = os.path.dirname(filepath)
-    video_path    = os.path.join(dir, relative_path)
+    video_path    = os.path.join(dir, relative_path.lstrip('/'))
     video_path    = video_path.replace("\\", "/")
 
     path_config_file: str = deeplabcut.create_new_project(task, experimenter, [video_path], project_folder, copy_videos = False)
@@ -128,12 +128,12 @@ def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, gro
     bodypart_colors = deeplabcut_params.params.pop(dlc_defs.Parameters.danse.BODY_PART_COLORS).split(', ')
     deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
 
-    data, group, operation, series, videoName = group_names
+    _, _, _, series, videoName = group_names
     time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
     h5_files = glob.glob(os.path.join(path_output, '*.h5'))
     file_path = h5_files[0]
     data_coords = pd.read_hdf(file_path)
-    operation_path = f'{group}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}'
+    operation_path = f'{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}'
 
     for index, bodypart in enumerate(bodypart_names):
         coords = data_coords.loc[:, pd.IndexSlice[:, bodypart, ['x','y']]]
@@ -148,7 +148,7 @@ def save_coords_to_doric(filepath, datapath, path_output, deeplabcut_params, gro
             defs.DoricFile.Attribute.ROI.COLOR       : bodypart_colors[index]
         }
 
-        time_path = f'{group}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}/{defs.DoricFile.Dataset.TIME}'
+        time_path = f'{defs.DoricFile.Group.BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}/{videoName}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}/{defs.DoricFile.Dataset.TIME}'
         if time_path not in file_:
             file_.create_dataset(time_path, data=time_)
 
