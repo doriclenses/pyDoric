@@ -162,7 +162,7 @@ def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
     for index, bodypart_name in enumerate(bodypart_names):
         coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
 
-        datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(id_).zfill(2))}'
+        datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
         if datapath in file_: 
             del file_[datapath] # Remove existing dataset if it exists 
 
