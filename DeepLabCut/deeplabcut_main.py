@@ -126,16 +126,15 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
     cap.release() 
     cv2.destroyAllWindows()
 
-
-
 def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
-
     print(dlc_defs.Messages.SAVING_TO_DORIC, flush=True)
 
     file_ = h5py.File(filepath, 'a')
+    bodypart_names  = params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
+    bodypart_colors = params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
 
     # Define correct path for saving operaion results
     _, _, _, series, video_name = group_names
