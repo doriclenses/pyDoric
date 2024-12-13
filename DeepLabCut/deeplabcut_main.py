@@ -97,15 +97,19 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
         os.makedirs(labeled_data_path)
 
     # Create pandas dataframe with body part coordinates
-    data = []
-    for i in range(len(extracted_frames)):
-        data.append([params[bodypart_name+dlc_defs.Parameters.danse.COORDINATES][i] for bodypart_name in bodypart_names])
+    data = [] # [[bp1_x1, bp1_x2, ..., bp1_xn], [bp1_y1, bp1_y2, ..., bp1_yn], [bp2_x1, bp2_x2, ..., bp2_xn], [bp2_y1, bp2_y2, ..., bp2_yn], ...]
+    for name in bodypart_names:
+        data.append([x for x, y in params[name+dlc_defs.Parameters.danse.COORDINATES]])
+        data.append([y for x, y in params[name+dlc_defs.Parameters.danse.COORDINATES]]) 
+    dataT = list(map(list, zip(*data))) # [[bp1_x1, bp1_y1, bp2_x1, bp2_y1, ...], ..., [bp1_xn, bp1_yn, bp2_xn, bp2_yn, ...]]
 
-    indecies = [[('labeled-data', video_name, f'img{frame}.png')] for frame in extracted_frames]
-    header1  = [[(experimenter, bodypart_name, 'x'), (experimenter, bodypart_name, 'y')] for bodypart_name in bodypart_names]
+    indices = [('labeled-data', video_name, f'img{frame}.png') for frame in extracted_frames]
+    header1 = []
+    for bodypart_name in bodypart_names:
+        header1 += [(experimenter, bodypart_name, 'x'),(experimenter, bodypart_name, 'y')]
     header2  = pd.MultiIndex.from_tuples(header1, names = ['scorer', 'bodyparts', 'coords'])
     
-    df = pd.DataFrame(data, columns = header2, index = pd.MultiIndex.from_tuples(indices))
+    df = pd.DataFrame(dataT, columns = header2, index = pd.MultiIndex.from_tuples(indices))
 
     # Save dataframe as hdf file 
     file_path = f'{labeled_data_path}/CollectedData_{experimenter}.h5'
