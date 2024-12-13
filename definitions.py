@@ -6,7 +6,7 @@ class DoricFile:
 
     class Group:
         DATA_PROCESSED = "DataProcessed"
-        DATA_BEHAVIOR       = "DataBehavior"
+        DATA_BEHAVIOR  = "DataBehavior"
 
     class Dataset:
         IMAGE_STACK = "ImageStack"

@@ -30,8 +30,6 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     project_folder: str    = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
     bodypart_names: list   = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     extracted_frames: list = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
-    
-    extracted_frames = [int(frame) for frame in extracted_frames]
 
     # Create project and train network
     video_path, config_file_path = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params.params)
@@ -95,8 +93,8 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
     dir_path   = os.path.dirname(config_file_path)
 
     labeled_data_path = os.path.join(dir_path, "labeled-data", video_name)
-    if not os.path.exists(labeled_datapath):
-        os.makedirs(labeled_datapath)
+    if not os.path.exists(labeled_data_path):
+        os.makedirs(labeled_data_path)
 
     # Create pandas dataframe with body part coordinates
     data = []
@@ -110,7 +108,7 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
     df = pd.DataFrame(data, columns = header2, index = pd.MultiIndex.from_tuples(indices))
 
     # Save dataframe as hdf file 
-    file_path = f'{labeled_datapath}/CollectedData_{experimenter}.h5'
+    file_path = f'{labeled_data_path}/CollectedData_{experimenter}.h5'
     df.to_hdf(file_path, key='keypoints', mode='w')
 
     # Save extracted frames used for labeling as .png
@@ -145,7 +143,7 @@ def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
     
     operation_name  = f"{video_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
     operation_count = utils.operation_count(group_path, file_, operation_name, params, {})    
-    operation_path  = f'{group_path}/{operationName+operation_count}'
+    operation_path  = f'{group_path}/{operation_name+operation_count}'
     
     # Save time
     time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
@@ -168,12 +166,12 @@ def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
         if datapath in file_: 
             del file_[datapath] # Remove existing dataset if it exists 
 
-        file_.create_dataset(datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords_df.shape), maxshape=(h5py.UNLIMITED, 2))
+        file_.create_dataset(datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords.shape), maxshape=(h5py.UNLIMITED, 2))
         attrs = {
             defs.DoricFile.Attribute.Dataset.USERNAME: bodypart_name,
             defs.DoricFile.Attribute.Dataset.COLOR   : bodypart_colors[index]
         }
-        utils.save_attributes(attrs, file_, dataset_path)
+        utils.save_attributes(attrs, file_, datapath)
 
     utils.print_group_path_for_DANSE(operation_path)
     
