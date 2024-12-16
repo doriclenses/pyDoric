@@ -6,11 +6,13 @@ class DoricFile:
 
     class Group:
         DATA_PROCESSED = "DataProcessed"
+        DATA_BEHAVIOR  = "DataBehavior"
 
     class Dataset:
         IMAGE_STACK = "ImageStack"
         TIME        = "Time"
         ROI         = "ROI{0}"
+        COORDINATES = "Coordinates{0}"
 
     class Attribute:
 
@@ -18,6 +20,7 @@ class DoricFile:
             USERNAME = "Username"
             NAME     = "Name"
             PLANE_ID = "PlaneID"
+            COLOR    = "Color"
 
         class Group:
             OPERATIONS      = "Operations"
