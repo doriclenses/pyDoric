@@ -36,12 +36,7 @@ def main(caiman_params):
         pass
 
     # start the cluster
-    try:
-        cm.stop_server()  # stop it if it was running
-    except():
-        pass
-
-    c, dview, n_processes = cm.cluster.setup_cluster(backend="local", n_processes=None, single_thread=False)
+    c, dview, n_processes = cm.cluster.setup_cluster(backend="multiprocessing", n_processes = None, single_thread = False)
 
     fname_new = motion_correction(dview, caiman_params)
 
