@@ -2,6 +2,11 @@
 import os
 import sys
 
+# Make unneeded package a dummy package so they can be removing during pyinstaller
+from unittest.mock import Mock
+sys.modules['panel']      = Mock()
+sys.modules['matplotlib'] = Mock()
+
 # Edit system variables and path
 # /!\ The change of environment variable CAIMAN_DATA need to be done before all caiman related imports
 os.environ["CAIMAN_DATA"] = os.path.dirname(os.path.abspath(__file__))+"\\caiman_data"

@@ -143,7 +143,7 @@ def motion_correction(dview, caiman_params):
         fname_new = cm.save_memmap(fname_mc, base_name="memmap_", order='C', border_to_0 = bord_px)
 
     else:
-        fname_new = cm.save_memmap([caiman_params.cnmf_params.data["fnames"]], base_name="memmap_", order='C', border_to_0=0)
+        fname_new = cm.save_memmap(caiman_params.cnmf_params.data["fnames"], base_name="memmap_", order='C', border_to_0=0)
 
     return fname_new
 
