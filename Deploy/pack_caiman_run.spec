@@ -31,9 +31,15 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('skimage')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
+tmp_ret = collect_all('scipy')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
+tmp_ret = collect_all('ipyparallel')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
 datas += [( '../CaImAn/caiman_data/model', 'caiman_data/model')]
 
-#binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
+excludes = ["PyQt5", "Markdown", "jupyter", "panel", "matplotlib"]
 
 a_caimAn = Analysis(
     ['../CaImAn/caiman_run.py'],
