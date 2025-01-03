@@ -4,13 +4,16 @@ import sys
 
 # Make unneeded package a dummy package so they can be removing during pyinstaller
 from unittest.mock import Mock
-packages_name = ["panel", "matplotlib", "matplotlib.pyplot", "matplotlib.animation", "matplotlib.patches",  "matplotlib.widgets", "bokeh"]
+packages_name  = ["panel", "bokeh", "ipywidgets", "ipyparallel"]
+packages_name += ["matplotlib", "matplotlib.pyplot", "matplotlib.animation", "matplotlib.patches",  "matplotlib.widgets"]
+packages_name += ["IPython", "IPython.display", "IPython.paths"]
+
 for pack_name in packages_name:
     sys.modules[pack_name] = Mock()
 
 # Edit system variables and path
 # /!\ The change of environment variable CAIMAN_DATA need to be done before all caiman related imports
-os.environ["CAIMAN_DATA"] = os.path.dirname(os.path.abspath(__file__))+"\\caiman_data"
+os.environ["CAIMAN_DATA"] = f"{os.path.dirname(os.path.abspath(__file__))}\\caiman_data"
 
 sys.path.append("..")
 # Import CaimAn related utilities libraries
