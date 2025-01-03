@@ -39,7 +39,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 datas += [( '../CaImAn/caiman_data/model', 'caiman_data/model')]
 
-excludes = ["PyQt5", "Markdown", "jupyter", "panel", "matplotlib"]
+excludes = ["PyQt5", "Markdown", "jupyter", "panel", "matplotlib", "bokeh"]
 
 a_caimAn = Analysis(
     ['../CaImAn/caiman_run.py'],
