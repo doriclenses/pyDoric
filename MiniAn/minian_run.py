@@ -7,8 +7,9 @@ from dask.distributed import Client, LocalCluster
 
 # Make unneeded package a dummy package so they can be removing during pyinstaller
 from unittest.mock import Mock
-sys.modules['panel']      = Mock()
-sys.modules['matplotlib'] = Mock()
+packages_name = ['panel', 'matplotlib', 'bokeh', 'bokeh.palettes']
+for pack_name in packages_name:
+    sys.modules[pack_name] = Mock()
 
 # needed but not directly used
 import h5py
