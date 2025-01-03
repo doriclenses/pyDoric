@@ -6,7 +6,7 @@ import sys
 from unittest.mock import Mock
 packages_name  = ["panel", "bokeh", "ipywidgets", "ipyparallel"]
 packages_name += ["matplotlib", "matplotlib.pyplot", "matplotlib.animation", "matplotlib.patches",  "matplotlib.widgets"]
-packages_name += ["IPython", "IPython.display", "IPython.paths"]
+packages_name += ["IPython", "IPython.display"]
 
 for pack_name in packages_name:
     sys.modules[pack_name] = Mock()
