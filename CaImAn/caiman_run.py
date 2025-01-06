@@ -2,16 +2,16 @@
 import os
 import sys
 
-# Make unneeded package a dummy package so they can be removing during pyinstaller
+# Turn unused packages to dummy ones so they can be removed during pyinstaller wrapping
 from unittest.mock import Mock
-packages_name  = ["panel", "bokeh", "ipywidgets", "ipyparallel"]
-packages_name += ["matplotlib", "matplotlib.pyplot", "matplotlib.animation", "matplotlib.patches",  "matplotlib.widgets"]
-packages_name += ["IPython", "IPython.display"]
-packages_name += ["tensorflow", "tensorflow.keras", "tensorflow.keras.layers", "tensorflow.keras.models", "tensorflow.keras.optimizers",
+mock_packages  = ["panel", "bokeh", "ipywidgets", "ipyparallel"]
+mock_packages += ["matplotlib", "matplotlib.pyplot", "matplotlib.animation", "matplotlib.patches",  "matplotlib.widgets"]
+mock_packages += ["IPython", "IPython.display"]
+mock_packages += ["tensorflow", "tensorflow.keras", "tensorflow.keras.layers", "tensorflow.keras.models", "tensorflow.keras.optimizers",
                   "tensorflow.keras.backend", "tensorflow.keras.callbacks", "tensorflow.keras.initializers", "tensorflow.keras.utils"]
 
-for pack_name in packages_name:
-    sys.modules[pack_name] = Mock()
+for package in mock_packages:
+    sys.modules[package] = Mock()
 
 # Edit system variables and path
 # /!\ The change of environment variable CAIMAN_DATA need to be done before all caiman related imports

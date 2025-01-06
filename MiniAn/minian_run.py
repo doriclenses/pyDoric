@@ -5,11 +5,11 @@ import tempfile
 import numpy as np
 from dask.distributed import Client, LocalCluster
 
-# Make unneeded package a dummy package so they can be removing during pyinstaller
+# Turn unused packages to dummy ones so they can be removed during pyinstaller wrapping
 from unittest.mock import Mock
-packages_name = ['panel', 'matplotlib', 'bokeh', 'bokeh.palettes']
-for pack_name in packages_name:
-    sys.modules[pack_name] = Mock()
+mock_packages = ['panel', 'matplotlib', 'bokeh', 'bokeh.palettes']
+for package in mock_packages:
+    sys.modules[package] = Mock()
 
 # needed but not directly used
 import h5py
