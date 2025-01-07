@@ -106,7 +106,7 @@ def save_suite2p_to_doric(
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
-    file_ = h5py.File(doric_file_name, 'w')
+    file_ = h5py.File(doric_file_name, 'a') if plane_IDs == [-1] else file_ = h5py.File(doric_file_name, 'w')
     # Check if Suite2p results already exist
     operation_count = utils.operation_count(vpath, file_, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
