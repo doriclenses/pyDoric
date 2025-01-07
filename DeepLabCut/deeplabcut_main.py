@@ -34,7 +34,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     # Create project and train network
     video_path, config_file_path = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params.params)
     deeplabcut.create_training_dataset(config_file_path)
-    update_Pytorch_config_file(config_file_path)
+    update_pytorch_config_file(config_file_path)
     deeplabcut.train_network(config_file_path, batch_size=8)
     deeplabcut.evaluate_network(config_file_path)
  
@@ -83,7 +83,7 @@ def update_config_file(config_file_path, bodypart_names):
     with open(config_file_path, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
 
-def update_Pytorch_config_file(config_file_path):
+def update_pytorch_config_file(config_file_path):
     """
     Update label names in the pytorch config file
     """
