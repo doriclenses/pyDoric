@@ -47,7 +47,7 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     save_suite2p_to_doric(
         output_ops      = output_ops,
         time_           = time_,
-        doric_file_name = suite2p_params.paths[defs.Parameters.Preview.FILEPATH],
+        doric_file_name = suite2p_params.paths[defs.Parameters.Preview.FILEPATH] if not suite2p_params.is_microscope else suite2p_params.paths[defs.Parameters.Path.FILEPATH],
         vpath           = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
         series          = series,
         sensor          = sensor,
