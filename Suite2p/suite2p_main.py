@@ -107,21 +107,29 @@ def save_suite2p_to_doric(
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
-    file_ = h5py.File(doric_file_name, 'a') if plane_IDs == [-1] else file_ = h5py.File(doric_file_name, 'w')
+    if (plane_IDs == [-1]):
+        file_ = h5py.File(doric_file_name, 'a')
+    else:
+        file_ = h5py.File(doric_file_name, 'w')
+
     # Check if Suite2p results already exist
     operation_count = utils.operation_count(vpath, file_, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
     params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operation_count
 
-    rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS + operation_count}"
+    meanImg_seriespath  = f"{vpath}/{s2p_defs.DoricFile.Group.MEAMIMG+operation_count}/{series}"
+    meanImgE_seriespath = f"{vpath}/{s2p_defs.DoricFile.Group.MEAMIMGE+operation_count}/{series}"
+    vcoor_seriespath    = f"{vpath}/{s2p_defs.DoricFile.Group.VCORR+operation_count}/{series}"
+
+    rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operation_count}"
     rois_seriespath  = f"{rois_grouppath}/{series}"
 
     spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operation_count}"
     spikes_seriespath  = f"{spikes_grouppath}/{series}"
 
-    meanImg  = output_ops['meanImg']
-    meanImgE = output_ops['meanImgE']
-    Vcorr    = output_ops['Vcorr']
+    meanImg  = split_by_plane(ops['meanImg'], len(plane_IDs))
+    meanImgE = split_by_plane(ops['meanImgE'], len(plane_IDs))
+    Vcorr    = split_by_plane(ops['Vcorr'], len(plane_IDs))
 
     print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
     for plane_index, plane_ID in enumerate(plane_IDs):
@@ -137,6 +145,11 @@ def save_suite2p_to_doric(
             rois_path   = f"{rois_seriespath}/{sensor}"
             spikes_path = f"{spikes_seriespath}/{sensor}"
             del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
+        else:
+            height, width = meanImg[plane_index].shape
+            file_.create_dataset(f"{meanImg_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImg[plane_index], dtype = "float64", chunks=(height, width))
+            file_.create_dataset(f"{meanImgE_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImgE[plane_index], dtype = "float64", chunks=(height, width))
+            file_.create_dataset(f"{vcoor_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = Vcorr[plane_index], dtype = "float64", chunks=(height, width))
             
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
@@ -156,6 +169,15 @@ def save_suite2p_to_doric(
                            usernames     = [usernames[i] for i in cell_indexs],
                            attrs         = attrs)
     
+    if meanImg_seriespath in file_:
+        utils.print_group_path_for_DANSE(f"{meanImg_seriespath}/{sensor}")
+
+    if meanImgE_seriespath in file_:
+        utils.print_group_path_for_DANSE(f"{meanImgE_seriespath}/{sensor}")
+
+    if vcoor_seriespath in file_:
+        utils.print_group_path_for_DANSE(f"{vcoor_seriespath}/{sensor}")
+
     utils.save_attributes(utils.merge_params(params_doric, params_source), file_, rois_grouppath)
     if rois_seriespath in file_:
         for plane_sensor in file_[rois_seriespath].keys():
@@ -175,3 +197,16 @@ def correct_spikes_values(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
 
     return spikes
 
+def split_by_plane(suite2p_image: np.ndarray, plane_count: int):
+    hight, width = suite2p_image.shape
+    
+    hight_split = np.ceil(plane_count/2)
+    width_split = 1 if plane_count == 1 else 2
+    
+    images = []
+    for n in range(plane_count):
+        image = suite2p_image[int(n/2)*int(hight/hight_split) : (int(n/2) + 1)*int(hight/hight_split),
+                              n*int(width/width_split) : (n + 1)*int(width/width_split)]
+        images.append(image)
+
+    return images
