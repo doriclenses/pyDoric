@@ -82,6 +82,7 @@ def save_suite2p_to_doric(
     f_cells     = np.load(Path(output_ops['save_path']).joinpath('F.npy')) #array of fluorescence traces (ROIs by timepoints)
     f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
     spks        = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
+    ops         = np.load(Path(output_ops['save_path']).joinpath('ops.npy'), allow_pickle=True).item()
 
     stats   = stats[iscell]
     f_cells = f_cells[iscell, :]
