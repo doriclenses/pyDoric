@@ -206,7 +206,7 @@ def split_by_plane(suite2p_image: np.ndarray, plane_count: int):
     images = []
     for n in range(plane_count):
         image = suite2p_image[int(n/2)*int(hight/hight_split) : (int(n/2) + 1)*int(hight/hight_split),
-                              n*int(width/width_split) : (n + 1)*int(width/width_split)]
+                              n%2*int(width/width_split) : (n%2 + 1)*int(width/width_split)]
         images.append(image)
 
     return images
