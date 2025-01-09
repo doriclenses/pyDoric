@@ -192,7 +192,7 @@ def correct_spikes_values(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
 
     return spikes
 
-def split_by_plane(suite2p_image: np.ndarray, plane_count: int):
+def split_by_plane(suite2p_image: np.ndarray, plane_count: int) -> list[np.ndarray]:
     hight, width = suite2p_image.shape
     
     hight_split = np.ceil(plane_count/2)
