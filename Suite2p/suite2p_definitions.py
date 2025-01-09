@@ -16,7 +16,7 @@ class DoricFile:
 
     class Group:
         ROISIGNALS = "Suite2pROISignals"
-        MEAMIMG    = "Suite2pMeanImgVoluImages"
-        MEAMIMGE   = "Suite2pMeanImgEVoluImages"
-        VCORR      = "Suite2pVcorrVoluImages"
+        MEAMIMG    = "Suite2pMeanImg"
+        MEAMIMGE   = "Suite2pMeanImgE"
+        VCORR      = "Suite2pVcorr"
         SPIKES     = "Suite2pSpikes"
