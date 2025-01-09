@@ -169,14 +169,9 @@ def save_suite2p_to_doric(
                            usernames     = [usernames[i] for i in cell_indexs],
                            attrs         = attrs)
     
-    if meanImg_seriespath in file_:
-        utils.print_group_path_for_DANSE(f"{meanImg_seriespath}/{sensor}")
-
-    if meanImgE_seriespath in file_:
-        utils.print_group_path_for_DANSE(f"{meanImgE_seriespath}/{sensor}")
-
-    if vcoor_seriespath in file_:
-        utils.print_group_path_for_DANSE(f"{vcoor_seriespath}/{sensor}")
+    for seriespath in [meanImg_seriespath, meanImgE_seriespath, vcoor_seriespath]:
+        if seriespath in file_:
+            utils.print_group_path_for_DANSE(f"{seriespath}/{sensor}")
 
     utils.save_attributes(utils.merge_params(params_doric, params_source), file_, rois_grouppath)
     if rois_seriespath in file_:
