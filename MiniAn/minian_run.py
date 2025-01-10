@@ -5,6 +5,12 @@ import tempfile
 import numpy as np
 from dask.distributed import Client, LocalCluster
 
+# Turn unused packages to dummy ones so they can be removed during pyinstaller wrapping
+from unittest.mock import Mock
+mock_packages = ['panel', 'matplotlib', 'bokeh', 'bokeh.palettes']
+for package in mock_packages:
+    sys.modules[package] = Mock()
+
 # needed but not directly used
 import h5py
 import xarray as xr
