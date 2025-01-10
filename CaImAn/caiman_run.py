@@ -18,6 +18,8 @@ for package in mock_packages:
 os.environ["CAIMAN_DATA"] = f"{os.path.dirname(os.path.abspath(__file__))}\\caiman_data"
 
 sys.path.append("..")
+os.add_dll_directory(os.path.abspath(f"{os.getcwd()}\\..\\..\\..\\DNAMainApp\\Libraries\\pythondlls"))
+
 # Import CaimAn related utilities libraries
 import utilities as utils
 import caiman_definitions as cm_defs

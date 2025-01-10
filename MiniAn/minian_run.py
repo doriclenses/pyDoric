@@ -11,11 +11,13 @@ mock_packages = ['panel', 'matplotlib', 'bokeh', 'bokeh.palettes']
 for package in mock_packages:
     sys.modules[package] = Mock()
 
+sys.path.append("..")
+os.add_dll_directory(os.path.abspath(f"{os.getcwd()}\\..\\..\\..\\DNAMainApp\\Libraries\\pythondlls"))
+
 # needed but not directly used
 import h5py
 import xarray as xr
 
-sys.path.append("..")
 import utilities as utils
 import minian_main        as mn_main
 import minian_parameters  as mn_params
