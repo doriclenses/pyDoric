@@ -165,7 +165,7 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
     cap.release() 
     cv2.destroyAllWindows()
 
-def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
+def save_coords_to_doric(filepath, datapath, output_path, params, config_file_path, shuffle_index_start, group_names):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
@@ -193,10 +193,33 @@ def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
     params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
     utils.save_attributes(utils.merge_params(params_current = params), file_, operation_path)
 
-    # Save coordinates for each body part
-    h5_file1 = glob.glob(os.path.join(output_path, '*.h5'))[0]
-    df_coords = pd.read_hdf(h5_file1)
+    root_path   = os.path.dirname(config_file_path)
+    target_file = 'pytorch_config.yaml'
 
+    # get info from configFile
+    with open(config_file_path, 'r') as file:
+        dataConfig = yaml.safe_load(file)
+    task  = dataConfig['Task']
+    date  = dataConfig['date']
+    trainset   = int(dataConfig['TrainingFraction'][0] * 100)
+    iterations = dataConfig['iteration']
+
+    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle_index_start}'
+    dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
+    pytorch_config_file_path = os.path.join(dir_path, target_file)
+    
+    # get info from Pytorch configFile
+    with open(pytorch_config_file_path, 'r') as file:
+        data = yaml.safe_load(file)
+    model = data['net_type'].replace("_", "").capitalize()
+    epochs = data['train_settings']['epochs']
+
+    # get coords data from hdf file using info (above) from config and pytorch config file
+    hdf_data_file = f'{task}DLC_{model}_{task}{date}shuffle{shuffle_index_start}_snapshot_{epochs}.h5'
+    hdf_data_file = os.path.join(root_path, hdf_data_file)
+    df_coords = pd.read_hdf(hdf_data_file)
+
+    # Save coordinates for each body part
     for index, bodypart_name in enumerate(bodypart_names):
         coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
 
