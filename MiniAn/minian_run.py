@@ -1,9 +1,6 @@
 # Import miscellaneous and utilities librarys
 import os
 import sys
-import tempfile
-import numpy as np
-from dask.distributed import Client, LocalCluster
 
 # Turn unused packages to dummy ones so they can be removed during pyinstaller wrapping
 from unittest.mock import Mock
