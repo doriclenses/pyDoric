@@ -81,28 +81,35 @@ def update_config_file(config_file_path, bodypart_names):
     Update label names in the config file
     """
 
-    with open(config_file_path, 'r') as file:
-        data = yaml.safe_load(file)
+    with open(config_file_path, 'r') as cfg:
+        data = yaml.safe_load(cfg)
   
     data['bodyparts'] = bodypart_names
 
-    with open(config_file_path, 'w') as file:
-        yaml.safe_dump(data, file, default_flow_style=False)
+    with open(config_file_path, 'w') as cfg:
+        yaml.safe_dump(data, cfg, default_flow_style=False)
 
-def update_pytorch_config_file(config_file_path):
+def update_pytorch_config_file(config_file_path, shuffle_index):
     """
     Update label names in the pytorch config file
     """
     root_path   = os.path.dirname(config_file_path)
     target_file = 'pytorch_config.yaml'
-    for dir_path, dirnames, filenames in os.walk(root_path): 
-        if target_file in filenames:
-            print(dir_path)
-            pytorch_config_file_path = os.path.join(dir_path, target_file)
+
+    # get info from configFile
+    with open(config_file_path, 'r') as file:
+        dataConfig = yaml.safe_load(file)
+    task       = dataConfig['Task']
+    date       = dataConfig['date']
+    trainset   = int(dataConfig['TrainingFraction'][0] * 100)
+    iterations = dataConfig['iteration']
+
+    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle_index}'
+    dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
+    pytorch_config_file_path = os.path.join(dir_path, target_file)
 
     with open(pytorch_config_file_path, 'r') as file:
         data = yaml.safe_load(file)
-  
     data['model']['backbone']['freeze_bn_stats']    = False
     data['train_settings']['dataloader_pin_memory'] = True
 
