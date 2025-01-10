@@ -33,15 +33,21 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     # Create project and train network
     video_path, config_file_path = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params.params)
-    deeplabcut.create_training_dataset(config_file_path)
-    update_pytorch_config_file(config_file_path)
-    deeplabcut.train_network(config_file_path, batch_size=8)
-    deeplabcut.evaluate_network(config_file_path)
- 
+    training_dataset_info = deeplabcut.create_training_dataset(config_file_path)
+    
+    shuffle_nums = len(training_dataset_info)
+    shuffle_index_start = training_dataset_info[0][1]
+    shuffles = [shuffle_index_start + i for i in range(shuffle_nums)]
+
+    for shuffle_index in shuffles:
+        update_pytorch_config_file(config_file_path, shuffle_index) 
+        deeplabcut.train_network(config_file_path, batch_size=8, shuffle = shuffle_index)
+    
+    deeplabcut.evaluate_network(config_file_path, Shuffles = shuffles)
     # Analyze video and save the result
-    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path))
+    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path), shuffle = shuffle_index_start)
     save_coords_to_doric(filepath, datapath, os.path.dirname(config_file_path), deeplabcut_params.params,
-                         group_names = deeplabcut_params.get_h5path_names()) 
+                         config_file_path, shuffle_index_start, group_names = deeplabcut_params.get_h5path_names())
 
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
