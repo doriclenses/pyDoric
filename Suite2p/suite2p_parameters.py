@@ -21,7 +21,7 @@ class Suite2pParameters:
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
         self.is_microscope: bool  = danse_params.pop(defs.Parameters.Main.IS_MICROSCOPE, False)
-        self.time_length: int     = self.get_time_length()
+        height, width, self.time_length = self.get_data_shape()
         
         self.ops = suite2p.default_ops() # https://suite2p.readthedocs.io/en/latest/settings.html#
         # Suite2p Main Settings
@@ -75,15 +75,17 @@ class Suite2pParameters:
 
         return [data, driver, operation, series, sensor]
 
-    def get_time_length(self):
+    def get_data_shape(self):
+        height = -1
+        width = -1
         time_count = -1
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             for datapath in self.paths[defs.Parameters.Path.H5PATH]:
-                _, _, time_count = file_[datapath].shape
+                height, width, time_count = file_[datapath].shape
                 
                 if time_count == -1:
                     time_count = time_count
                 else:
                     time_count = min(time_count, time_count)
 
-        return time_count
+        return [height, width, time_count]
