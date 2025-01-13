@@ -32,11 +32,12 @@ class Suite2pParameters:
         # Suite2p Registration Settings
         self.ops['batch_size']        = 100 # Decrease the batch_size in case low RAM on computer
         self.ops['smooth_sigma']      = 4   # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
+        self.ops['nimg_init']         = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
     
         # Suite2p 1P registration
-        self.ops['1Preg']             = True # High-pass spatial filtering and tapering, which help with 1P registration
-        self.ops['spatial_hp_reg']    = 42   # Window in pixels for spatial high-pass filtering before registration
-        self.ops['pre_smooth']        = self.params['CellDiameter'] - self.params['CellDiameter'] % 2 # STD of Gaussian smoothing, which is applied before spatial high-pass filtering (need to be even)
+        self.ops['1Preg']             = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
+        self.ops['spatial_hp_reg']    = self.params.get("HighPassFilterWindow", 2.8) * self.params['CellDiameter']# Window in pixels for spatial high-pass filtering before registration
+        self.ops['spatial_taper']     = 0.3 * max(height, width)
 
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
@@ -45,6 +46,9 @@ class Suite2pParameters:
         self.ops['anatomical_only']   = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
         self.ops['diameter']          = self.params['CellDiameter'] # Diameter that will be used for Cellpose
         self.ops['flow_threshold']    = 0.4 # Flow threshold that will be used for cellpose
+
+        # Classification Settings
+        self.ops['use_builtin_classifier'] = True
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
