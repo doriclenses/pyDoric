@@ -36,8 +36,10 @@ class Suite2pParameters:
     
         # Suite2p 1P registration
         self.ops['1Preg']             = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
-        self.ops['spatial_hp_reg']    = self.params.get("HighPassFilterWindow", 2.8) * self.params['CellDiameter']# Window in pixels for spatial high-pass filtering before registration
-        self.ops['spatial_taper']     = 0.3 * max(height, width)
+        if self.ops['1Preg']:
+            self.ops['spatial_hp_reg']    = int(self.params["HighPassFilter"] * self.params['CellDiameter']) # Window in pixels for spatial high-pass filtering before registration
+            self.ops['spatial_hp_reg']    -= self.ops['spatial_hp_reg']%2 # Make it even number
+            self.ops['spatial_taper']     = 0.3 * max(height, width) # How many pixels to ignore on edges - they are set to zero
 
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
