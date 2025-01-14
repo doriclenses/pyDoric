@@ -9,7 +9,13 @@ for package in mock_packages:
     sys.modules[package] = Mock()
 
 sys.path.append("..")
-os.add_dll_directory(os.path.abspath(f"{os.getcwd()}\\..\\..\\..\\DNAMainApp\\Libraries\\pythondlls"))
+path_dev = os.path.abspath(f"{os.getcwd()}\\..\\..\\..\\DNAMainApp\\Libraries\\pythondlls")
+path_re  = os.path.abspath(f"{os.getcwd()}\\libraries\\pythondlls")
+
+if os.path.exists(path_dev):
+    os.add_dll_directory(path_dev)
+elif os.path.exists(path_re):
+    os.add_dll_directory(path_re)
 
 # needed but not directly used
 import h5py
