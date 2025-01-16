@@ -15,8 +15,10 @@ class DoricFile:
     """
 
     class Group:
+        MEAN_IMAGE         = "MeanImage"
+        MEDIAN_FILTER_MEAN = "MedianFilteredMeanImage"
+        CORRELATION_MAP    = "CorrelationMap"
+        MAX_PROJECTION     = "MaxProjection"
+
         ROISIGNALS = "Suite2pROISignals"
-        MEAMIMG    = "Suite2pMeanImg"
-        MEAMIMGE   = "Suite2pMeanImgE"
-        VCORR      = "Suite2pVcorr"
         SPIKES     = "Suite2pSpikes"

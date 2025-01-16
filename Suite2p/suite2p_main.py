@@ -117,19 +117,16 @@ def save_suite2p_to_doric(
 
     params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operation_count
 
-    meanImg_seriespath  = f"{vpath}/{s2p_defs.DoricFile.Group.MEAMIMG+operation_count}/{series}"
-    meanImgE_seriespath = f"{vpath}/{s2p_defs.DoricFile.Group.MEAMIMGE+operation_count}/{series}"
-    vcoor_seriespath    = f"{vpath}/{s2p_defs.DoricFile.Group.VCORR+operation_count}/{series}"
-
     rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operation_count}"
     rois_seriespath  = f"{rois_grouppath}/{series}"
 
     spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operation_count}"
     spikes_seriespath  = f"{spikes_grouppath}/{series}"
 
-    meanImg  = split_by_plane(ops['meanImg'], len(plane_IDs))
-    meanImgE = split_by_plane(ops['meanImgE'], len(plane_IDs))
-    Vcorr    = split_by_plane(ops['Vcorr'], len(plane_IDs))
+    mean_image      = split_by_plane(ops['meanImg'], len(plane_IDs))
+    median_filter   = split_by_plane(ops['meanImgE'], len(plane_IDs))
+    correlation_map = split_by_plane(ops['Vcorr'], len(plane_IDs))
+    max_projection  = split_by_plane(ops['max_proj'], len(plane_IDs))
 
     print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
     for plane_index, plane_ID in enumerate(plane_IDs):
@@ -146,10 +143,11 @@ def save_suite2p_to_doric(
             spikes_path = f"{spikes_seriespath}/{sensor}"
             del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
         else:
-            height, width = meanImg[plane_index].shape
-            file_.create_dataset(f"{meanImg_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImg[plane_index], dtype = "float64", chunks=True)
-            file_.create_dataset(f"{meanImgE_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImgE[plane_index], dtype = "float64", chunks=True)
-            file_.create_dataset(f"{vcoor_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = Vcorr[plane_index], dtype = "float64", chunks=True)
+            height, width = mean_image[plane_index].shape
+            file_.create_dataset(f"{s2p_defs.DoricFile.Group.MEAN_IMAGE}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = mean_image[plane_index], dtype = "float64", chunks=True)
+            file_.create_dataset(f"{s2p_defs.DoricFile.Group.MEDIAN_FILTER_MEAN}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = median_filter[plane_index], dtype = "float64", chunks=True)
+            file_.create_dataset(f"{s2p_defs.DoricFile.Group.CORRELATION_MAP}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = correlation_map[plane_index], dtype = "float64", chunks=True)
+            file_.create_dataset(f"{s2p_defs.DoricFile.Group.MAX_PROJECTION}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = max_projection[plane_index], dtype = "float64", chunks=True)
             
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
