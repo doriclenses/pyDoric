@@ -147,9 +147,9 @@ def save_suite2p_to_doric(
             del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
         else:
             height, width = meanImg[plane_index].shape
-            file_.create_dataset(f"{meanImg_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImg[plane_index], dtype = "float64", chunks=(height, width))
-            file_.create_dataset(f"{meanImgE_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImgE[plane_index], dtype = "float64", chunks=(height, width))
-            file_.create_dataset(f"{vcoor_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = Vcorr[plane_index], dtype = "float64", chunks=(height, width))
+            file_.create_dataset(f"{meanImg_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImg[plane_index], dtype = "float64", chunks=True)
+            file_.create_dataset(f"{meanImgE_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = meanImgE[plane_index], dtype = "float64", chunks=True)
+            file_.create_dataset(f"{vcoor_seriespath}/{sensor}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = Vcorr[plane_index], dtype = "float64", chunks=True)
             
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
