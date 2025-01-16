@@ -13,12 +13,12 @@ class DoricFile:
     """
     Names of the .doric file structue
     """
-
-    class Group:
+    class Dataset:
         MEAN_IMAGE         = "MeanImage"
         MEDIAN_FILTER_MEAN = "MedianFilteredMeanImage"
         CORRELATION_MAP    = "CorrelationMap"
         MAX_PROJECTION     = "MaxProjection"
 
+    class Group:
         ROISIGNALS = "Suite2pROISignals"
         SPIKES     = "Suite2pSpikes"

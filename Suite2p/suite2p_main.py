@@ -117,16 +117,16 @@ def save_suite2p_to_doric(
 
     params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operation_count
 
-    rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS+operation_count}"
-    rois_seriespath  = f"{rois_grouppath}/{series}"
-
-    spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operation_count}"
-    spikes_seriespath  = f"{spikes_grouppath}/{series}"
-
     mean_image      = split_by_plane(ops['meanImg'], len(plane_IDs))
     median_filter   = split_by_plane(ops['meanImgE'], len(plane_IDs))
     correlation_map = split_by_plane(ops['Vcorr'], len(plane_IDs))
     max_projection  = split_by_plane(ops['max_proj'], len(plane_IDs))
+
+    height, width , _ = mean_image.shape
+    file_.create_dataset(s2p_defs.DoricFile.Dataset.MEAN_IMAGE, data = mean_image, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.DoricFile.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.DoricFile.Dataset.CORRELATION_MAP, data = correlation_map, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.DoricFile.Dataset.MAX_PROJECTION, data = max_projection, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
 
     print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
     for plane_index, plane_ID in enumerate(plane_IDs):
@@ -135,20 +135,14 @@ def save_suite2p_to_doric(
         attrs = {"Unit": "AU",
                  defs.DoricFile.Attribute.Dataset.PLANE_ID: plane_ID}
         
-        rois_path   = f"{rois_seriespath}/{sensor}-P{plane_ID}"
-        spikes_path = f"{spikes_seriespath}/{sensor}-P{plane_ID}"
+        rois_path   = f"{s2p_defs.DoricFile.Group.ROISIGNALS}/P{plane_ID}"
+        spikes_path = f"{s2p_defs.DoricFile.Group.SPIKES}/P{plane_ID}"
 
         if plane_ID == -1:
-            rois_path   = f"{rois_seriespath}/{sensor}"
-            spikes_path = f"{spikes_seriespath}/{sensor}"
+            rois_path   = f"{s2p_defs.DoricFile.Group.ROISIGNALS}/{sensor}"
+            spikes_path = f"{s2p_defs.DoricFile.Group.SPIKES}/{sensor}"
             del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
-        else:
-            height, width = mean_image[plane_index].shape
-            file_.create_dataset(f"{s2p_defs.DoricFile.Group.MEAN_IMAGE}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = mean_image[plane_index], dtype = "float64", chunks=True)
-            file_.create_dataset(f"{s2p_defs.DoricFile.Group.MEDIAN_FILTER_MEAN}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = median_filter[plane_index], dtype = "float64", chunks=True)
-            file_.create_dataset(f"{s2p_defs.DoricFile.Group.CORRELATION_MAP}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = correlation_map[plane_index], dtype = "float64", chunks=True)
-            file_.create_dataset(f"{s2p_defs.DoricFile.Group.MAX_PROJECTION}/{defs.DoricFile.Dataset.IMAGE_STACK}P{plane_ID}", data = max_projection[plane_index], dtype = "float64", chunks=True)
-            
+        
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
                                time_         = time_[plane_index],
@@ -166,20 +160,6 @@ def save_suite2p_to_doric(
                            dataset_names = [dataset_names[i] for i in cell_indexs],
                            usernames     = [usernames[i] for i in cell_indexs],
                            attrs         = attrs)
-    
-    for seriespath in [meanImg_seriespath, meanImgE_seriespath, vcoor_seriespath]:
-        if seriespath in file_:
-            utils.print_group_path_for_DANSE(f"{seriespath}/{sensor}")
-
-    utils.save_attributes(utils.merge_params(params_doric, params_source), file_, rois_grouppath)
-    if rois_seriespath in file_:
-        for plane_sensor in file_[rois_seriespath].keys():
-            utils.print_group_path_for_DANSE(f"{rois_seriespath}/{plane_sensor}")
-        
-    utils.save_attributes(utils.merge_params(params_doric, params_source), file_, spikes_grouppath)
-    if spikes_seriespath in file_:
-        for plane_sensor in file_[spikes_seriespath].keys():
-            utils.print_group_path_for_DANSE(f"{spikes_seriespath}/{plane_sensor}")
 
     file_.close()
 
@@ -190,7 +170,7 @@ def correct_spikes_values(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
 
     return spikes
 
-def split_by_plane(suite2p_image: np.ndarray, plane_count: int) -> list[np.ndarray]:
+def split_by_plane(suite2p_image: np.ndarray, plane_count: int) -> np.ndarray:
     hight, width = suite2p_image.shape
     
     hight_split = np.ceil(plane_count/2)
@@ -202,4 +182,4 @@ def split_by_plane(suite2p_image: np.ndarray, plane_count: int) -> list[np.ndarr
                               n%2*int(width/width_split) : (n%2 + 1)*int(width/width_split)]
         images.append(image)
 
-    return images
+    return np.moveaxis(np.array(images), 0, -1)
