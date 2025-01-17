@@ -9,9 +9,10 @@ class Messages:
     SAVING_SPIKES      = "Saving Spikes"
     ROI_NAMES          = "Generating ROI names"
 
-class DoricFile:
+
+class Preview:
     """
-    Names of the .doric file structue
+    Names of preview file structue
     """
     class Dataset:
         MEAN_IMAGE         = "MeanImage"
@@ -19,6 +20,11 @@ class DoricFile:
         CORRELATION_MAP    = "CorrelationMap"
         MAX_PROJECTION     = "MaxProjection"
 
+
+class DoricFile:
+    """
+    Names of the .doric file structue
+    """
     class Group:
         ROISIGNALS = "Suite2pROISignals"
         SPIKES     = "Suite2pSpikes"

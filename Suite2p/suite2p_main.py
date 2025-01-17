@@ -123,10 +123,10 @@ def save_suite2p_to_doric(
     max_projection  = split_by_plane(ops['max_proj'], len(plane_IDs))
 
     height, width , _ = mean_image.shape
-    file_.create_dataset(s2p_defs.DoricFile.Dataset.MEAN_IMAGE, data = mean_image, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
-    file_.create_dataset(s2p_defs.DoricFile.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
-    file_.create_dataset(s2p_defs.DoricFile.Dataset.CORRELATION_MAP, data = correlation_map, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
-    file_.create_dataset(s2p_defs.DoricFile.Dataset.MAX_PROJECTION, data = max_projection, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MEAN_IMAGE, data = mean_image, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.CORRELATION_MAP, data = correlation_map, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MAX_PROJECTION, data = max_projection, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
 
     print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
     for plane_index, plane_ID in enumerate(plane_IDs):
