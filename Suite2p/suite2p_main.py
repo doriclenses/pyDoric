@@ -47,7 +47,7 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     save_suite2p_to_doric(
         output_ops      = output_ops,
         time_           = time_,
-        doric_file_name = suite2p_params.paths[defs.Parameters.Preview.FILEPATH] if not suite2p_params.is_microscope else suite2p_params.paths[defs.Parameters.Path.FILEPATH],
+        doric_file_name = suite2p_params.paths[defs.Parameters.Preview.FILEPATH],
         vpath           = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
         series          = series,
         sensor          = sensor,
@@ -107,10 +107,7 @@ def save_suite2p_to_doric(
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
-    if (plane_IDs == [-1]):
-        file_ = h5py.File(doric_file_name, 'a')
-    else:
-        file_ = h5py.File(doric_file_name, 'w')
+    file_ = h5py.File(doric_file_name, 'w')
 
     # Check if Suite2p results already exist
     operation_count = utils.operation_count(vpath, file_, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
