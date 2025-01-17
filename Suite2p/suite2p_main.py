@@ -110,15 +110,12 @@ def save_suite2p_to_doric(
     file_ = h5py.File(doric_file_name, 'w')
 
     # Check if Suite2p results already exist
-    operation_count = utils.operation_count(vpath, file_, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
-
-    params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operation_count
-
     mean_image      = split_by_plane(ops['meanImg'], len(plane_IDs))
     median_filter   = split_by_plane(ops['meanImgE'], len(plane_IDs))
     correlation_map = split_by_plane(ops['Vcorr'], len(plane_IDs))
     max_projection  = split_by_plane(ops['max_proj'], len(plane_IDs))
 
+    print(s2p_defs.Messages.SAVING_IMAGES, flush=True)
     height, width , _ = mean_image.shape
     file_.create_dataset(s2p_defs.Preview.Dataset.MEAN_IMAGE, data = mean_image, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
     file_.create_dataset(s2p_defs.Preview.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
@@ -129,22 +126,13 @@ def save_suite2p_to_doric(
     for plane_index, plane_ID in enumerate(plane_IDs):
         cell_indexs = [i for i, stat in enumerate(stats) if stat["iplane"] == plane_index]
 
-        attrs = {"Unit": "AU",
-                 defs.DoricFile.Attribute.Dataset.PLANE_ID: plane_ID}
-        
-        rois_path   = f"{s2p_defs.DoricFile.Group.ROISIGNALS}/P{plane_ID}"
-        spikes_path = f"{s2p_defs.DoricFile.Group.SPIKES}/P{plane_ID}"
-
-        if plane_ID == -1:
-            rois_path   = f"{s2p_defs.DoricFile.Group.ROISIGNALS}/{sensor}"
-            spikes_path = f"{s2p_defs.DoricFile.Group.SPIKES}/{sensor}"
-            del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
+        attrs = {defs.DoricFile.Attribute.Dataset.PLANE_ID: plane_ID}
         
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
                                time_         = time_[plane_index],
                                file_         = file_,
-                               path          = rois_path,
+                               path          = s2p_defs.Preview.Group.ROISIGNALS,
                                ids           = [ids[i] for i in cell_indexs],
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
@@ -153,7 +141,7 @@ def save_suite2p_to_doric(
         utils.save_signals(signals        = spikes[cell_indexs, :],
                            time_         = time_[plane_index],
                            file_         = file_,
-                           path          = spikes_path,
+                           path          = s2p_defs.Preview.Group.SPIKES,
                            dataset_names = [dataset_names[i] for i in cell_indexs],
                            usernames     = [usernames[i] for i in cell_indexs],
                            attrs         = attrs)
