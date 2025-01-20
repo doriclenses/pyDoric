@@ -83,11 +83,7 @@ def save_suite2p_to_doric(
     f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
     spks        = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
     ops         = np.load(Path(output_ops['save_path']).joinpath('ops.npy'), allow_pickle=True).item()
-
-    stats   = stats[iscell]
-    f_cells = f_cells[iscell, :]
-    spks    = spks[iscell, :]
-     
+  
     n_cells = len(stats)
     Ly = output_ops["Ly"]
     Lx = output_ops["Lx"]
@@ -105,7 +101,7 @@ def save_suite2p_to_doric(
     print(s2p_defs.Messages.ROI_NAMES, flush = True)
     ids           = [i + 1 for i in range(n_cells)]
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
-    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
+    usernames     = [int(cell) for cell in iscell]
 
     file_ = h5py.File(doric_file_name, 'w')
 
@@ -132,7 +128,7 @@ def save_suite2p_to_doric(
                                footprints    = footprints[cell_indexs, :, :],
                                time_         = time_[plane_index],
                                file_         = file_,
-                               path          = s2p_defs.Preview.Group.ROISIGNALS,
+                               path          = f"{s2p_defs.Preview.Group.ROISIGNALS}/P{plane_ID}",
                                ids           = [ids[i] for i in cell_indexs],
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
@@ -141,7 +137,7 @@ def save_suite2p_to_doric(
         utils.save_signals(signals        = spikes[cell_indexs, :],
                            time_         = time_[plane_index],
                            file_         = file_,
-                           path          = s2p_defs.Preview.Group.SPIKES,
+                           path          = f"{s2p_defs.Preview.Group.SPIKES}/P{plane_ID}",
                            dataset_names = [dataset_names[i] for i in cell_indexs],
                            usernames     = [usernames[i] for i in cell_indexs],
                            attrs         = attrs)
