@@ -193,7 +193,7 @@ def save_roi_signals(
     ids: List[int] = [],
     dataset_names: List[str] = [],
     usernames: List[str] = [],
-    other_attrs: list[dict] = [],
+    other_attrs: List[dict] = [],
     common_attrs: Optional[dict] = {}
     ):
 
