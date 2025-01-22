@@ -795,7 +795,7 @@ def save_minian_to_doric(
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
         utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
-                                ids            = ids,
+                                ids            = list(ids),
                                 dataset_names  = dataset_names,
                                 usernames      = usernames,
                                 common_attrs   = attrs)

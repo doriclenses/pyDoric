@@ -100,7 +100,7 @@ def get_frequency(
 def get_dims(
     file_: Union[h5py.File, str],
     path: str
-    ) -> Tuple[Tuple[int, int], int]:
+    ) -> Tuple[Tuple[int, ...], int]:
 
     path = clean_path(path)
 
@@ -128,7 +128,7 @@ def get_dims(
 #*************************************************************** SAVE FUNCTIONS ********************************************
 def save_images(
     images: np.ndarray,
-    time_: np.array,
+    time_: np.ndarray,
     f: h5py.File,
     path: str,
     bit_count: int = 16,
@@ -190,9 +190,9 @@ def save_roi_signals(
     time_: np.ndarray,
     file_: h5py.File,
     path: str,
-    ids: list[int] = [],
-    dataset_names: list[str] = [],
-    usernames: list[str] = [],
+    ids: List[int] = [],
+    dataset_names: List[str] = [],
+    usernames: List[str] = [],
     other_attrs: list[dict] = [],
     common_attrs: Optional[dict] = {}
     ):
@@ -245,8 +245,8 @@ def save_signals(
     time_: np.ndarray,
     file_: h5py.File,
     path: str,
-    dataset_names: list[str],
-    usernames: Optional[list[str]] = [],
+    dataset_names: List[str],
+    usernames: Optional[List[str]] = [],
     attrs: Optional[dict] = {}
     ):
 
@@ -261,7 +261,7 @@ def save_signals(
 
 
 def save_signal(
-    signal: np.array,
+    signal: np.ndarray,
     f: h5py.File,
     path: str,
     attrs: Optional[dict] = None
@@ -291,8 +291,8 @@ def save_attributes(
 
 
 def footprint_to_coords(
-    footprint: np.array
-    ) -> np.array:
+    footprint: np.ndarray
+    ) -> np.ndarray:
 
     _, mask = cv2.threshold(footprint, 0, 255, 0)
     contours, _ = cv2.findContours(mask.astype("uint8"), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
