@@ -101,7 +101,7 @@ def save_suite2p_to_doric(
     print(s2p_defs.Messages.ROI_NAMES, flush = True)
     ids           = [i + 1 for i in range(n_cells)]
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
-    usernames     = [int(cell) for cell in iscell]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
     file_ = h5py.File(doric_file_name, 'w')
 
@@ -132,7 +132,8 @@ def save_suite2p_to_doric(
                                ids           = [ids[i] for i in cell_indexs],
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
-                               attrs         = attrs)
+                               other_attrs   = [{"isCell": int(iscell[i])} for i in cell_indexs],
+                               common_attrs  = attrs)
             
         utils.save_signals(signals        = spikes[cell_indexs, :],
                            time_         = time_[plane_index],

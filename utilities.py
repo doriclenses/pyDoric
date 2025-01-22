@@ -193,7 +193,8 @@ def save_roi_signals(
     ids: list[int] = [],
     dataset_names: list[str] = [],
     usernames: list[str] = [],
-    attrs: Optional[dict] = {}
+    other_attrs: list[dict] = [],
+    common_attrs: Optional[dict] = {}
     ):
 
     """
@@ -227,8 +228,11 @@ def save_roi_signals(
             defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames else defs.DoricFile.Dataset.ROI.format(id_)
         }
 
-        if attrs:
-            roi_attrs = {**roi_attrs, **attrs}
+        if other_attrs:
+            roi_attrs.update(other_attrs[i])
+
+        if common_attrs:
+            roi_attrs = {**roi_attrs, **common_attrs}
 
         dataset_name = dataset_names[i] if dataset_names else defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4))
         save_signal(signals[i], file_, f"{path}/{dataset_name}", roi_attrs)
