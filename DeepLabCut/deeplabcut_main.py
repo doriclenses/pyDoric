@@ -117,17 +117,11 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
 
     # Save extracted frames used for labeling as .png
     cap = cv2.VideoCapture(video_path)
-    frame_index = 0
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break 
-        
-        if frame_index in extracted_frames: 
-            # Save the frame as a PNG file
-            frame_filename = f'{labeled_data_path}/img{frame_index}.png'
-            cv2.imwrite(frame_filename, frame)
-        frame_index += 1
+    for frame in extracted_frames:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
+        ret, img = cap.read()
+        frame_filename = f'{labeled_data_path}/img{frame}.png'
+        cv2.imwrite(frame_filename, img)
 
     cap.release() 
     cv2.destroyAllWindows()
