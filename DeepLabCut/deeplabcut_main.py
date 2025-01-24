@@ -37,7 +37,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     
     shuffle_nums = len(training_dataset_info)
     shuffle_index_start = training_dataset_info[0][1]
-    shuffles = [shuffle_index_start + i for i in range(shuffle_nums)]
+    shuffles = list(range(shuffle_index_start, shuffle_index_start + shuffle_nums))
 
     for shuffle_index in shuffles:
         update_pytorch_config_file(config_file_path, shuffle_index) 
