@@ -50,7 +50,7 @@ class Suite2pParameters:
         self.ops['flow_threshold']    = 0.4 # Flow threshold that will be used for cellpose
 
         # Classification Settings
-        self.ops['use_builtin_classifier'] = True
+        self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
