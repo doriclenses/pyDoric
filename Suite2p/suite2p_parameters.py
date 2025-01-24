@@ -39,7 +39,7 @@ class Suite2pParameters:
         if self.ops['1Preg']:
             self.ops['spatial_hp_reg']    = int(self.params["HighPassFilter"] * self.params['CellDiameter']) # Window in pixels for spatial high-pass filtering before registration
             self.ops['spatial_hp_reg']    -= self.ops['spatial_hp_reg']%2 # Make it even number
-            self.ops['spatial_taper']     = 0.3 * min(height, width) # How many pixels to ignore on edges - they are set to zero
+            self.ops['spatial_taper']     = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
 
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
