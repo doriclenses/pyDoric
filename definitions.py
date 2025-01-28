@@ -77,6 +77,7 @@ class Parameters:
         TMP_DIR  = "TmpDir"
         FILEPATH = "Filepath"
         H5PATH   = "HDF5Path"
+        EXP_FILE = "ExperimentFile"
 
 
     class danse:

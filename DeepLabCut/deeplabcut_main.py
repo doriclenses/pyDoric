@@ -25,7 +25,8 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     """
     # Read danse parameters 
     filepaths: str = deeplabcut_params.paths[defs.Parameters.Path.FILEPATH]
-    datapaths: str = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
+    datapath: str  = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
+    expFile:  str  = deeplabcut_params.paths[defs.Parameters.Path.EXP_FILE]
 
     project_folder: str    = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
     bodypart_names: list   = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
@@ -33,32 +34,32 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     frames_to_extract: int = deeplabcut_params.params[dlc_defs.Parameters.danse.FRAMES_TO_EXTRACT]
 
     # Create project and train network
-    video_paths, config_file_path = create_project(filepaths, datapaths, project_folder, bodypart_names, frames_to_extract, extracted_frames, deeplabcut_params.params)
+    video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, deeplabcut_params.params)
     deeplabcut.create_training_dataset(config_file_path)
     deeplabcut.train_network(config_file_path)
     deeplabcut.evaluate_network(config_file_path)
  
     # Analyze video and save the result
     deeplabcut.analyze_videos(config_file_path, video_paths, destfolder = os.path.dirname(config_file_path))
-    save_coords_to_doric(filepaths, datapaths, os.path.dirname(config_file_path), deeplabcut_params) 
+    save_coords_to_doric(filepaths, datapath, os.path.dirname(config_file_path), deeplabcut_params) 
 
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
     print("hello preview")
 
 
-def create_project(filepaths, datapaths, project_folder, bodypart_names, frames_to_extract, extracted_frames, params):
+def create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, params):
     """
     Create DeepLabCut project folder with config file and labeled data
     """
 
-    filename = filepaths.pop() if len(filepaths) > 1 else filepaths[0]
+    filename = expFile if len(filepaths) > 1 else filepaths[0]
     task = os.path.splitext(os.path.basename(filename))[0]
     user = "danse"
     video_paths = []
-    for i,filepath in enumerate(filepaths):
+    for i, filepath in enumerate(filepaths):
         with h5py.File(filepath, 'r') as file_:
-            relative_path = file_[datapaths[i]].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
+            relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
             video_paths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
 
     config_file_path = deeplabcut.create_new_project(task, user, video_paths, project_folder, copy_videos = False)
@@ -130,21 +131,20 @@ def create_labeled_data(config_file_path, frames_to_extract, extracted_frames, b
         cap.release() 
         cv2.destroyAllWindows()
 
-def save_coords_to_doric(filepaths, datapaths, output_path, deeplabcut_params: dlc_params.DeepLabCutParameters):
+def save_coords_to_doric(filepaths, datapath, output_path, deeplabcut_params: dlc_params.DeepLabCutParameters):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
-    print(dlc_defs.Messages.SAVING_TO_DORIC, flush=True)
 
+    print(dlc_defs.Messages.SAVING_TO_DORIC, flush=True)
+    
     bodypart_names  = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     bodypart_colors = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
 
-
-    for i, datapath in enumerate(datapaths):
-        file_ = h5py.File(filepaths[i], 'a')
-
+    for file_name in filepaths:
+        file_ = h5py.File(file_name, 'a')
         # Define correct path for saving operaion results
-        group_names = deeplabcut_params.get_h5path_names(i)
+        group_names = deeplabcut_params.get_h5path_names()
         _, _, _, series, video_name = group_names
         group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
     
@@ -153,13 +153,13 @@ def save_coords_to_doric(filepaths, datapaths, output_path, deeplabcut_params: d
         operation_path  = f'{group_path}/{operation_name+operation_count}'
     
         # Save time
-        time_ = np.array(file_[f"{datapaths[i]}/{defs.DoricFile.Dataset.TIME}"])
+        time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
         time_path = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
         if time_path not in file_:
             file_.create_dataset(time_path, data=time_)
 
         # Save operation attributes
-        deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapaths[i]
+        deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
         utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
 
         # Save coordinates for each body part
@@ -169,16 +169,16 @@ def save_coords_to_doric(filepaths, datapaths, output_path, deeplabcut_params: d
         for index, bodypart_name in enumerate(bodypart_names):
             coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
 
-            datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
-            if datapath in file_: 
-                del file_[datapath] # Remove existing dataset if it exists 
+            coord_datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
+            if coord_datapath in file_: 
+                del file_[coord_datapath] # Remove existing dataset if it exists 
 
-            file_.create_dataset(datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords.shape), maxshape=(h5py.UNLIMITED, 2))
+            file_.create_dataset(coord_datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords.shape), maxshape=(h5py.UNLIMITED, 2))
             attrs = {
                 defs.DoricFile.Attribute.Dataset.USERNAME: bodypart_name,
                 defs.DoricFile.Attribute.Dataset.COLOR   : bodypart_colors[index]
             }
-            utils.save_attributes(attrs, file_, datapath)
+            utils.save_attributes(attrs, file_, coord_datapath)
 
         utils.print_group_path_for_DANSE(operation_path)
     
