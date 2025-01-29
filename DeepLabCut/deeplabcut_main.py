@@ -35,13 +35,16 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     # Create project and train network
     video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, deeplabcut_params.params)
-    deeplabcut.create_training_dataset(config_file_path)
+
+    training_dataset_info = deeplabcut.create_training_dataset(config_file_path)
+    shuffle_index = training_dataset_info[0][1]
+
     deeplabcut.train_network(config_file_path)
     deeplabcut.evaluate_network(config_file_path)
  
     # Analyze video and save the result
     deeplabcut.analyze_videos(config_file_path, video_paths, destfolder = os.path.dirname(config_file_path))
-    save_coords_to_doric(filepaths, datapath, os.path.dirname(config_file_path), deeplabcut_params) 
+    save_coords_to_doric(filepaths, datapath, os.path.dirname(config_file_path), deeplabcut_params, config_file_path, shuffle_index) 
 
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -131,7 +134,7 @@ def create_labeled_data(config_file_path, frames_to_extract, extracted_frames, b
         cap.release() 
         cv2.destroyAllWindows()
 
-def save_coords_to_doric(filepaths, datapath, output_path, deeplabcut_params: dlc_params.DeepLabCutParameters):
+def save_coords_to_doric(filepaths, datapath, output_path, deeplabcut_params: dlc_params.DeepLabCutParameters, config_file_path, shuffle_index):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
@@ -145,10 +148,10 @@ def save_coords_to_doric(filepaths, datapath, output_path, deeplabcut_params: dl
         file_ = h5py.File(file_name, 'a')
         # Define correct path for saving operaion results
         group_names = deeplabcut_params.get_h5path_names()
-        _, _, _, series, video_name = group_names
+        _, _, _, series, video_group_name = group_names
         group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
     
-        operation_name  = f"{video_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
+        operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
         operation_count = utils.operation_count(group_path, file_, operation_name, deeplabcut_params.params, {})    
         operation_path  = f'{group_path}/{operation_name+operation_count}'
     
@@ -163,8 +166,35 @@ def save_coords_to_doric(filepaths, datapath, output_path, deeplabcut_params: dl
         utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
 
         # Save coordinates for each body part
-        h5_file1 = glob.glob(os.path.join(output_path, '*.h5'))[0]
-        df_coords = pd.read_hdf(h5_file1)
+        root_path   = os.path.dirname(config_file_path)
+        target_file = 'pytorch_config.yaml'
+
+        # get info from configFile
+        with open(config_file_path, 'r') as file:
+            dataConfig = yaml.safe_load(file)
+        task  = dataConfig['Task']
+        date  = dataConfig['date']
+        trainset   = int(dataConfig['TrainingFraction'][0] * 100)
+        iterations = dataConfig['iteration']
+
+        folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle_index}'
+        dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
+        pytorch_config_file_path = os.path.join(dir_path, target_file)
+
+        # get info from Pytorch configFile
+        with open(pytorch_config_file_path, 'r') as file:
+            data = yaml.safe_load(file)
+        model = data['net_type'].replace("_", "").capitalize()
+        epochs = data['train_settings']['epochs']
+
+        relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
+        video_path = os.path.join(os.path.dirname(file_name), relative_path.lstrip('/'))
+        video_name = os.path.splitext(os.path.basename(video_path))[0]
+
+        # get coords data from hdf file using info (above) from config and pytorch config file
+        hdf_data_file = f'{video_name}DLC_{model}_{task}{date}shuffle{shuffle_index}_snapshot_{epochs}.h5'
+        hdf_data_file = os.path.join(root_path, hdf_data_file)
+        df_coords = pd.read_hdf(hdf_data_file)
 
         for index, bodypart_name in enumerate(bodypart_names):
             coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
