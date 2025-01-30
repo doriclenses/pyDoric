@@ -21,7 +21,7 @@ class Suite2pParameters:
         self.params: dict         = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params: dict = danse_params.get(defs.Parameters.Main.PREVIEW, {})
         self.is_microscope: bool  = danse_params.pop(defs.Parameters.Main.IS_MICROSCOPE, False)
-        self.time_length: int     = self.get_time_length()
+        height, width, self.time_length = self.get_data_shape()
         
         self.ops = suite2p.default_ops() # https://suite2p.readthedocs.io/en/latest/settings.html#
         # Suite2p Main Settings
@@ -32,11 +32,14 @@ class Suite2pParameters:
         # Suite2p Registration Settings
         self.ops['batch_size']        = 100 # Decrease the batch_size in case low RAM on computer
         self.ops['smooth_sigma']      = 4   # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
+        self.ops['nimg_init']         = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
     
         # Suite2p 1P registration
-        self.ops['1Preg']             = True # High-pass spatial filtering and tapering, which help with 1P registration
-        self.ops['spatial_hp_reg']    = 42   # Window in pixels for spatial high-pass filtering before registration
-        self.ops['pre_smooth']        = self.params['CellDiameter'] - self.params['CellDiameter'] % 2 # STD of Gaussian smoothing, which is applied before spatial high-pass filtering (need to be even)
+        self.ops['1Preg']             = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
+        if self.ops['1Preg']:
+            spatial_hp_reg = 2.8 * self.params['CellDiameter']
+            self.ops['spatial_hp_reg']    = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
+            self.ops['spatial_taper']     = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
 
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
@@ -45,6 +48,9 @@ class Suite2pParameters:
         self.ops['anatomical_only']   = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
         self.ops['diameter']          = self.params['CellDiameter'] # Diameter that will be used for Cellpose
         self.ops['flow_threshold']    = 0.4 # Flow threshold that will be used for cellpose
+
+        # Classification Settings
+        self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
@@ -75,15 +81,17 @@ class Suite2pParameters:
 
         return [data, driver, operation, series, sensor]
 
-    def get_time_length(self):
+    def get_data_shape(self):
+        height = -1
+        width = -1
         time_count = -1
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             for datapath in self.paths[defs.Parameters.Path.H5PATH]:
-                _, _, time_count = file_[datapath].shape
+                height, width, time_count = file_[datapath].shape
                 
                 if time_count == -1:
                     time_count = time_count
                 else:
                     time_count = min(time_count, time_count)
 
-        return time_count
+        return [height, width, time_count]
