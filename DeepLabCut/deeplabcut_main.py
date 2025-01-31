@@ -42,8 +42,8 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     # Analyze video and save the result
     deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path), shuffle = shuffle_index)
-    save_coords_to_doric(filepath, datapath, os.path.dirname(config_file_path), deeplabcut_params.params,
-                         config_file_path, shuffle_index, group_names = deeplabcut_params.get_h5path_names())
+    save_coords_to_doric(filepath, datapath, deeplabcut_params.params, config_file_path,
+                         shuffle_index, group_names = deeplabcut_params.get_h5path_names())
 
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -161,7 +161,7 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
     cap.release() 
     cv2.destroyAllWindows()
 
-def save_coords_to_doric(filepath, datapath, output_path, params, config_file_path, shuffle_index, group_names):
+def save_coords_to_doric(filepath, datapath, params, config_file_path, shuffle_index, group_names):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
