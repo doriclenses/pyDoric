@@ -35,15 +35,15 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     video_path, config_file_path = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params.params)
     training_dataset_info = deeplabcut.create_training_dataset(config_file_path)
     
-    shuffle_index = training_dataset_info[0][1]
-    update_pytorch_config_file(config_file_path, shuffle_index) 
-    deeplabcut.train_network(config_file_path, batch_size=8, shuffle = shuffle_index)
-    deeplabcut.evaluate_network(config_file_path, Shuffles = [shuffle_index])
+    shuffle = training_dataset_info[0][1]
+    update_pytorch_config_file(config_file_path, shuffle) 
+    deeplabcut.train_network(config_file_path, batch_size=8, shuffle = shuffle)
+    deeplabcut.evaluate_network(config_file_path, Shuffles = [shuffle])
 
     # Analyze video and save the result
-    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path), shuffle = shuffle_index)
+    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path), shuffle = shuffle)
     save_coords_to_doric(filepath, datapath, deeplabcut_params.params, config_file_path,
-                         shuffle_index, group_names = deeplabcut_params.get_h5path_names())
+                         shuffle, group_names = deeplabcut_params.get_h5path_names())
 
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -161,7 +161,7 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
     cap.release() 
     cv2.destroyAllWindows()
 
-def save_coords_to_doric(filepath, datapath, params, config_file_path, shuffle_index, group_names):
+def save_coords_to_doric(filepath, datapath, params, config_file_path, shuffle, group_names):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
@@ -200,7 +200,7 @@ def save_coords_to_doric(filepath, datapath, params, config_file_path, shuffle_i
     trainset   = int(dataConfig['TrainingFraction'][0] * 100)
     iterations = dataConfig['iteration']
 
-    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle_index}'
+    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
     dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
     pytorch_config_file_path = os.path.join(dir_path, target_file)
     
@@ -211,7 +211,7 @@ def save_coords_to_doric(filepath, datapath, params, config_file_path, shuffle_i
     epochs = data['train_settings']['epochs']
 
     # get coords data from hdf file using info (above) from config and pytorch config file
-    hdf_data_file = f'{task}DLC_{model}_{task}{date}shuffle{shuffle_index}_snapshot_{epochs}.h5'
+    hdf_data_file = f'{task}DLC_{model}_{task}{date}shuffle{shuffle}_snapshot_{epochs}.h5'
     hdf_data_file = os.path.join(root_path, hdf_data_file)
     df_coords = pd.read_hdf(hdf_data_file)
 
