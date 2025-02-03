@@ -33,14 +33,17 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     # Create project and train network
     video_path, config_file_path = create_project(filepath, datapath, project_folder, bodypart_names, extracted_frames, deeplabcut_params.params)
-    deeplabcut.create_training_dataset(config_file_path)
-    deeplabcut.train_network(config_file_path)
-    deeplabcut.evaluate_network(config_file_path)
- 
+    training_dataset_info = deeplabcut.create_training_dataset(config_file_path)
+    
+    shuffle = training_dataset_info[0][1]
+    update_pytorch_config_file(config_file_path, shuffle) 
+    deeplabcut.train_network(config_file_path, batch_size=8, shuffle = shuffle)
+    deeplabcut.evaluate_network(config_file_path, Shuffles = [shuffle])
+
     # Analyze video and save the result
-    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path))
-    save_coords_to_doric(filepath, datapath, os.path.dirname(config_file_path), deeplabcut_params.params,
-                         group_names = deeplabcut_params.get_h5path_names()) 
+    deeplabcut.analyze_videos(config_file_path, [video_path], destfolder = os.path.dirname(config_file_path), shuffle = shuffle)
+    save_coords_to_doric(filepath, datapath, deeplabcut_params.params, config_file_path,
+                         shuffle, group_names = deeplabcut_params.get_h5path_names())
 
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -74,14 +77,40 @@ def update_config_file(config_file_path, bodypart_names):
     Update label names in the config file
     """
 
-    with open(config_file_path, 'r') as file:
-        data = yaml.safe_load(file)
+    with open(config_file_path, 'r') as cfg:
+        data = yaml.safe_load(cfg)
   
     data['bodyparts'] = bodypart_names
 
-    with open(config_file_path, 'w') as file:
-        yaml.safe_dump(data, file, default_flow_style=False)
+    with open(config_file_path, 'w') as cfg:
+        yaml.safe_dump(data, cfg, default_flow_style=False)
 
+def update_pytorch_config_file(config_file_path, shuffle_index):
+    """
+    Update label names in the pytorch config file
+    """
+    root_path   = os.path.dirname(config_file_path)
+    target_file = 'pytorch_config.yaml'
+
+    # get info from configFile
+    with open(config_file_path, 'r') as file:
+        dataConfig = yaml.safe_load(file)
+    task       = dataConfig['Task']
+    date       = dataConfig['date']
+    trainset   = int(dataConfig['TrainingFraction'][0] * 100)
+    iterations = dataConfig['iteration']
+
+    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle_index}'
+    dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
+    pytorch_config_file_path = os.path.join(dir_path, target_file)
+
+    with open(pytorch_config_file_path, 'r') as file:
+        data = yaml.safe_load(file)
+    data['model']['backbone']['freeze_bn_stats']    = False
+    data['train_settings']['dataloader_pin_memory'] = True
+
+    with open(pytorch_config_file_path, 'w') as file:
+        yaml.safe_dump(data, file, default_flow_style=False)
 
 def create_labeled_data(config_file_path, extracted_frames, bodypart_names, experimenter, params, video_path):
     """
@@ -132,7 +161,7 @@ def create_labeled_data(config_file_path, extracted_frames, bodypart_names, expe
     cap.release() 
     cv2.destroyAllWindows()
 
-def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
+def save_coords_to_doric(filepath, datapath, params, config_file_path, shuffle, group_names):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
@@ -160,10 +189,33 @@ def save_coords_to_doric(filepath, datapath, output_path, params, group_names):
     params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
     utils.save_attributes(utils.merge_params(params_current = params), file_, operation_path)
 
-    # Save coordinates for each body part
-    h5_file1 = glob.glob(os.path.join(output_path, '*.h5'))[0]
-    df_coords = pd.read_hdf(h5_file1)
+    root_path   = os.path.dirname(config_file_path)
+    target_file = 'pytorch_config.yaml'
 
+    # get info from configFile
+    with open(config_file_path, 'r') as file:
+        dataConfig = yaml.safe_load(file)
+    task  = dataConfig['Task']
+    date  = dataConfig['date']
+    trainset   = int(dataConfig['TrainingFraction'][0] * 100)
+    iterations = dataConfig['iteration']
+
+    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
+    dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
+    pytorch_config_file_path = os.path.join(dir_path, target_file)
+    
+    # get info from Pytorch configFile
+    with open(pytorch_config_file_path, 'r') as file:
+        data = yaml.safe_load(file)
+    model = data['net_type'].replace("_", "").capitalize()
+    epochs = data['train_settings']['epochs']
+
+    # get coords data from hdf file using info (above) from config and pytorch config file
+    hdf_data_file = f'{task}DLC_{model}_{task}{date}shuffle{shuffle}_snapshot_{epochs}.h5'
+    hdf_data_file = os.path.join(root_path, hdf_data_file)
+    df_coords = pd.read_hdf(hdf_data_file)
+
+    # Save coordinates for each body part
     for index, bodypart_name in enumerate(bodypart_names):
         coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
 
