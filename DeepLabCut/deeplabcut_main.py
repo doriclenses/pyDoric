@@ -93,14 +93,7 @@ def update_pytorch_config_file(config_file_path, shuffle_index):
     root_path   = os.path.dirname(config_file_path)
     target_file = 'pytorch_config.yaml'
 
-    # get info from configFile
-    with open(config_file_path, 'r') as file:
-        dataConfig = yaml.safe_load(file)
-    task       = dataConfig['Task']
-    date       = dataConfig['date']
-    trainset   = int(dataConfig['TrainingFraction'][0] * 100)
-    iterations = dataConfig['iteration']
-
+    task, date, trainset, iterations = get_info_config_file(config_file_path)
     folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle_index}'
     dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
     pytorch_config_file_path = os.path.join(dir_path, target_file)
@@ -193,14 +186,7 @@ def save_coords_to_doric(filepaths, datapath, deeplabcut_params, config_file_pat
         root_path   = os.path.dirname(config_file_path)
         target_file = 'pytorch_config.yaml'
 
-        # get info from configFile
-        with open(config_file_path, 'r') as file:
-            dataConfig = yaml.safe_load(file)
-        task  = dataConfig['Task']
-        date  = dataConfig['date']
-        trainset   = int(dataConfig['TrainingFraction'][0] * 100)
-        iterations = dataConfig['iteration']
-
+        task, date, trainset, iterations = get_info_config_file(config_file_path)
         folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
         dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
         pytorch_config_file_path = os.path.join(dir_path, target_file)
@@ -238,3 +224,14 @@ def save_coords_to_doric(filepaths, datapath, deeplabcut_params, config_file_pat
         utils.print_group_path_for_DANSE(operation_path)
     
         file_.close()
+
+def get_info_config_file(config_file_path):
+
+    with open(config_file_path, 'r') as file:
+        dataConfig = yaml.safe_load(file)
+    task       = dataConfig['Task']
+    date       = dataConfig['date']
+    trainset   = int(dataConfig['TrainingFraction'][0] * 100)
+    iterations = dataConfig['iteration']
+
+    return [task, date, trainset, iterations]
