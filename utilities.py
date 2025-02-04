@@ -224,7 +224,6 @@ def save_roi_signals(
             defs.DoricFile.Attribute.ROI.ID:           id_,
             defs.DoricFile.Attribute.ROI.SHAPE:        0,
             defs.DoricFile.Attribute.ROI.COORDS:       footprint_to_coords(footprint),
-            defs.DoricFile.Attribute.Dataset.NAME:     usernames[i] if usernames else defs.DoricFile.Dataset.ROI.format(id_),
             defs.DoricFile.Attribute.Dataset.USERNAME: usernames[i] if usernames else defs.DoricFile.Dataset.ROI.format(id_)
         }
 
