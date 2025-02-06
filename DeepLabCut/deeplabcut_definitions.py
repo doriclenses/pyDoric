@@ -17,14 +17,14 @@ class Parameters:
         """
         Parameters of danse Pose Estimation operation
         """
-        PROJECT_FOLDER    = "ProjectFolder"
-        BODY_PART_NAMES   = "BodyPartNames"
-        BODY_PART_COLORS  = "BodyPartColors"
-        COORDINATES       = "Coordinates"
-        EXTRACTED_FRAMES  = "ExtractedFrames"
-        FRAMES_TO_EXTRACT = "FramesToExtract"
-        RELATIVE_FILEPATH = "RelativeFilePath"
-        VIDEO_DATAPATH    = "VideoDatapath"
+        PROJECT_FOLDER         = "ProjectFolder"
+        BODY_PART_NAMES        = "BodyPartNames"
+        BODY_PART_COLORS       = "BodyPartColors"
+        COORDINATES            = "Coordinates"
+        EXTRACTED_FRAMES       = "ExtractedFrames"
+        EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
+        RELATIVE_FILEPATH      = "RelativeFilePath"
+        VIDEO_DATAPATH         = "VideoDatapath"
         
 class DoricFile:
 

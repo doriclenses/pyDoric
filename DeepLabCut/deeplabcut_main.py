@@ -26,12 +26,12 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     # Read danse parameters 
     filepaths: str = deeplabcut_params.paths[defs.Parameters.Path.FILEPATH]
     datapath: str  = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
-    expFile:  str  = deeplabcut_params.paths[defs.Parameters.Path.EXP_FILE]
+    expFile:  str  = deeplabcut_params.params[defs.Parameters.Path.EXP_FILE]
 
     project_folder: str    = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
     bodypart_names: list   = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     extracted_frames: list = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
-    frames_to_extract: int = deeplabcut_params.params[dlc_defs.Parameters.danse.FRAMES_TO_EXTRACT]
+    frames_to_extract: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
 
     # Create project and train network
     video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, deeplabcut_params.params)
