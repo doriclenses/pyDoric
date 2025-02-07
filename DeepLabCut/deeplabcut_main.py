@@ -33,6 +33,8 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     extracted_frames: list = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
     frames_to_extract: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
 
+    deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = '; '.join([', '.join(map(str, sublist)) for sublist in extracted_frames])
+
     # Create project and train network
     video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, deeplabcut_params.params)
     training_dataset_info = deeplabcut.create_training_dataset(config_file_path)
