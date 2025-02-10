@@ -122,7 +122,7 @@ def create_labeled_data(config_file_path, frames_to_extract, extracted_frames, b
         if not os.path.exists(labeled_data_path):
             os.makedirs(labeled_data_path)
 
-        frames_range = [i*(frames_to_extract*i), frames_to_extract*(i+1)]
+        frames_range = [extracted_frames_count*i, extracted_frames_count*(i+1)]
 
         # Create pandas dataframe with body part coordinates
         data = [] # [[bp1_x1, bp1_x2, ..., bp1_xn], [bp1_y1, bp1_y2, ..., bp1_yn], [bp2_x1, bp2_x2, ..., bp2_xn], [bp2_y1, bp2_y2, ..., bp2_yn], ...]
