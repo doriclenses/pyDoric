@@ -33,7 +33,6 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     extracted_frames: list = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
     frames_to_extract: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
 
-    deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = '; '.join([', '.join(map(str, sublist)) for sublist in extracted_frames])
 
     # Create project and train network
     video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, deeplabcut_params.params)
@@ -46,6 +45,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     # Analyze video and save the result
     deeplabcut.analyze_videos(config_file_path, video_paths, destfolder = os.path.dirname(config_file_path), shuffle = shuffle)
+    modifyParamForAttrib(deeplabcut_params.params, extracted_frames)
     save_coords_to_doric(filepaths, datapath, deeplabcut_params, config_file_path, shuffle)
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -241,3 +241,13 @@ def get_info_config_file(config_file_path):
     iterations = dataConfig['iteration']
 
     return [task, date, trainset, iterations]
+
+def modifyParamForAttrib(
+        params:dict, 
+        extracted_frames:list[list[int]]
+):
+    """
+    Modifies parameter so that they are saved correctly as attribute
+    Extracted frames is list[list[int]], the fx mofifies it to a str where each list is joined by ;
+    """
+    params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = '; '.join([', '.join(map(str, sublist)) for sublist in extracted_frames])
