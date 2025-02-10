@@ -61,7 +61,7 @@ def create_project(filepaths, datapath, expFile, project_folder, bodypart_names,
     task = os.path.splitext(os.path.basename(filename))[0]
     user = "danse"
     video_paths = []
-    for i, filepath in enumerate(filepaths):
+    for filepath in filepaths:
         with h5py.File(filepath, 'r') as file_:
             relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
             video_paths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
