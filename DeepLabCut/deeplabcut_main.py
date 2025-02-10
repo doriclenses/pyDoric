@@ -135,7 +135,7 @@ def create_labeled_data(config_file_path, frames_to_extract, extracted_frames, b
         header1 = []
         for bodypart_name in bodypart_names:
             header1 += [(experimenter, bodypart_name, 'x'),(experimenter, bodypart_name, 'y')]
-            header2  = pd.MultiIndex.from_tuples(header1, names = ['scorer', 'bodyparts', 'coords'])
+        header2  = pd.MultiIndex.from_tuples(header1, names = ['scorer', 'bodyparts', 'coords'])
 
         df = pd.DataFrame(dataT, columns = header2, index = pd.MultiIndex.from_tuples(indices))
 
