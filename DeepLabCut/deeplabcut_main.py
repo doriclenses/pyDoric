@@ -24,21 +24,19 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     DeepLabCut algorithm
     """
     # Read danse parameters 
-    filepaths: str = deeplabcut_params.paths[defs.Parameters.Path.FILEPATH]
-    datapath: str  = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
-    expFile:  str  = deeplabcut_params.params[defs.Parameters.Path.EXP_FILE]
-
-    project_folder: str    = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    bodypart_names: list   = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    extracted_frames: list = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
-    frames_to_extract: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
-
+    filepaths: list[str]              = deeplabcut_params.paths[defs.Parameters.Path.FILEPATH]
+    datapath: str                     = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
+    expFile:  str                     = deeplabcut_params.params[defs.Parameters.Path.EXP_FILE]
+    project_folder: str               = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
+    bodypart_names: list              = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
+    extracted_frames: list[list[int]] = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
+    extracted_frames_count: int       = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
 
     # Create project and train network
-    video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, deeplabcut_params.params)
+    video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, extracted_frames_count, extracted_frames, deeplabcut_params.params)
     training_dataset_info = deeplabcut.create_training_dataset(config_file_path)
     
-    shuffle = training_dataset_info[0][1]
+    shuffle: int = training_dataset_info[0][1]
     update_pytorch_config_file(config_file_path, shuffle) 
     deeplabcut.train_network(config_file_path, batch_size=8, shuffle = shuffle)
     deeplabcut.evaluate_network(config_file_path, Shuffles = [shuffle])
@@ -52,7 +50,16 @@ def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
     print("hello preview")
 
 
-def create_project(filepaths, datapath, expFile, project_folder, bodypart_names, frames_to_extract, extracted_frames, params):
+def create_project(
+    filepaths: list,
+    datapath: str, 
+    expFile: str,
+    project_folder: str,
+    bodypart_names: list,
+    extracted_frames_count: int, 
+    extracted_frames: list[list[int]],
+    params: dict
+):
     """
     Create DeepLabCut project folder with config file and labeled data
     """
@@ -70,7 +77,7 @@ def create_project(filepaths, datapath, expFile, project_folder, bodypart_names,
     
     update_config_file(config_file_path, bodypart_names)
 
-    create_labeled_data(config_file_path, frames_to_extract, extracted_frames, bodypart_names, user, params, video_paths)
+    create_labeled_data(config_file_path, extracted_frames_count, extracted_frames, bodypart_names, user, params, video_paths)
 
     return video_paths, config_file_path
 
@@ -88,7 +95,10 @@ def update_config_file(config_file_path, bodypart_names):
     with open(config_file_path, 'w') as cfg:
         yaml.safe_dump(data, cfg, default_flow_style=False)
 
-def update_pytorch_config_file(config_file_path, shuffle_index):
+def update_pytorch_config_file(
+    config_file_path: str, 
+    shuffle_index: int
+):
     """
     Update label names in the pytorch config file
     """
@@ -108,7 +118,15 @@ def update_pytorch_config_file(config_file_path, shuffle_index):
     with open(pytorch_config_file_path, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
 
-def create_labeled_data(config_file_path, frames_to_extract, extracted_frames, bodypart_names, experimenter, params, video_paths):
+def create_labeled_data(
+    config_file_path: str,
+    extracted_frames_count: int,
+    extracted_frames: list[list[int]],
+    bodypart_names: list,
+    experimenter: str, 
+    params: dict, 
+    video_paths: list
+):
     """
     Create labeled data in DeepLabCut format
     """
@@ -154,7 +172,13 @@ def create_labeled_data(config_file_path, frames_to_extract, extracted_frames, b
         cap.release() 
         cv2.destroyAllWindows()
 
-def save_coords_to_doric(filepaths, datapath, deeplabcut_params, config_file_path, shuffle):
+def save_coords_to_doric(
+    filepaths: list, 
+    datapath: str, 
+    deeplabcut_params, 
+    config_file_path: str, 
+    shuffle: int
+):
     """
     Save DeepLabCut analyzed video labels in doric file
     """
@@ -227,7 +251,7 @@ def save_coords_to_doric(filepaths, datapath, deeplabcut_params, config_file_pat
             utils.print_group_path_for_DANSE(operation_path)
         
             file_.close()
-            
+
         except Exception as error:
             utils.print_error(error, dlc_defs.Messages.SAVING_FAILED.format(file = file_name))
 
