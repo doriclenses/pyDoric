@@ -122,7 +122,7 @@ def save_suite2p_to_doric(
     for plane_index, plane_ID in enumerate(plane_IDs):
         cell_indexs = [i for i, stat in enumerate(stats) if stat["iplane"] == plane_index]
 
-        attrs = {defs.DoricFile.Attribute.Dataset.PLANE_ID: plane_ID}
+        attrs = {defs.DoricFile.Attribute.Dataset.PLANE_ID: np.int32(plane_ID)}
         
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
@@ -132,7 +132,7 @@ def save_suite2p_to_doric(
                                ids           = [ids[i] for i in cell_indexs],
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
-                               other_attrs   = [{"isCell": int(iscell[i])} for i in cell_indexs],
+                               other_attrs   = [{"isCell": np.int32(iscell[i])} for i in cell_indexs],
                                common_attrs  = attrs)
             
         utils.save_signals(signals        = spikes[cell_indexs, :],
