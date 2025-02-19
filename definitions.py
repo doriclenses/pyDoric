@@ -74,10 +74,11 @@ class Parameters:
         Paths to file and dataset to process
         """
 
-        TMP_DIR  = "TmpDir"
-        FILEPATH = "Filepath"
-        H5PATH   = "HDF5Path"
-        EXP_FILE = "ExperimentFile"
+        TMP_DIR   = "TmpDir"
+        FILEPATH  = "Filepath"
+        FILEPATHS = "Filepaths"
+        H5PATH    = "HDF5Path"
+        EXP_FILE  = "ExperimentFile"
 
 
     class danse:

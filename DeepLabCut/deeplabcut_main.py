@@ -24,7 +24,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     DeepLabCut algorithm
     """
     # Read danse parameters 
-    filepaths: list[str]              = deeplabcut_params.paths[defs.Parameters.Path.FILEPATH]
+    filepaths: list[str]              = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
     datapath: str                     = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
     expFile:  str                     = deeplabcut_params.params[defs.Parameters.Path.EXP_FILE]
     project_folder: str               = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
