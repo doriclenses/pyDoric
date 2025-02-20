@@ -24,13 +24,13 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     DeepLabCut algorithm
     """
     # Read danse parameters 
-    filepaths: list[str]              = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
-    datapath: str                     = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
-    expFile:  str                     = deeplabcut_params.params[defs.Parameters.Path.EXP_FILE]
-    project_folder: str               = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    bodypart_names: list              = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    extracted_frames: list[list[int]] = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
-    extracted_frames_count: int       = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
+    filepaths: list[str]        = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
+    datapath: str               = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
+    expFile:  str               = deeplabcut_params.params[defs.Parameters.Path.EXP_FILE]
+    project_folder: str         = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
+    bodypart_names: list        = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
+    extracted_frames: list      = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
+    extracted_frames_count: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
 
     # Create project and train network
     video_paths, config_file_path = create_project(filepaths, datapath, expFile, project_folder, bodypart_names, extracted_frames_count, extracted_frames, deeplabcut_params.params)
@@ -43,7 +43,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     # Analyze video and save the result
     deeplabcut.analyze_videos(config_file_path, video_paths, destfolder = os.path.dirname(config_file_path), shuffle = shuffle)
-    modifyParamForAttrib(deeplabcut_params.params, extracted_frames)
+    # modifyParamForAttrib(deeplabcut_params.params, extracted_frames)
     save_coords_to_doric(filepaths, datapath, deeplabcut_params, config_file_path, shuffle)
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -57,7 +57,7 @@ def create_project(
     project_folder: str,
     bodypart_names: list,
     extracted_frames_count: int, 
-    extracted_frames: list[list[int]],
+    extracted_frames: list,
     params: dict
 ):
     """
@@ -121,7 +121,7 @@ def update_pytorch_config_file(
 def create_labeled_data(
     config_file_path: str,
     extracted_frames_count: int,
-    extracted_frames: list[list[int]],
+    extracted_frames: list,
     bodypart_names: list,
     experimenter: str, 
     params: dict, 
@@ -141,15 +141,15 @@ def create_labeled_data(
             os.makedirs(labeled_data_path)
 
         frames_range = [extracted_frames_count*i, extracted_frames_count*(i+1)]
-
+        frames = extracted_frames[frames_range[0]:frames_range[1]]
         # Create pandas dataframe with body part coordinates
         data = [] # [[bp1_x1, bp1_x2, ..., bp1_xn], [bp1_y1, bp1_y2, ..., bp1_yn], [bp2_x1, bp2_x2, ..., bp2_xn], [bp2_y1, bp2_y2, ..., bp2_yn], ...]
         for name in bodypart_names:
             data.append([x for x, y in params[name+dlc_defs.Parameters.danse.COORDINATES][frames_range[0]:frames_range[1]]])
             data.append([y for x, y in params[name+dlc_defs.Parameters.danse.COORDINATES][frames_range[0]:frames_range[1]]]) 
         dataT = list(map(list, zip(*data))) # [[bp1_x1, bp1_y1, bp2_x1, bp2_y1, ...], ..., [bp1_xn, bp1_yn, bp2_xn, bp2_yn, ...]]
-
-        indices = [('labeled-data', video_name, f'img{frame}.png') for frame in extracted_frames[i]]
+         
+        indices = [('labeled-data', video_name, f'img{frame}.png') for frame in frames]
         header1 = []
         for bodypart_name in bodypart_names:
             header1 += [(experimenter, bodypart_name, 'x'),(experimenter, bodypart_name, 'y')]
@@ -163,7 +163,7 @@ def create_labeled_data(
 
         # Save extracted frames used for labeling as .png
         cap = cv2.VideoCapture(video_path)
-        for frame in extracted_frames[i]:
+        for frame in frames:
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame)
             ret, img = cap.read()
             frame_filename = f'{labeled_data_path}/img{frame}.png'
@@ -266,12 +266,12 @@ def get_info_config_file(config_file_path):
 
     return [task, date, trainset, iterations]
 
-def modifyParamForAttrib(
-        params:dict, 
-        extracted_frames:list[list[int]]
-):
-    """
-    Modifies parameter so that they are saved correctly as attribute
-    Extracted frames is list[list[int]], the fx mofifies it to a str where each list is joined by ;
-    """
-    params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = '; '.join([', '.join(map(str, sublist)) for sublist in extracted_frames])
+# def modifyParamForAttrib(
+#         params:dict, 
+#         extracted_frames:list[list[int]]
+# ):
+#     """
+#     Modifies parameter so that they are saved correctly as attribute
+#     Extracted frames is list[list[int]], the fx mofifies it to a str where each list is joined by ;
+#     """
+#     params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = '; '.join([', '.join(map(str, sublist)) for sublist in extracted_frames])
