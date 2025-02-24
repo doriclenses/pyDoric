@@ -1,5 +1,6 @@
 import h5py
 import sys
+import os
 import numpy as np
 from tifffile import imwrite
 
@@ -22,6 +23,8 @@ class CaimanParameters:
         self.params = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params = danse_params.get(defs.Parameters.Main.PREVIEW, {})
 
+        os.environ["CAIMAN_TEMP"] = self.paths[defs.Parameters.Path.TMP_DIR]
+
         self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH][0])
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
@@ -34,7 +37,7 @@ class CaimanParameters:
         neuron_diameter = tuple([self.params[defs.Parameters.danse.NEURO_DIAM_MIN], self.params[defs.Parameters.danse.NEURO_DIAM_MAX]])
 
         print(cm_defs.Messages.WRITE_IMAGE_TIFF, flush=True)
-        fnames = self.paths[defs.Parameters.Path.TMP_DIR] + '/' + f"tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif"
+        fnames = f"{self.paths[defs.Parameters.Path.TMP_DIR]}/tiff_{'_'.join(self.get_h5path_names()[2:4])}.tif"
         imwrite(fnames, images.transpose(2, 0, 1))
         del images
 
@@ -74,6 +77,7 @@ class CaimanParameters:
             "use_cnn": False,
             "fnames": fnames
         })
+
         self.params_cross_reg = {}
         if self.params.get(defs.Parameters.danse.CROSS_REG, False):
             self.params_cross_reg = {
