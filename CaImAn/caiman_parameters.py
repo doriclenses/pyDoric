@@ -1,6 +1,5 @@
 import h5py
 import sys
-import os
 import numpy as np
 from tifffile import imwrite
 
@@ -22,8 +21,6 @@ class CaimanParameters:
         self.paths  = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params = danse_params.get(defs.Parameters.Main.PREVIEW, {})
-
-        os.environ["CAIMAN_TEMP"] = self.paths[defs.Parameters.Path.TMP_DIR]
 
         self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH][0])
 
