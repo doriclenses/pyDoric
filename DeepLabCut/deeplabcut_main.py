@@ -95,6 +95,7 @@ def update_config_file(config_file_path, bodypart_names):
     with open(config_file_path, 'w') as cfg:
         yaml.safe_dump(data, cfg, default_flow_style=False)
 
+
 def update_pytorch_config_file(
     config_file_path: str, 
     shuffle_index: int
@@ -117,6 +118,7 @@ def update_pytorch_config_file(
 
     with open(pytorch_config_file_path, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
+
 
 def create_labeled_data(
     config_file_path: str,
@@ -171,6 +173,7 @@ def create_labeled_data(
 
         cap.release() 
         cv2.destroyAllWindows()
+
 
 def save_coords_to_doric(
     filepaths: list, 
@@ -255,10 +258,12 @@ def save_coords_to_doric(
         except Exception as error:
             utils.print_error(error, dlc_defs.Messages.SAVING_FAILED.format(file = file_name))
 
+
 def get_info_config_file(config_file_path):
 
     with open(config_file_path, 'r') as file:
         dataConfig = yaml.safe_load(file)
+        
     task       = dataConfig['Task']
     date       = dataConfig['date']
     trainset   = int(dataConfig['TrainingFraction'][0] * 100)
