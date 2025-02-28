@@ -798,7 +798,7 @@ def save_minian_to_doric(
                                 ids            = list(ids),
                                 dataset_names  = dataset_names,
                                 usernames      = usernames,
-                                attrs          = attrs)
+                                common_attrs   = attrs)
         utils.print_group_path_for_DANSE(rois_datapath)
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
