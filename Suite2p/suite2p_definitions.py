@@ -16,14 +16,17 @@ class Preview:
     Names of preview file structue
     """
     class Dataset:
-        MEAN_IMAGE         = "MeanImage"
-        MEDIAN_FILTER_MEAN = "MedianFilteredMeanImage"
+        MEAN         = "Mean"
+        MEDIAN_FILTER_MEAN = "MedianFilteredMean"
         CORRELATION_MAP    = "CorrelationMap"
         MAX_PROJECTION     = "MaxProjection"
 
     class Group:
         ROISIGNALS = "ROISignals"
         SPIKES     = "Spikes"
+
+    class Attribute:
+        CELL = "Cell"
 
 
 class DoricFile:

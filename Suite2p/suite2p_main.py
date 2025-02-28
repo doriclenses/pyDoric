@@ -112,7 +112,7 @@ def save_suite2p_to_doric(
 
     print(s2p_defs.Messages.SAVING_IMAGES, flush=True)
     height, width , _ = mean_image.shape
-    file_.create_dataset(s2p_defs.Preview.Dataset.MEAN_IMAGE, data = mean_image, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MEAN, data = mean_image, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
     file_.create_dataset(s2p_defs.Preview.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
     file_.create_dataset(s2p_defs.Preview.Dataset.CORRELATION_MAP, data = correlation_map, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
     file_.create_dataset(s2p_defs.Preview.Dataset.MAX_PROJECTION, data = max_projection, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
@@ -131,7 +131,7 @@ def save_suite2p_to_doric(
                                ids           = [ids[i] for i in cell_indexs],
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
-                               other_attrs   = [{"isCell": np.int32(iscell[i])} for i in cell_indexs],
+                               other_attrs   = [{s2p_defs.Preview.Attribute.CELL: np.int32(iscell[i])} for i in cell_indexs],
                                common_attrs  = attrs)
             
         utils.save_signals(signals        = spikes[cell_indexs, :],
