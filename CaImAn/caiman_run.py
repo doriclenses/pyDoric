@@ -20,6 +20,7 @@ os.environ["CAIMAN_DATA"] = f"{os.path.dirname(os.path.abspath(__file__))}\\caim
 sys.path.append("..")
 # Import CaimAn related utilities libraries
 import utilities as utils
+import definitions as defs
 import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
 import caiman_main        as cm_main
@@ -49,6 +50,7 @@ except Exception as error:
 
 if __name__ == "__main__":
     caiman_params = cm_params.CaimanParameters(danse_parameters)
+    os.environ["CAIMAN_TEMP"] = caiman_params.paths[defs.Parameters.Path.TMP_DIR]
 
     if caiman_params.preview_params:
         cm_main.preview(caiman_params)
