@@ -28,9 +28,9 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
 
     tif_file_path: str = f"{suite2p_params.paths[defs.Parameters.Path.TMP_DIR]}/images.tif"
     with TiffWriter(tif_file_path, bigtiff=True) as tif_file:
-        for I in range(suite2p_params.time_length):
+        for t in range(suite2p_params.time_length):
             for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
-                tif_file.write(file_[datapath][:, :, I], contiguous=True)
+                tif_file.write(file_[datapath][:, :, t], contiguous=True)
 
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
 
