@@ -26,7 +26,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     # Read danse parameters 
     filepaths: list[str]        = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
     datapath: str               = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
-    expFile:  str               = deeplabcut_params.params[defs.Parameters.Path.EXP_FILE]
+    expFile:  str               = deeplabcut_params.params.get(defs.Parameters.Path.EXP_FILE, "")
     project_folder: str         = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
     bodypart_names: list        = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     extracted_frames: list      = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
