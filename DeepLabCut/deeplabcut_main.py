@@ -63,16 +63,15 @@ def create_project(
     """
     Create DeepLabCut project folder with config file and labeled data
     """
-
-    filename = expFile if len(filepaths) > 1 else filepaths[0]
-    task = os.path.splitext(os.path.basename(filename))[0]
-    user = "danse"
     video_paths = []
     for filepath in filepaths:
         with h5py.File(filepath, 'r') as file_:
             relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
             video_paths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
 
+    path = expFile if len(filepaths) > 1 else filepaths[0]
+    task = os.path.splitext(os.path.basename(path))[0]
+    user = "danse"
     config_file_path = deeplabcut.create_new_project(task, user, video_paths, project_folder, copy_videos = False)
     
     update_config_file(config_file_path, bodypart_names)
