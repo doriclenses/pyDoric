@@ -133,10 +133,9 @@ def create_labeled_data(
     """
 
     # Create folder for labeled data
+    dir_path   = os.path.dirname(config_file_path)
     for i, video_path in enumerate(video_paths):
         video_name = os.path.splitext(os.path.basename(video_path))[0]
-        dir_path   = os.path.dirname(config_file_path)
-
         labeled_data_path = os.path.join(dir_path, "labeled-data", video_name)
         if not os.path.exists(labeled_data_path):
             os.makedirs(labeled_data_path)
