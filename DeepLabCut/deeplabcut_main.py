@@ -268,4 +268,4 @@ def get_info_config_file(config_file_path):
     trainset   = int(dataConfig['TrainingFraction'][0] * 100)
     iterations = dataConfig['iteration']
 
-    return [task, date, trainset, iterations]
+    return (task, date, trainset, iterations)
