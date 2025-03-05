@@ -6,7 +6,7 @@ class Messages:
     LOADING_ARGUMENTS  = "Loading parameters"
     PROCESS_DONE       = "Pose Estimation process is done"
     SAVING_TO_DORIC    = "Saving data to doric file..."
-    SAVING_FAILED      = "Saving coordinates to {file}"
+    SAVING_FAILED      = "Failed to save coordinates to the file - {file}"
 
 class Parameters:
 
