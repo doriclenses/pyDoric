@@ -270,13 +270,3 @@ def get_info_config_file(config_file_path):
     iterations = dataConfig['iteration']
 
     return [task, date, trainset, iterations]
-
-# def modifyParamForAttrib(
-#         params:dict, 
-#         extracted_frames:list[list[int]]
-# ):
-#     """
-#     Modifies parameter so that they are saved correctly as attribute
-#     Extracted frames is list[list[int]], the fx mofifies it to a str where each list is joined by ;
-#     """
-#     params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES] = '; '.join([', '.join(map(str, sublist)) for sublist in extracted_frames])
