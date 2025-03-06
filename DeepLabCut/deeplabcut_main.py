@@ -189,18 +189,31 @@ def save_coords_to_doric(
     bodypart_names  = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     bodypart_colors = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
 
+    # Define correct paths for saving operaion results
+    group_names = deeplabcut_params.get_h5path_names()
+    _, _, _, series, video_group_name = group_names
+    group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
+    operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
+
+    # Get path for PyTorch file
+    root_path   = os.path.dirname(config_file_path)
+    target_file = 'pytorch_config.yaml'
+    task, date, trainset, iterations = get_info_config_file(config_file_path)
+    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
+    dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
+    pytorch_config_file_path = os.path.join(dir_path, target_file)
+
+    # Get info from PyTorch configFile
+    with open(pytorch_config_file_path, 'r') as file:
+        data = yaml.safe_load(file)
+    model = data['net_type'].replace("_", "").capitalize()
+    epochs = data['train_settings']['epochs']
+
     for file_name in filepaths:
         try:
             file_ = h5py.File(file_name, 'a')
-            # Define correct path for saving operaion results
-            group_names = deeplabcut_params.get_h5path_names()
-            _, _, _, series, video_group_name = group_names
-            group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
-        
-            operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
             operation_count = utils.operation_count(group_path, file_, operation_name, deeplabcut_params.params, {})    
-            operation_path  = f'{group_path}/{operation_name+operation_count}'
-        
+            operation_path  = f'{group_path}/{operation_name + operation_count}'
             # Save time
             time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
             time_path = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
@@ -210,20 +223,6 @@ def save_coords_to_doric(
             # Save operation attributes
             deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
             utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
-
-            root_path   = os.path.dirname(config_file_path)
-            target_file = 'pytorch_config.yaml'
-
-            task, date, trainset, iterations = get_info_config_file(config_file_path)
-            folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
-            dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
-            pytorch_config_file_path = os.path.join(dir_path, target_file)
-
-            # get info from Pytorch configFile
-            with open(pytorch_config_file_path, 'r') as file:
-                data = yaml.safe_load(file)
-            model = data['net_type'].replace("_", "").capitalize()
-            epochs = data['train_settings']['epochs']
 
             relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
             video_path = os.path.join(os.path.dirname(file_name), relative_path.lstrip('/'))
