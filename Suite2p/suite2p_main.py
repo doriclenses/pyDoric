@@ -113,18 +113,22 @@ def save_suite2p_to_doric(
     max_projection  = split_by_plane(ops['max_proj'], len(plane_IDs))
 
     print(s2p_defs.Messages.SAVING_IMAGES, flush=True)
-    height, width , _ = mean_image.shape
-    file_.create_dataset(s2p_defs.Preview.Dataset.MEAN, data = mean_image, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
-    file_.create_dataset(s2p_defs.Preview.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
-    file_.create_dataset(s2p_defs.Preview.Dataset.CORRELATION_MAP, data = correlation_map, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
-    file_.create_dataset(s2p_defs.Preview.Dataset.MAX_PROJECTION, data = max_projection, dtype = "float64", chunks = (height, width , 1), maxshape = (height, width, None))
+    height_mean, width_mean, _                   = mean_image.shape
+    height_median_filter, width_median_filter, _ = median_filter.shape
+    height_corr, width_corr, _                   = correlation_map.shape
+    height_max, width_max, _                     = max_projection.shape
+
+    file_.create_dataset(s2p_defs.Preview.Dataset.MEAN, data = mean_image, dtype = "float64", chunks = (height_mean, width_mean , 1), maxshape = (height_mean, width_mean, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height_median_filter, width_median_filter , 1), maxshape = (height_median_filter, width_median_filter, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.CORRELATION_MAP, data = correlation_map, dtype = "float64", chunks = (height_corr, width_corr , 1), maxshape = (height_corr, width_corr, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MAX_PROJECTION, data = max_projection, dtype = "float64", chunks = (height_max, width_max , 1), maxshape = (height_max, width_max, None))
 
     print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
     for plane_index, plane_ID in enumerate(plane_IDs):
         cell_indexs = [i for i, stat in enumerate(stats) if stat["iplane"] == plane_index]
 
         attrs = {defs.DoricFile.Attribute.Dataset.PLANE_ID: np.int32(plane_ID)}
-        
+
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
                                time_         = time_[plane_index],
