@@ -222,7 +222,7 @@ def save_coords_to_doric(
         time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
         time_path = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
         if time_path not in file_:
-            file_.create_dataset(time_path, data=time_)
+            file_.create_dataset(time_path, data=time_, dtype="float64", chunks=utils.def_chunk_size(time_.shape), maxshape=None)
 
         # Save operation attributes
         deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
