@@ -16,7 +16,7 @@ class Preview:
     Names of preview file structue
     """
     class Dataset:
-        MEAN         = "Mean"
+        MEAN               = "Mean"
         MEDIAN_FILTER_MEAN = "MedianFilteredMean"
         CORRELATION_MAP    = "CorrelationMap"
         MAX_PROJECTION     = "MaxProjection"
