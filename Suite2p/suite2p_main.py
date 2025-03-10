@@ -50,6 +50,7 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
         vpath           = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
         series          = series,
         sensor          = sensor,
+        is_microscope   = suite2p_params.is_microscope,
         params_doric    = suite2p_params.params,
         params_source   = params_source_data,
         plane_IDs       = [int(datapath[-1]) for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]] if not suite2p_params.is_microscope else [-1]
@@ -67,6 +68,7 @@ def save_suite2p_to_doric(
     vpath: str,
     series: str,
     sensor: str,
+    is_microscope: bool,
     params_doric: dict = {},
     params_source: dict = {},
     plane_IDs: list[int] = []
@@ -127,7 +129,7 @@ def save_suite2p_to_doric(
                                footprints    = footprints[cell_indexs, :, :],
                                time_         = time_[plane_index],
                                file_         = file_,
-                               path          = f"{s2p_defs.Preview.Group.ROISIGNALS}/P{plane_ID}",
+                               path          = f"{s2p_defs.Preview.Group.ROISIGNALS}/P{plane_ID}" if not is_microscope else f"{s2p_defs.Preview.Group.ROISIGNALS}",
                                ids           = [ids[i] for i in cell_indexs],
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
@@ -137,7 +139,7 @@ def save_suite2p_to_doric(
         utils.save_signals(signals        = spikes[cell_indexs, :],
                            time_         = time_[plane_index],
                            file_         = file_,
-                           path          = f"{s2p_defs.Preview.Group.SPIKES}/P{plane_ID}",
+                           path          = f"{s2p_defs.Preview.Group.SPIKES}/P{plane_ID}" if not is_microscope else f"{s2p_defs.Preview.Group.SPIKES}",
                            dataset_names = [dataset_names[i] for i in cell_indexs],
                            usernames     = [usernames[i] for i in cell_indexs],
                            attrs         = attrs)
