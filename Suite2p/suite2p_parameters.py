@@ -25,9 +25,20 @@ class Suite2pParameters:
         
         self.ops = suite2p.default_ops() # https://suite2p.readthedocs.io/en/latest/settings.html#
         # Suite2p Main Settings
-        self.ops['data_path']         = [self.paths[defs.Parameters.Path.TMP_DIR]]
-        self.ops['nplanes']           = len(self.paths[defs.Parameters.Path.H5PATH])
-        self.ops['tau']               = self.params['BiosensorDecayTime'] # Timescale of GCaMP to use for deconvolution
+        self.ops['data_path']           = [self.paths[defs.Parameters.Path.TMP_DIR]]
+        self.ops['nplanes']             = len(self.paths[defs.Parameters.Path.H5PATH])
+        self.ops['tau']                 = self.params['BiosensorDecayTime'] # Timescale of GCaMP to use for deconvolution
+        self.ops['force_sktiff']        = True # Whether or not to use scikit-image (tifffile package) for tiff reading, default is False (uses scanimage tiff-reader)
+        self.ops['nchannels']           = 1 # Each tiff has these many channels per plane
+        self.ops['functional_chan']     = 1 # This channel is used to extract functional ROIs (1-based)
+        self.ops['frames_include']      = -1 # If greater than zero, only frames_include frames are processed
+        self.ops['multiplane_parallel'] = False # Whether or not to run on server
+        self.ops['ignore_flyback']      = [] # Specifies which planes should be ignored as flyback planes during processing
+        
+        # Bidirectional phase offset, applies to 2P recordings only
+        self.ops['do_bidiphase']   = False
+        self.ops['bidiphase']      = 0 # If set to any value besides 0, then this offset is used
+        self.ops['bidi_corrected'] = False
 
         # Suite2p Registration Settings
         self.ops['batch_size']        = 100 # Decrease the batch_size in case low RAM on computer
