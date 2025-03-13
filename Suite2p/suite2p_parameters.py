@@ -57,12 +57,18 @@ class Suite2pParameters:
         self.ops['pad_fft']               = False
 
         # Suite2p 1P registration
-        self.ops['1Preg']             = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
+        self.ops['1Preg'] = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
         if self.ops['1Preg']:
             self.ops['pre_smooth'] = False
             spatial_hp_reg = 2.8 * self.params['CellDiameter']
-            self.ops['spatial_hp_reg']    = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
-            self.ops['spatial_taper']     = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
+            self.ops['spatial_hp_reg'] = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
+            self.ops['spatial_taper']  = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
+
+        # Suite2p Non-Rigid registration (optional) will approx double the time
+        self.ops['nonrigid']      = True
+        self.ops['block_size']    = [128,128]  # Can be [64,64], [256,256]. Recommend keeping this a power of 2 and/or 3
+        self.ops['maxregshiftNR'] = int(self.params['CellDiameter']/3)
+        self.ops['snr_thresh']    = 1.5 # default: 1.2, How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
 
         # Suite2p ROI Detection Settings
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
