@@ -41,13 +41,25 @@ class Suite2pParameters:
         self.ops['bidi_corrected'] = False
 
         # Suite2p Registration Settings
-        self.ops['batch_size']        = 100 # Decrease the batch_size in case low RAM on computer
-        self.ops['smooth_sigma']      = 4   # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
-        self.ops['nimg_init']         = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
-    
+        self.ops['do_registration']       = True # whether or not to run registration
+        self.ops['align_by_chan']         = 1
+        self.ops['nimg_init']             = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
+        self.ops['batch_size']            = 100 # Decrease the batch_size in case low RAM on computer
+        self.ops['maxregshift']           = 0.1 # maximum shift size - for rigid registration. 0.1 = 10% of the size of the FOV      
+        self.ops['smooth_sigma_time']     = 0 # Temporal smoothing, standard deviation for Gaussian kernel; Might need this to be set to 1 or 2 for low SNR data
+        self.ops['smooth_sigma']          = 4 # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
+        self.ops['keep_movie_raw']        = False
+        self.ops['two_step_registration'] = False # Whether or not to run registration twice (for low SNR data). keep_movie_raw must be True for this to work.
+        self.ops['subpixel']              = 10 # Precision of Subpixel Registration (1/subpixel steps; default is 10 = 0.1 pixel accuracy)
+        self.ops['th_badframes']          = 1.0 # Determines the frames that are excluded when determining the cropping region. Decrease th_badframes and more frames will be set as bad frames
+        self.ops['norm_frames']           = True # Normalize frames when detecting shifts
+        self.ops['force_refImg']          = False # if True, use refImg stored in ops['refImg'] 
+        self.ops['pad_fft']               = False
+
         # Suite2p 1P registration
         self.ops['1Preg']             = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
         if self.ops['1Preg']:
+            self.ops['pre_smooth'] = False
             spatial_hp_reg = 2.8 * self.params['CellDiameter']
             self.ops['spatial_hp_reg']    = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
             self.ops['spatial_taper']     = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
