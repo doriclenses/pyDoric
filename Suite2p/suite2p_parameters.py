@@ -56,9 +56,12 @@ class Suite2pParameters:
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
 
         # Suite2p Cellpose Detection
-        self.ops['anatomical_only']   = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
-        self.ops['diameter']          = self.params['CellDiameter'] # Diameter that will be used for Cellpose
-        self.ops['flow_threshold']    = 0.4 # Flow threshold that will be used for cellpose
+        self.ops['anatomical_only']    = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
+        self.ops['diameter']           = self.params['CellDiameter'] # Diameter that will be used for Cellpose
+        self.ops['flow_threshold']     = 0.4 # Maximum allowed error of the flows. Increase this threshold if cellpose is not returning as many ROIs as you’d expect.
+        self.ops['cellprob_threshold'] = 0.0 # -6 to +6, Pixels > cellprob_threshold are used to run dynamics & determine ROIs. Decrease it, if cellpose is not returning as many ROIs as you’d expect
+        self.ops['pretrained_model']   = "cyto"  # 'nuclei'
+        self.ops['spatial_hp_cp']      = int(self.params['CellDiameter']/4) # Window for spatial high-pass filtering of image to be used for cellpose. Recommended: 1/4-1/8 diameter in px
 
         # Classification Settings
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
