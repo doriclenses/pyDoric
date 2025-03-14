@@ -71,7 +71,16 @@ class Suite2pParameters:
         self.ops['snr_thresh']    = 1.5 # default: 1.2, How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
 
         # Suite2p ROI Detection Settings
+        self.ops['roidetect']         = True
+        self.ops['sparse_mode']       = True
+        self.ops['spatial_scale']     = 0 # if anatomical_only = 0, then diameter is ignored and spatial_scale matters. 0 means multi_scale (automatic detection of the cell diameter).
+                                          # 1: 6 pixels, 2: 12 pixels, 3: 24 pixels, 4: 48 pixels
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
+        self.ops['spatial_hp_detect'] = 40 # default: 25, window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
+        self.ops['high_pass']         = 40 # default:100, but suggest less than 10 value for 1p images. Temporal high pass filter, running mean subtraction across time with window of size
+        self.ops['max_overlap']       = 0.75 # 1 means, no cells are discarded
+        self.ops['max_iterations']    = 20 # at most ops[‘max_iterations’], but usually stops before
+        self.ops['denoise']           = True # default:False
 
         # Suite2p Cellpose Detection
         self.ops['anatomical_only']    = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
