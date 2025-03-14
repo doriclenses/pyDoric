@@ -92,6 +92,7 @@ class Suite2pParameters:
 
         # Classification Settings
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
+        self.ops['preclassify'] = 0.5 # default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0)
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
