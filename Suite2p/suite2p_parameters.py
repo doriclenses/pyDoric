@@ -90,9 +90,18 @@ class Suite2pParameters:
         self.ops['pretrained_model']   = "cyto"  # 'nuclei'
         self.ops['spatial_hp_cp']      = int(self.params['CellDiameter']/4) # Window for spatial high-pass filtering of image to be used for cellpose. Recommended: 1/4-1/8 diameter in px
 
+        # Suite2p Spike Deconvolution settings
+        self.ops['spikedetect']      = True # Whether or not to run spike_deconvolution
+        self.ops['neucoeff']         = 0.7 # neuropil coefficient for all ROIs
+        self.ops['baseline']         = "maximin" # method for computing baseline. maxmin: gaussian filter->min Filter->max filter; constant: gaussian filter->min of the trace; 
+                                                 # constant_percentile: computes a constant baseline by taking the ops['prctile_baseline'] percentile of the trace 
+        self.ops['win_baseline']     = 60 # window for maximin filter in seconds
+        self.ops['sig_baseline']     = 10 # width of Gaussian filter in frames
+        self.ops['prctile_baseline'] = 8 # percentile of trace to use as baseline
+
         # Classification Settings
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
-        self.ops['preclassify'] = 0.5 # default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0)
+        self.ops['preclassify'] = 0.5 # default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but removes some of the 'non-cells'
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
