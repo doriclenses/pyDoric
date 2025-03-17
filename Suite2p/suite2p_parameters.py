@@ -90,6 +90,13 @@ class Suite2pParameters:
         self.ops['pretrained_model']   = "cyto"  # 'nuclei'
         self.ops['spatial_hp_cp']      = int(self.params['CellDiameter']/4) # Window for spatial high-pass filtering of image to be used for cellpose. Recommended: 1/4-1/8 diameter in px
 
+        # Signal extraction settings
+        self.ops['neuropil_extract']      = True
+        self.ops['allow_overlap']         = False 
+        self.ops['inner_neuropil_radius'] = 2 # Radius (in pixels) around each cell within which pixels are excluded from the neuropil calculation.
+        self.ops['min_neuropil_pixels']   = 350 # Minimum number of pixels used to compute neuropil for each cell
+        # self.ops['lam_percentile'] 
+
         # Suite2p Spike Deconvolution settings
         self.ops['spikedetect']      = True # Whether or not to run spike_deconvolution
         self.ops['neucoeff']         = 0.7 # neuropil coefficient for all ROIs
