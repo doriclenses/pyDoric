@@ -57,9 +57,9 @@ class Suite2pParameters:
         self.ops['pad_fft']               = False
 
         # Suite2p 1P registration
-        self.ops['1Preg'] = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
+        self.ops['1Preg']              = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
         if self.ops['1Preg']:
-            self.ops['pre_smooth'] = False
+            self.ops['pre_smooth']     = False
             spatial_hp_reg = 2.8 * self.params['CellDiameter']
             self.ops['spatial_hp_reg'] = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
             self.ops['spatial_taper']  = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
@@ -75,6 +75,9 @@ class Suite2pParameters:
         self.ops['sparse_mode']       = True
         self.ops['spatial_scale']     = 0 # if anatomical_only = 0, then diameter is ignored and spatial_scale matters. 0 means multi_scale (automatic detection of the cell diameter).
                                           # 1: 6 pixels, 2: 12 pixels, 3: 24 pixels, 4: 48 pixels
+        self.ops['connected']         = True # whether or not to require ROIs to be fully connected. If True, Suite2p ensures that each ROI is a single, connected region in the image. 
+                                             # This can help  in avoiding fragmented or disjointed ROIs, which might not correspond to actual cells.
+                                             # Set to False (0) for dendrite/boutons.                                  
         self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
         self.ops['spatial_hp_detect'] = 40 # default: 25, window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
         self.ops['high_pass']         = 40 # default:100, but suggest less than 10 value for 1p images. Temporal high pass filter, running mean subtraction across time with window of size
@@ -95,7 +98,8 @@ class Suite2pParameters:
         self.ops['allow_overlap']         = False 
         self.ops['inner_neuropil_radius'] = 2 # Radius (in pixels) around each cell within which pixels are excluded from the neuropil calculation.
         self.ops['min_neuropil_pixels']   = 350 # Minimum number of pixels used to compute neuropil for each cell
-        # self.ops['lam_percentile'] 
+        self.ops['lam_percentile']        = 50 # Percentile of Lambda (pixel weighings) within area to ignore when excluding cell pixels for neuropil extraction
+                                               # Allows some pixels with low cell weights to be used, disable with lam_percentile=0.0
 
         # Suite2p Spike Deconvolution settings
         self.ops['spikedetect']      = True # Whether or not to run spike_deconvolution
@@ -107,8 +111,10 @@ class Suite2pParameters:
         self.ops['prctile_baseline'] = 8 # percentile of trace to use as baseline
 
         # Classification Settings
+        self.ops['soma_crop']              = True # crop dendrites for cell classification stats
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
-        self.ops['preclassify'] = 0.5 # default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but removes some of the 'non-cells'
+        self.ops['preclassify']            = 0.5 # default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but removes 
+                                                 # some of the 'non-cells'
 
         with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
             time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
