@@ -1,7 +1,6 @@
 import os
 import sys
 from pathlib import Path
-import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 from typing import Optional
@@ -29,9 +28,9 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
 
     tif_file_path: str = f"{suite2p_params.paths[defs.Parameters.Path.TMP_DIR]}/images.tif"
     with TiffWriter(tif_file_path, bigtiff=True) as tif_file:
-        for I in range(suite2p_params.time_length):
+        for t in range(suite2p_params.time_length):
             for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
-                tif_file.write(file_[datapath][:, :, I], contiguous=True)
+                tif_file.write(file_[datapath][:, :, t], contiguous=True)
 
     output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
 
@@ -47,10 +46,11 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
     save_suite2p_to_doric(
         output_ops      = output_ops,
         time_           = time_,
-        doric_file_name = suite2p_params.paths[defs.Parameters.Path.FILEPATH],
+        doric_file_name = suite2p_params.paths[defs.Parameters.Preview.FILEPATH],
         vpath           = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
         series          = series,
         sensor          = sensor,
+        is_microscope   = suite2p_params.is_microscope,
         params_doric    = suite2p_params.params,
         params_source   = params_source_data,
         plane_IDs       = [int(datapath[-1]) for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]] if not suite2p_params.is_microscope else [-1]
@@ -68,6 +68,7 @@ def save_suite2p_to_doric(
     vpath: str,
     series: str,
     sensor: str,
+    is_microscope: bool,
     params_doric: dict = {},
     params_source: dict = {},
     plane_IDs: list[int] = []
@@ -82,11 +83,8 @@ def save_suite2p_to_doric(
     f_cells     = np.load(Path(output_ops['save_path']).joinpath('F.npy')) #array of fluorescence traces (ROIs by timepoints)
     f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
     spks        = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
-
-    stats   = stats[iscell]
-    f_cells = f_cells[iscell, :]
-    spks    = spks[iscell, :]
-     
+    ops         = np.load(Path(output_ops['save_path']).joinpath('ops.npy'), allow_pickle=True).item()
+  
     n_cells = len(stats)
     Ly = output_ops["Ly"]
     Lx = output_ops["Lx"]
@@ -106,60 +104,49 @@ def save_suite2p_to_doric(
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
-    file_ = h5py.File(doric_file_name, 'a')
+    file_ = h5py.File(doric_file_name, 'w')
+
     # Check if Suite2p results already exist
-    operation_count = utils.operation_count(vpath, file_, s2p_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
+    mean_image      = split_by_plane(ops['meanImg'], len(plane_IDs))
+    median_filter   = split_by_plane(ops['meanImgE'], len(plane_IDs))
+    correlation_map = split_by_plane(ops['Vcorr'], len(plane_IDs))
+    max_projection  = split_by_plane(ops['max_proj'], len(plane_IDs))
 
-    params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operation_count
+    print(s2p_defs.Messages.SAVING_IMAGES, flush=True)
+    height_mean, width_mean, _                   = mean_image.shape
+    height_median_filter, width_median_filter, _ = median_filter.shape
+    height_corr, width_corr, _                   = correlation_map.shape
+    height_max, width_max, _                     = max_projection.shape
 
-    rois_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.ROISIGNALS + operation_count}"
-    rois_seriespath  = f"{rois_grouppath}/{series}"
-
-    spikes_grouppath   = f"{vpath}/{s2p_defs.DoricFile.Group.SPIKES+operation_count}"
-    spikes_seriespath  = f"{spikes_grouppath}/{series}"
+    file_.create_dataset(s2p_defs.Preview.Dataset.MEAN, data = mean_image, dtype = "float64", chunks = (height_mean, width_mean , 1), maxshape = (height_mean, width_mean, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MEDIAN_FILTER_MEAN, data = median_filter, dtype = "float64", chunks = (height_median_filter, width_median_filter , 1), maxshape = (height_median_filter, width_median_filter, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.CORRELATION_MAP, data = correlation_map, dtype = "float64", chunks = (height_corr, width_corr , 1), maxshape = (height_corr, width_corr, None))
+    file_.create_dataset(s2p_defs.Preview.Dataset.MAX_PROJECTION, data = max_projection, dtype = "float64", chunks = (height_max, width_max , 1), maxshape = (height_max, width_max, None))
 
     print(f"{s2p_defs.Messages.SAVING_ROIS} and {s2p_defs.Messages.SAVING_SPIKES}", flush=True)
     for plane_index, plane_ID in enumerate(plane_IDs):
         cell_indexs = [i for i, stat in enumerate(stats) if stat["iplane"] == plane_index]
 
-        attrs = {"Unit": "AU",
-                 defs.DoricFile.Attribute.Dataset.PLANE_ID: plane_ID}
-        
-        rois_path   = f"{rois_seriespath}/{sensor}-P{plane_ID}"
-        spikes_path = f"{spikes_seriespath}/{sensor}-P{plane_ID}"
+        attrs = {defs.DoricFile.Attribute.Dataset.PLANE_ID: np.int32(plane_ID)}
 
-        if plane_ID == -1:
-            rois_path   = f"{rois_seriespath}/{sensor}"
-            spikes_path = f"{spikes_seriespath}/{sensor}"
-            del attrs[defs.DoricFile.Attribute.Dataset.PLANE_ID]
-            
         utils.save_roi_signals(signals       = f_cells[cell_indexs, :],
                                footprints    = footprints[cell_indexs, :, :],
                                time_         = time_[plane_index],
                                file_         = file_,
-                               path          = rois_path,
+                               path          = f"{s2p_defs.Preview.Group.ROISIGNALS}/P{plane_ID}" if not is_microscope else f"{s2p_defs.Preview.Group.ROISIGNALS}",
                                ids           = [ids[i] for i in cell_indexs],
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
-                               attrs         = attrs)
+                               other_attrs   = [{s2p_defs.Preview.Attribute.CELL: np.int32(iscell[i])} for i in cell_indexs],
+                               common_attrs  = attrs)
             
         utils.save_signals(signals        = spikes[cell_indexs, :],
                            time_         = time_[plane_index],
                            file_         = file_,
-                           path          = spikes_path,
+                           path          = f"{s2p_defs.Preview.Group.SPIKES}/P{plane_ID}" if not is_microscope else f"{s2p_defs.Preview.Group.SPIKES}",
                            dataset_names = [dataset_names[i] for i in cell_indexs],
                            usernames     = [usernames[i] for i in cell_indexs],
                            attrs         = attrs)
-    
-    utils.save_attributes(utils.merge_params(params_doric, params_source), file_, rois_grouppath)
-    if rois_seriespath in file_:
-        for plane_sensor in file_[rois_seriespath].keys():
-            utils.print_group_path_for_DANSE(f"{rois_seriespath}/{plane_sensor}")
-        
-    utils.save_attributes(utils.merge_params(params_doric, params_source), file_, spikes_grouppath)
-    if spikes_seriespath in file_:
-        for plane_sensor in file_[spikes_seriespath].keys():
-            utils.print_group_path_for_DANSE(f"{spikes_seriespath}/{plane_sensor}")
 
     file_.close()
 
@@ -170,3 +157,16 @@ def correct_spikes_values(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
 
     return spikes
 
+def split_by_plane(suite2p_image: np.ndarray, plane_count: int) -> np.ndarray:
+    height, width = suite2p_image.shape
+    
+    height_split = np.ceil(plane_count/2)
+    width_split = 1 if plane_count == 1 else 2
+    
+    images = []
+    for n in range(plane_count):
+        image = suite2p_image[int(n/2)*int(height/height_split) : (int(n/2) + 1)*int(height/height_split),
+                              n%2*int(width/width_split) : (n%2 + 1)*int(width/width_split)]
+        images.append(image)
+
+    return np.moveaxis(np.array(images), 0, -1)
