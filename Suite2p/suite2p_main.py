@@ -158,14 +158,14 @@ def correct_spikes_values(spks:np.ndarray, f_cells:np.ndarray) -> np.ndarray:
     return spikes
 
 def split_by_plane(suite2p_image: np.ndarray, plane_count: int) -> np.ndarray:
-    hight, width = suite2p_image.shape
+    height, width = suite2p_image.shape
     
-    hight_split = np.ceil(plane_count/2)
+    height_split = np.ceil(plane_count/2)
     width_split = 1 if plane_count == 1 else 2
     
     images = []
     for n in range(plane_count):
-        image = suite2p_image[int(n/2)*int(hight/hight_split) : (int(n/2) + 1)*int(hight/hight_split),
+        image = suite2p_image[int(n/2)*int(height/height_split) : (int(n/2) + 1)*int(height/height_split),
                               n%2*int(width/width_split) : (n%2 + 1)*int(width/width_split)]
         images.append(image)
 
