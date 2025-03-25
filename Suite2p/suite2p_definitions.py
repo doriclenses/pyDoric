@@ -27,12 +27,3 @@ class Preview:
 
     class Attribute:
         CELL = "Cell"
-
-
-class DoricFile:
-    """
-    Names of the .doric file structue
-    """
-    class Group:
-        ROISIGNALS = "Suite2pROISignals"
-        SPIKES     = "Suite2pSpikes"
