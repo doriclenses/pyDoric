@@ -7,15 +7,23 @@ class Messages:
     PROCESS_DONE       = "Suite2p process is done"
     SAVING_ROIS        = "Saving ROIs"
     SAVING_SPIKES      = "Saving Spikes"
+    SAVING_IMAGES      = "Saving Images"
     ROI_NAMES          = "Generating ROI names"
 
-class DoricFile:
+
+class Preview:
     """
-    Names of the .doric file structue
+    Names of preview file structue
     """
+    class Dataset:
+        MEAN               = "Mean"
+        MEDIAN_FILTER_MEAN = "MedianFilteredMean"
+        CORRELATION_MAP    = "CorrelationMap"
+        MAX_PROJECTION     = "MaxProjection"
 
     class Group:
-        ROISIGNALS  = "Suite2pROISignals"
-        IMAGES      = "Suite2pImages"
-        RESIDUALS   = "Suite2pResidualImages"
-        SPIKES      = "Suite2pSpikes"
+        ROISIGNALS = "ROISignals"
+        SPIKES     = "Spikes"
+
+    class Attribute:
+        CELL = "Cell"
