@@ -96,26 +96,20 @@ def update_config_file(config_file_path, bodypart_names):
 
 
 def update_pytorch_config_file(
-    config_file_path: str, 
-    shuffle_index: int
+    config_filepath: str, 
+    shuffle: int
 ):
     """
     Update label names in the pytorch config file
     """
-    root_path   = os.path.dirname(config_file_path)
-    target_file = 'pytorch_config.yaml'
 
-    task, date, trainset, iterations = get_info_config_file(config_file_path)
-    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle_index}'
-    dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
-    pytorch_config_file_path = os.path.join(dir_path, target_file)
-
-    with open(pytorch_config_file_path, 'r') as file:
+    pytorch_config_filepath = get_pytorch_config_file(config_filepath, shuffle)
+    with open(pytorch_config_filepath, 'r') as file:
         data = yaml.safe_load(file)
     data['model']['backbone']['freeze_bn_stats']    = False
     data['train_settings']['dataloader_pin_memory'] = True
 
-    with open(pytorch_config_file_path, 'w') as file:
+    with open(pytorch_config_filepath, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
 
 
@@ -195,21 +189,23 @@ def save_coords_to_doric(
     group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
     operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
 
-    # Get path for PyTorch file
-    root_path   = os.path.dirname(config_file_path)
-    target_file = 'pytorch_config.yaml'
-    task, date, trainset, iterations = get_info_config_file(config_file_path)
-    folderName = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
-    dir_path   = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iterations}', folderName, 'train')
-    pytorch_config_file_path = os.path.join(dir_path, target_file)
 
-    # Get info from PyTorch configFile
-    with open(pytorch_config_file_path, 'r') as file:
-        data = yaml.safe_load(file)
-    model = data['net_type'].replace("_", "").capitalize()
-    epochs = data['train_settings']['epochs']
+    # Get info from config file
+    with open(config_filepath, 'r') as file:
+        config_data = yaml.safe_load(file)
+        
+    config_task = data['Task']
+    config_date = data['date']
+
+    # Get info from PyTorch config file
+    pytorch_config_filepath = get_pytorch_config_file(config_filepath, shuffle)
+    with open(pytorch_config_filepath, 'r') as file:
+        pytorch_data = yaml.safe_load(file)
 
     for file_name in filepaths:
+    model  = pytorch_data['net_type'].replace("_", "").capitalize()
+    epochs = pytorch_data['train_settings']['epochs']
+
         try:
             file_ = h5py.File(file_name, 'a')
         except OSError as e:
@@ -255,14 +251,19 @@ def save_coords_to_doric(
         file_.close()
 
 
-def get_info_config_file(config_file_path):
+def get_pytorch_config_file(config_filepath, shuffle):
 
-    with open(config_file_path, 'r') as file:
-        dataConfig = yaml.safe_load(file)
+    with open(config_filepath, 'r') as file:
+        data = yaml.safe_load(file)
         
-    task       = dataConfig['Task']
-    date       = dataConfig['date']
-    trainset   = int(dataConfig['TrainingFraction'][0] * 100)
-    iterations = dataConfig['iteration']
+    task      = data['Task']
+    date      = data['date']
+    trainset  = int(data['TrainingFraction'][0] * 100)
+    iteration = data['iteration']
 
-    return (task, date, trainset, iterations)
+    filename     = 'pytorch_config.yaml'
+    project_path = os.path.dirname(config_filepath)
+    folder_name  = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
+    folder_path  = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iteration}', folder_name, 'train')
+
+    return os.path.join(folder_path, filename)
