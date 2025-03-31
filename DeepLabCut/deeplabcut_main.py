@@ -64,12 +64,12 @@ def create_project(
     Create DeepLabCut project folder with config file and labeled data
     """
     video_filepaths = []
-    for filepath in filepaths:
+    for filepath in data_filepaths:
         with h5py.File(filepath, 'r') as file_:
             relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
             video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
 
-    path = exp_filepath if len(filepaths) > 1 else filepaths[0]
+    path = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
     task = os.path.splitext(os.path.basename(path))[0]
     user = "danse"
 
@@ -201,8 +201,8 @@ def save_coords_to_doric(
     with open(config_filepath, 'r') as file:
         config_data = yaml.safe_load(file)
         
-    config_task = data['Task']
-    config_date = data['date']
+    config_task = config_data['Task']
+    config_date = config_data['date']
 
     # Get info from PyTorch config file
     pytorch_config_filepath = get_pytorch_config_file(config_filepath, shuffle)
@@ -237,8 +237,8 @@ def save_coords_to_doric(
         video_filename = os.path.splitext(os.path.basename(video_filepath))[0]
 
         # Get coords from hdf file using info (above) from config and pytorch config files
-        hdf_data_file = f'{video_filename}DLC_{model}_{task}{date}shuffle{shuffle}_snapshot_{epochs}.h5'
-        hdf_data_file = os.path.join(root_path, hdf_data_file)
+        hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
+        hdf_data_file = os.path.join(os.path.dirname(config_filepath), hdf_data_file)
         df_coords = pd.read_hdf(hdf_data_file)
 
         # Save coordinates for each body part
@@ -272,6 +272,6 @@ def get_pytorch_config_file(config_filepath, shuffle):
     filename     = 'pytorch_config.yaml'
     project_path = os.path.dirname(config_filepath)
     folder_name  = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
-    folder_path  = os.path.join(root_path, 'dlc-models-pytorch', f'iteration-{iteration}', folder_name, 'train')
+    folder_path  = os.path.join(project_path, 'dlc-models-pytorch', f'iteration-{iteration}', folder_name, 'train')
 
     return os.path.join(folder_path, filename)
