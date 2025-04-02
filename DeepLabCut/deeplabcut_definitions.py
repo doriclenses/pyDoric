@@ -6,6 +6,7 @@ class Messages:
     LOADING_ARGUMENTS  = "Loading parameters"
     PROCESS_DONE       = "Pose Estimation process is done"
     SAVING_TO_DORIC    = "Saving data to doric file..."
+    FILE_OPENING_ERROR = "Error opening file - {file}"
 
 class Parameters:
 
@@ -17,13 +18,15 @@ class Parameters:
         """
         Parameters of danse Pose Estimation operation
         """
-        PROJECT_FOLDER    = "ProjectFolder"
-        BODY_PART_NAMES   = "BodyPartNames"
-        BODY_PART_COLORS  = "BodyPartColors"
-        COORDINATES       = "Coordinates"
-        EXTRACTED_FRAMES  = "ExtractedFrames"
-        RELATIVE_FILEPATH = "RelativeFilePath"
-        VIDEO_DATAPATH    = "VideoDatapath"
+        PROJECT_FOLDER         = "ProjectFolder"
+        BODY_PART_NAMES        = "BodyPartNames"
+        BODY_PART_COLORS       = "BodyPartColors"
+        COORDINATES            = "Coordinates"
+        EXTRACTED_FRAMES       = "ExtractedFrames"
+        EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
+        VIDEO_DATAPATH         = "VideoDatapath"
+
+        RELATIVE_FILEPATH      = "RelativeFilePath" 
         
 class DoricFile:
 
