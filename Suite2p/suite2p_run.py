@@ -1,13 +1,22 @@
 # Import miscellaneous and utilities librarys
 import os
 import sys
+
+sys.path.append("..")
+path_dev = os.path.abspath(f"{os.getcwd()}\\..\\..\\..\\DNAMainApp\\Libraries\\pythondlls")
+path_re  = os.path.abspath(f"{os.getcwd()}\\libraries\\pythondlls")
+
+if os.path.exists(path_dev):
+    os.add_dll_directory(path_dev)
+elif os.path.exists(path_re):
+    os.add_dll_directory(path_re)
+
 import tempfile
 import numpy as np
 
 # needed but not directly used
 import h5py
 
-sys.path.append("..")
 import utilities as utils
 import suite2p_main        as s2p_main
 import suite2p_parameters  as s2p_params

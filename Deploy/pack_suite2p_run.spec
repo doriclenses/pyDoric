@@ -7,6 +7,9 @@ from PyInstaller.utils.hooks import collect_dynamic_libs
 #
 # for main MiniAn python script
 #
+import sys
+sys.path.append(".")
+import pack_definitions as pack_defs
 
 block_cipher = None
 
@@ -41,6 +44,9 @@ a_suite2p = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+
+a_suite2p.binaries= TOC([x for x in a_suite2p.binaries if not any(exclude in x[0] for exclude in pack_defs.Exclusion.binaries)])
+
 pyz_suite2p = PYZ(a_suite2p.pure, a_suite2p.zipped_data, cipher=block_cipher)
 
 exe_suite2p = EXE(
