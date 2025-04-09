@@ -1,6 +1,6 @@
 class Exclusion:
     """
-    qwewqewq
+    
     """
 
     binaries = ["mkl_core.2.dll"
