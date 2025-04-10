@@ -396,12 +396,6 @@ def print_error(error, position):
 #*************************************************************** OTHER FUNCTIONS ********************************************
 def def_chunk_size(data_shape):
 
-    if len(data_shape) == 3:
-        height   = data_shape[1]
-        width    = data_shape[2]
-
-        return (height,width,1)
-
     if len(data_shape) == 1:
         chunk_size = 65536
         durantion = data_shape[0]
@@ -410,6 +404,21 @@ def def_chunk_size(data_shape):
             chunk_size = durantion
 
         return  (chunk_size,)
+    
+    if len(data_shape) == 2:
+        chunk_size = 65536
+        durantion = data_shape[0]
+
+        if durantion < chunk_size:
+            chunk_size = durantion
+
+        return (chunk_size, 2)
+    
+    if len(data_shape) == 3:
+        height   = data_shape[1]
+        width    = data_shape[2]
+
+        return (height,width,1)
 
 
 def clean_path(path):
