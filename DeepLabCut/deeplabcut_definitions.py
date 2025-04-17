@@ -25,8 +25,8 @@ class Parameters:
         EXTRACTED_FRAMES       = "ExtractedFrames"
         EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
         VIDEO_DATAPATH         = "VideoDatapath"
-
         RELATIVE_FILEPATH      = "RelativeFilePath" 
+        VIDEO_RANGE            = "VideoRange"
         
 class DoricFile:
 
