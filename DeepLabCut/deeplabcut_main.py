@@ -136,7 +136,7 @@ def create_labeled_data(
         if not os.path.exists(labeled_data_filepath):
             os.makedirs(labeled_data_filepath)
 
-        frames_range = [extracted_frames_count*i, extracted_frames_count*(i+1) + 1]
+        frames_range = [extracted_frames_count*i, extracted_frames_count*(i+1)]
 
         # Create pandas dataframe with body part coordinates
         data = [] # [[bp1_x1, bp1_x2, ..., bp1_xn], [bp1_y1, bp1_y2, ..., bp1_yn], [bp2_x1, bp2_x2, ..., bp2_xn], [bp2_y1, bp2_y2, ..., bp2_yn], ...]
@@ -232,7 +232,9 @@ def save_coords_to_doric(
         # Save operation attributes
         utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
 
-        relative_path  = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
+        relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
+        video_range   = file_[datapath].attrs[dlc_defs.Parameters.danse.VIDEO_RANGE]
+
         video_filepath = os.path.join(os.path.dirname(filepath), relative_path.lstrip('/'))
         video_filename = os.path.splitext(os.path.basename(video_filepath))[0]
 
@@ -240,6 +242,7 @@ def save_coords_to_doric(
         hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
         hdf_data_file = os.path.join(os.path.dirname(config_filepath), hdf_data_file)
         df_coords = pd.read_hdf(hdf_data_file)
+        df_coords = df_coords[video_range[0]: video_range[1] + 1]
 
         # Save coordinates for each body part
         for index, bodypart_name in enumerate(bodypart_names):
