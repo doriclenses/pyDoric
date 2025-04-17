@@ -7,6 +7,9 @@ from PyInstaller.utils.hooks import collect_dynamic_libs
 #
 # for main MiniAn python script
 #
+import sys
+sys.path.append(".")
+import pack_definitions as pack_defs
 
 block_cipher = None
 
@@ -43,6 +46,9 @@ a_minian = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+
+a_minian.binaries= TOC([x for x in a_minian.binaries if not any(exclude in x[0] for exclude in pack_defs.Exclusion.binaries)])
+
 pyz_minian = PYZ(a_minian.pure, a_minian.zipped_data, cipher=block_cipher)
 
 exe_minian = EXE(
