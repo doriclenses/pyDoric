@@ -77,16 +77,22 @@ class Suite2pParameters:
                                           # 1: 6 pixels, 2: 12 pixels, 3: 24 pixels, 4: 48 pixels
         self.ops['connected']         = True # whether or not to require ROIs to be fully connected. If True, Suite2p ensures that each ROI is a single, connected region in the image. 
                                              # This can help  in avoiding fragmented or disjointed ROIs, which might not correspond to actual cells.
-                                             # Set to False (0) for dendrite/boutons.                                  
-        self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
-        self.ops['spatial_hp_detect'] = 40 # default: 25, window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
-        self.ops['high_pass']         = 40 # default:100, but suggest less than 10 value for 1p images. Temporal high pass filter, running mean subtraction across time with window of size
-        self.ops['max_overlap']       = 0.75 # 1 means, no cells are discarded
-        self.ops['max_iterations']    = 20 # at most ops[‘max_iterations’], but usually stops before
-        self.ops['denoise']           = True # default:False
+                                             # Set to False (0) for dendrite/boutons.
+
+        if self.params["CellDetectionAlgorithm"]  == "Functional Detect":
+            self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
+            self.ops['spatial_hp_detect'] = self.params['SpatialHighPassFilter'] # default: 25, window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
+            self.ops['high_pass']         = self.params['TemporalHighPassFilter'] # default:100, but suggest less than 10 value for 1p images. Temporal high pass filter, running mean subtraction 
+                                                                                  # across time with window of size
+            self.ops['anatomical_only']   = 0
+        else:
+            self.ops['anatomical_only']   = 3 # Sets to use Cellpose algorithm and find masks on enhanced mean image
+
+        self.ops['max_overlap']    = 0.75 # 1 means, no cells are discarded
+        self.ops['max_iterations'] = 20 # at most ops[‘max_iterations’], but usually stops before
+        self.ops['denoise']        = True # default:False
 
         # Suite2p Cellpose Detection
-        self.ops['anatomical_only']    = 3   # Sets to use Cellpose algorithm and find masks on enhanced mean image
         self.ops['diameter']           = self.params['CellDiameter'] # Diameter that will be used for Cellpose
         self.ops['flow_threshold']     = 0.4 # Maximum allowed error of the flows. Increase this threshold if cellpose is not returning as many ROIs as you’d expect.
         self.ops['cellprob_threshold'] = 0.0 # -6 to +6, Pixels > cellprob_threshold are used to run dynamics & determine ROIs. Decrease it, if cellpose is not returning as many ROIs as you’d expect
