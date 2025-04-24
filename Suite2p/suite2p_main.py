@@ -138,15 +138,15 @@ def save_suite2p_to_doric(
                                dataset_names = [dataset_names[i] for i in cell_indexs],
                                usernames     = [usernames[i] for i in cell_indexs],
                                other_attrs   = [{s2p_defs.Preview.Attribute.CELL: np.int32(iscell[i])} for i in cell_indexs],
-                               common_attrs  = attrs)
+                               common_attrs  = attrs if not is_microscope else {})
             
-        utils.save_signals(signals        = spikes[cell_indexs, :],
+        utils.save_signals(signals       = spikes[cell_indexs, :],
                            time_         = time_[plane_index],
                            file_         = file_,
                            path          = f"{s2p_defs.Preview.Group.SPIKES}/P{plane_ID}" if not is_microscope else f"{s2p_defs.Preview.Group.SPIKES}",
                            dataset_names = [dataset_names[i] for i in cell_indexs],
                            usernames     = [usernames[i] for i in cell_indexs],
-                           attrs         = attrs)
+                           attrs         = attrs if not is_microscope else {})
 
     file_.close()
 
