@@ -224,10 +224,10 @@ def save_coords_to_doric(
         operation_path  = f'{group_path}/{operation_name + operation_count}'
 
         # Save time
-        time_ = np.array(file_[f"{datapath}/{defs.DoricFile.Dataset.TIME}"])
-        time_path = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
-        if time_path not in file_:
-            file_.create_dataset(time_path, data=time_, dtype="float64", chunks=utils.def_chunk_size(time_.shape), maxshape=None)
+        video_time = np.array(file_[f"{datapath[:datapath.rfind('/')]}/{defs.DoricFile.Dataset.TIME}"])
+        time_datapath = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
+        if time_datapath not in file_:
+            file_.create_dataset(time_datapath, data=video_time, dtype="float64", chunks=utils.def_chunk_size(video_time.shape), maxshape=None)
 
         # Save operation attributes
         utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
