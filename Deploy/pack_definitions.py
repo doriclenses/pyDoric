@@ -3,9 +3,9 @@ class Exclusion:
     
     """
 
-    binaries = ["libblas.dll",
-                "libcblas.dll",
-                "liblapack.dll",
+    binaries = [
+                "mkl_avx2.2.dll",
+                "mkl_avx512.2.dll",
                 "mkl_blacs_ilp64.2.dll",
                 "mkl_blacs_intelmpi_ilp64.2.dll",
                 "mkl_blacs_intelmpi_lp64.2.dll",
@@ -27,6 +27,5 @@ class Exclusion:
                 "mkl_vml_avx512.2.dll",
                 "mkl_vml_cmpt.2.dll",
                 "mkl_vml_def.2.dll",
-                "mkl_vml_mc3.2.dll",
-                "mkl_avx2.2.dll",
-                "mkl_avx512.2.dll"]
+                "mkl_vml_mc3.2.dll"
+            ]
