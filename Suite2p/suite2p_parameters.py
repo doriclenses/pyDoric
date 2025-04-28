@@ -34,14 +34,14 @@ class Suite2pParameters:
         self.ops['frames_include']      = -1 # If greater than zero, only frames_include frames are processed
         self.ops['multiplane_parallel'] = False # Whether or not to run on server
         self.ops['ignore_flyback']      = [] # Specifies which planes should be ignored as flyback planes during processing
-        
+
         # Bidirectional phase offset, applies to 2P recordings only
         self.ops['do_bidiphase']   = False
         self.ops['bidiphase']      = 0 # If set to any value besides 0, then this offset is used
         self.ops['bidi_corrected'] = False
 
         # Suite2p Registration Settings
-        self.ops['do_registration']       = True # whether or not to run registration
+        self.ops['do_registration']       = self.params['MotionCorrection'] # whether or not to run registration
         self.ops['align_by_chan']         = 1
         self.ops['nimg_init']             = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
         self.ops['batch_size']            = 100 # Decrease the batch_size in case low RAM on computer
@@ -56,28 +56,31 @@ class Suite2pParameters:
         self.ops['force_refImg']          = False # if True, use refImg stored in ops['refImg'] 
         self.ops['pad_fft']               = False
 
-        # Suite2p 1P registration
-        self.ops['1Preg']              = self.params["1PRegistration"] # High-pass spatial filtering and tapering, which help with 1P registration
-        if self.ops['1Preg']:
-            self.ops['pre_smooth']     = False
-            spatial_hp_reg = 2.8 * self.params['CellDiameter']
-            self.ops['spatial_hp_reg'] = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
-            self.ops['spatial_taper']  = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
 
-        # Suite2p Non-Rigid registration (optional) will approx double the time
-        self.ops['nonrigid']      = True
-        self.ops['block_size']    = [128,128]  # Can be [64,64], [256,256]. Recommend keeping this a power of 2 and/or 3
-        self.ops['maxregshiftNR'] = int(self.params['CellDiameter']/3)
-        self.ops['snr_thresh']    = 1.5 # default: 1.2, How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
+        if self.ops['do_registration']:
+            # Suite2p 1P registration
+            self.ops['1Preg'] = self.params["1PImaging"] # High-pass spatial filtering and tapering, which help with 1P registration
+            if self.ops['1Preg']:
+                self.ops['pre_smooth']     = False
+                spatial_hp_reg = 2.8 * self.params['CellDiameter']
+                self.ops['spatial_hp_reg'] = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
+                self.ops['spatial_taper']  = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
+
+            # Suite2p Non-Rigid registration (optional) will approx double the time
+            self.ops['nonrigid'] = True if self.params["RegistrationType"] == "Non-Rigid Registration" else False
+            if self.ops['nonrigid']:
+                self.ops['block_size']    = [128,128]  # Can be [64,64], [256,256]. Recommend keeping this a power of 2 and/or 3
+                self.ops['maxregshiftNR'] = int(self.params['CellDiameter']/3)
+                self.ops['snr_thresh']    = 1.5 # default: 1.2, How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
 
         # Suite2p ROI Detection Settings
-        self.ops['roidetect']         = True
-        self.ops['sparse_mode']       = True
-        self.ops['spatial_scale']     = 0 # if anatomical_only = 0, then diameter is ignored and spatial_scale matters. 0 means multi_scale (automatic detection of the cell diameter).
-                                          # 1: 6 pixels, 2: 12 pixels, 3: 24 pixels, 4: 48 pixels
-        self.ops['connected']         = True # whether or not to require ROIs to be fully connected. If True, Suite2p ensures that each ROI is a single, connected region in the image. 
-                                             # This can help  in avoiding fragmented or disjointed ROIs, which might not correspond to actual cells.
-                                             # Set to False (0) for dendrite/boutons.
+        self.ops['roidetect']     = True
+        self.ops['sparse_mode']   = True
+        self.ops['spatial_scale'] = 0 # if anatomical_only = 0, then diameter is ignored and spatial_scale matters. 0 means multi_scale (automatic detection of the cell diameter).
+                                      # 1: 6 pixels, 2: 12 pixels, 3: 24 pixels, 4: 48 pixels
+        self.ops['connected']     = True # whether or not to require ROIs to be fully connected. If True, Suite2p ensures that each ROI is a single, connected region in the image. 
+                                         # This can help  in avoiding fragmented or disjointed ROIs, which might not correspond to actual cells.
+                                         # Set to False (0) for dendrite/boutons.
 
         if self.params["CellDetectionAlgorithm"]  == "Functional Detect":
             self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
@@ -110,8 +113,8 @@ class Suite2pParameters:
         # Suite2p Spike Deconvolution settings
         self.ops['spikedetect']      = True # Whether or not to run spike_deconvolution
         self.ops['neucoeff']         = 0.7 # neuropil coefficient for all ROIs
-        self.ops['baseline']         = "maximin" # method for computing baseline. maxmin: gaussian filter->min Filter->max filter; constant: gaussian filter->min of the trace; 
-                                                 # constant_percentile: computes a constant baseline by taking the ops['prctile_baseline'] percentile of the trace 
+        self.ops['baseline']         = "maximin" # method for computing baseline. maxmin: gaussian filter->min Filter->max filter; constant: gaussian filter->min of the trace;
+                                                 # constant_percentile: computes a constant baseline by taking the ops['prctile_baseline'] percentile of the trace
         self.ops['win_baseline']     = 60 # window for maximin filter in seconds
         self.ops['sig_baseline']     = 10 # width of Gaussian filter in frames
         self.ops['prctile_baseline'] = 8 # percentile of trace to use as baseline
