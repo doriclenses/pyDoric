@@ -108,9 +108,8 @@ def save_suite2p_to_doric(
 
     # add enhanced mean image
     if "meanImgE" not in ops:
-        # ops["meanImgE"]  = suite2p.registration.compute_enhanced_mean_image(ops["meanImg"].astype(np.float32), ops)
-        ops = suite2p.extraction.enhanced_mean_image(ops)
-        
+        ops["meanImgE"]  = suite2p.registration.compute_enhanced_mean_image(ops["meanImg"].astype(np.float32), ops)
+
     # Check if Suite2p results already exist
     mean_image      = split_by_plane(ops['meanImg'], len(plane_IDs))
     median_filter   = split_by_plane(ops['meanImgE'], len(plane_IDs))
