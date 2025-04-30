@@ -188,8 +188,7 @@ def save_coords_to_doric(
     bodypart_colors = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
 
     # Define correct paths for saving operaion results
-    group_names = deeplabcut_params.get_h5path_names()
-    _, _, _, series, video_group_name = group_names
+    _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names()
     group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
     operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
 

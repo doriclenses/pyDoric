@@ -22,10 +22,10 @@ class DeepLabCutParameters:
         """
         h5path_names = self.paths[defs.Parameters.Path.H5PATH].split('/')
 
-        data = h5path_names[0]
-        driver = h5path_names[1]
-        operation = h5path_names[2]
-        series = h5path_names[-2]
-        sensor = h5path_names[-1]
+        data     = h5path_names[0]
+        driver   = h5path_names[1]
+        dataType = h5path_names[-4]
+        series   = h5path_names[-3]
+        group    = h5path_names[-2]
 
-        return [data, driver, operation, series, sensor]
+        return [data, driver, dataType, series, group]
