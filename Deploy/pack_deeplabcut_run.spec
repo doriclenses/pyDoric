@@ -4,6 +4,9 @@ from PyInstaller.utils.hooks import collect_all
 from PyInstaller.utils.hooks import copy_metadata
 from PyInstaller.utils.hooks import collect_dynamic_libs
 
+import sys
+sys.path.append(".")
+import pack_definitions as pack_defs
 
 block_cipher = None
 
@@ -57,6 +60,7 @@ exclude_binaries = [
     ]
 
 a_deeplabcut.binaries= TOC([x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)])
+a_deeplabcut.binaries= TOC([x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in pack_defs.Exclusion.binaries)])
 
 pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=block_cipher)
 

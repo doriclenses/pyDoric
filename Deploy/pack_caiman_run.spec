@@ -7,6 +7,9 @@ from PyInstaller.utils.hooks import collect_dynamic_libs
 #
 # for maim CaimAn python script
 #
+import sys
+sys.path.append(".")
+import pack_definitions as pack_defs
 
 block_cipher = None
 
@@ -36,7 +39,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 datas += [( '../CaImAn/caiman_data/model', 'caiman_data/model')]
 
-excludes = ["PyQt5", "Markdown", "jupyter", "panel", "matplotlib", "bokeh", "IPython", "ipyparallel", "ipywidgets", "tensorflow", "pyqtgraph"]
+excludes = ["PyQt5", "Markdown", "jupyter", "jupyterlab", "panel", "matplotlib", "bokeh", "IPython", "ipyparallel", "ipywidgets", "tensorflow", "pyqtgraph"]
 
 a_caimAn = Analysis(
     ['../CaImAn/caiman_run.py'],
@@ -53,6 +56,8 @@ a_caimAn = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+
+a_caimAn.binaries= TOC([x for x in a_caimAn.binaries if not any(exclude in x[0] for exclude in pack_defs.Exclusion.binaries)])
 
 pyz_caimAn = PYZ(a_caimAn.pure, a_caimAn.zipped_data, cipher=block_cipher)
 

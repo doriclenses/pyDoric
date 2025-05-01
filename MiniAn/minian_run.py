@@ -1,9 +1,6 @@
 # Import miscellaneous and utilities librarys
 import os
 import sys
-import tempfile
-import numpy as np
-from dask.distributed import Client, LocalCluster
 
 # Turn unused packages to dummy ones so they can be removed during pyinstaller wrapping
 from unittest.mock import Mock
@@ -11,11 +8,19 @@ mock_packages = ['panel', 'matplotlib', 'bokeh', 'bokeh.palettes']
 for package in mock_packages:
     sys.modules[package] = Mock()
 
+sys.path.append("..")
+path_dev = os.path.abspath(f"{os.getcwd()}\\..\\..\\..\\DNAMainApp\\Libraries\\pythondlls")
+path_re  = os.path.abspath(f"{os.getcwd()}\\libraries\\pythondlls")
+
+if os.path.exists(path_dev):
+    os.add_dll_directory(path_dev)
+elif os.path.exists(path_re):
+    os.add_dll_directory(path_re)
+
 # needed but not directly used
 import h5py
 import xarray as xr
 
-sys.path.append("..")
 import utilities as utils
 import minian_main        as mn_main
 import minian_parameters  as mn_params

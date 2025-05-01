@@ -1,5 +1,13 @@
 import sys
+import os
 sys.path.append("..")
+path_dev = os.path.abspath(f"{os.getcwd()}\\..\\..\\..\\DNAMainApp\\Libraries\\pythondlls")
+path_re  = os.path.abspath(f"{os.getcwd()}\\libraries\\pythondlls")
+
+if os.path.exists(path_dev):
+    os.add_dll_directory(path_dev)
+elif os.path.exists(path_re):
+    os.add_dll_directory(path_re)
 
 from unittest.mock import Mock
 submodules_matplotlib = [
