@@ -41,7 +41,7 @@ class Suite2pParameters:
         self.ops['bidi_corrected'] = False
 
         # Suite2p Registration Settings
-        self.ops['do_registration']       = self.params['MotionCorrection'] # whether or not to run registration
+        self.ops['do_registration']       = True if "RegistrationType" in self.params else False # whether or not to run registration
         self.ops['align_by_chan']         = 1
         self.ops['nimg_init']             = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
         self.ops['batch_size']            = 100 # Decrease the batch_size in case low RAM on computer
