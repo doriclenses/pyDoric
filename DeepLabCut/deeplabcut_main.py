@@ -24,7 +24,6 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     DeepLabCut algorithm
     """
     # Read danse parameters 
-    datapath: str               = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
     datapaths: list             = deeplabcut_params.paths[defs.Parameters.Path.H5PATHS]
     data_filepaths: list[str]   = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
     exp_filepath:  str          = deeplabcut_params.params.get(defs.Parameters.Path.EXP_FILE, "")
@@ -190,19 +189,13 @@ def save_coords_to_doric(
     bodypart_names  = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     bodypart_colors = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
 
-    # Define correct paths for saving operaion results
-    _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names()
-    group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
-    operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
-
     # Update parameters
-    deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapaths
     deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER] = os.path.dirname(config_filepath)
 
     # Get info from config file
     with open(config_filepath, 'r') as file:
         config_data = yaml.safe_load(file)
-        
+  
     config_task = config_data['Task']
     config_date = config_data['date']
 
@@ -222,10 +215,16 @@ def save_coords_to_doric(
             utils.print_error(e, dlc_defs.Messages.FILE_OPENING_ERROR.format(file = filepath))
             continue
 
-        operation_count = utils.operation_count(group_path, file_, operation_name, deeplabcut_params.params, {})    
-        operation_path  = f'{group_path}/{operation_name + operation_count}'
-
         for datapath in datapaths:
+            deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
+            # Define correct paths for saving operaion results
+            _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names(datapath)
+            group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
+            operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
+
+            operation_count = utils.operation_count(group_path, file_, operation_name, deeplabcut_params.params, {})    
+            operation_path  = f'{group_path}/{operation_name + operation_count}'
+
             # Save time
             video_time = np.array(file_[f"{datapath[:datapath.rfind('/')]}/{defs.DoricFile.Dataset.TIME}"])
             time_datapath = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
