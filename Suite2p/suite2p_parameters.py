@@ -41,11 +41,11 @@ class Suite2pParameters:
         self.ops['bidi_corrected'] = False
 
         # Suite2p Registration Settings
-        self.ops['do_registration']       = True if "RegistrationType" in self.params else False # whether or not to run registration
+        self.ops['do_registration']       = True if "RegistrationType" in self.params else False # Whether or not to run registration
         self.ops['align_by_chan']         = 1
         self.ops['nimg_init']             = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
         self.ops['batch_size']            = 100 # Decrease the batch_size in case low RAM on computer
-        self.ops['maxregshift']           = 0.1 # maximum shift size - for rigid registration. 0.1 = 10% of the size of the FOV      
+        self.ops['maxregshift']           = 0.1 # Maximum shift size - for rigid registration. 0.1 = 10% of the size of the FOV      
         self.ops['smooth_sigma_time']     = 0 # Temporal smoothing, standard deviation for Gaussian kernel; Might need this to be set to 1 or 2 for low SNR data
         self.ops['smooth_sigma']          = 4 # STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered
         self.ops['keep_movie_raw']        = False
@@ -53,7 +53,7 @@ class Suite2pParameters:
         self.ops['subpixel']              = 10 # Precision of Subpixel Registration (1/subpixel steps; default is 10 = 0.1 pixel accuracy)
         self.ops['th_badframes']          = 1.0 # Determines the frames that are excluded when determining the cropping region. Decrease th_badframes and more frames will be set as bad frames
         self.ops['norm_frames']           = True # Normalize frames when detecting shifts
-        self.ops['force_refImg']          = False # if True, use refImg stored in ops['refImg'] 
+        self.ops['force_refImg']          = False # If True, use refImg stored in ops['refImg'] 
         self.ops['pad_fft']               = False
 
 
@@ -61,7 +61,7 @@ class Suite2pParameters:
             # Suite2p 1P registration
             self.ops['1Preg'] = self.params["1PImaging"] # High-pass spatial filtering and tapering, which help with 1P registration
             if self.ops['1Preg']:
-                self.ops['pre_smooth']     = False
+                self.ops['pre_smooth']     = False # Default: 0. If > 0, defines stddev of Gaussian smoothing, which is applied before spatial high-pass filtering 
                 spatial_hp_reg = 2.8 * self.params['CellDiameter']
                 self.ops['spatial_hp_reg'] = (spatial_hp_reg - spatial_hp_reg%2) # Window in pixels (even number) for spatial high-pass filtering before registration
                 self.ops['spatial_taper']  = int(0.03 * min(height, width)) # How many pixels to ignore on edges - they are set to zero
@@ -71,14 +71,15 @@ class Suite2pParameters:
             if self.ops['nonrigid']:
                 self.ops['block_size']    = [128,128]  # Can be [64,64], [256,256]. Recommend keeping this a power of 2 and/or 3
                 self.ops['maxregshiftNR'] = int(self.params['CellDiameter']/3)
-                self.ops['snr_thresh']    = 1.5 # default: 1.2, How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
+                self.ops['snr_thresh']    = 1.5 # Default: 1.2. How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
 
         # Suite2p ROI Detection Settings
         self.ops['roidetect']     = True
-        self.ops['sparse_mode']   = True
-        self.ops['spatial_scale'] = 0 # if anatomical_only = 0, then diameter is ignored and spatial_scale matters. 0 means multi_scale (automatic detection of the cell diameter).
+        self.ops['sparse_mode']   = True # When true, the algorithm analyzes the data at different spatial scales (multi-scale) to better distinguish individual cells.
+                                         # The diameter parameter, is not used in sparse mode.
+        self.ops['spatial_scale'] = 0 # If anatomical_only = 0, then diameter is ignored and spatial_scale matters. 0 means multi_scale (automatic detection of the cell diameter).
                                       # 1: 6 pixels, 2: 12 pixels, 3: 24 pixels, 4: 48 pixels
-        self.ops['connected']     = True # whether or not to require ROIs to be fully connected. If True, Suite2p ensures that each ROI is a single, connected region in the image. 
+        self.ops['connected']     = True # Whether or not to require ROIs to be fully connected. If True, Suite2p ensures that each ROI is a single, connected region in the image. 
                                          # This can help  in avoiding fragmented or disjointed ROIs, which might not correspond to actual cells.
                                          # Set to False (0) for dendrite/boutons.
 
@@ -90,22 +91,23 @@ class Suite2pParameters:
 
         if self.params["CellDetectionAlgorithm"]  == "Functional Detect":
             self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
-            self.ops['spatial_hp_detect'] = self.params['SpatialHighPassFilter'] # default: 25, window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
-            self.ops['high_pass']         = int(self.params['TemporalHighPassFilter'] * self.ops['fs'])  # default:100, but suggest less than 10 value for 1p images. Temporal high pass filter,
-                                                                                                         # running mean subtraction across time with window of size
+            self.ops['spatial_hp_detect'] = self.params['SpatialHighPassFilter'] # Default: 25. Window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
+            self.ops['high_pass']         = int(self.params['TemporalHighPassFilter'] * self.ops['fs'])  # Default:100. Suite2p docs suggests less than 10 value for 1p images.
+                                                                                                         # Temporal high pass filter, running mean subtraction across time with window of size.
             self.ops['anatomical_only']   = 0
         else:
-            self.ops['anatomical_only']   = 3 # Sets to use Cellpose algorithm and find masks on enhanced mean image
+            self.ops['anatomical_only']   = 3 # If greater than 0, suite2p uses Cellpose algorithm (anatomical segmentation) for cell detection.
+                                              # Value of 3 - find masks on enhanced mean image
 
         self.ops['max_overlap']    = 0.75 # 1 means, no cells are discarded
-        self.ops['max_iterations'] = 20 # at most ops[‘max_iterations’], but usually stops before
-        self.ops['denoise']        = True # default:False
+        self.ops['max_iterations'] = 20 # At most ops[‘max_iterations’] iterations, but usually stops before.
+        self.ops['denoise']        = True # Default:False
 
         # Suite2p Cellpose Detection
         self.ops['diameter']           = self.params['CellDiameter'] # Diameter that will be used for Cellpose
         self.ops['flow_threshold']     = 0.4 # Maximum allowed error of the flows. Increase this threshold if cellpose is not returning as many ROIs as you’d expect.
         self.ops['cellprob_threshold'] = 0.0 # -6 to +6, Pixels > cellprob_threshold are used to run dynamics & determine ROIs. Decrease it, if cellpose is not returning as many ROIs as you’d expect
-        self.ops['pretrained_model']   = "cyto"  # 'nuclei'
+        self.ops['pretrained_model']   = "cyto"  # Path to pretrained model. Can be other models like "cyto2", "cyto3", "nuclei.
         self.ops['spatial_hp_cp']      = int(self.params['CellDiameter']/4) # Window for spatial high-pass filtering of image to be used for cellpose. Recommended: 1/4-1/8 diameter in px
 
         # Signal extraction settings
@@ -118,18 +120,18 @@ class Suite2pParameters:
 
         # Suite2p Spike Deconvolution settings
         self.ops['spikedetect']      = True # Whether or not to run spike_deconvolution
-        self.ops['neucoeff']         = 0.7 # neuropil coefficient for all ROIs
-        self.ops['baseline']         = "maximin" # method for computing baseline. maxmin: gaussian filter->min Filter->max filter; constant: gaussian filter->min of the trace;
+        self.ops['neucoeff']         = 0.7 # Neuropil coefficient for all ROIs
+        self.ops['baseline']         = "maximin" # Method for computing baseline. maxmin: gaussian filter->min Filter->max filter; constant: gaussian filter->min of the trace;
                                                  # constant_percentile: computes a constant baseline by taking the ops['prctile_baseline'] percentile of the trace
-        self.ops['win_baseline']     = 60 # window for maximin filter in seconds
-        self.ops['sig_baseline']     = 10 # width of Gaussian filter in frames
-        self.ops['prctile_baseline'] = 8 # percentile of trace to use as baseline
+        self.ops['win_baseline']     = 60 # Window for maximin filter in seconds
+        self.ops['sig_baseline']     = 10 # Width of Gaussian filter in frames
+        self.ops['prctile_baseline'] = 8 # Percentile of trace to use as baseline
 
         # Classification Settings
-        self.ops['soma_crop']              = True # crop dendrites for cell classification stats
+        self.ops['soma_crop']              = True # Crop dendrites for cell classification stats
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
-        self.ops['preclassify']            = 0.5 # default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but removes 
-                                                 # some of the 'non-cells'
+        self.ops['preclassify']            = 0.5 # Default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but 
+                                                 # removes some of the 'non-cells'
 
         # Remove advanced_settings function keys that are not in the minian functions list
         self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
