@@ -111,8 +111,9 @@ class Suite2pParameters:
         self.ops['spatial_hp_cp']      = int(self.params['CellDiameter']/4) # Window for spatial high-pass filtering of image to be used for cellpose. Recommended: 1/4-1/8 diameter in px
 
         # Signal extraction settings
-        self.ops['neuropil_extract']      = True
-        self.ops['allow_overlap']         = False 
+        self.ops['neuropil_extract']      = True # Whether or not to extract signal from neuropil.
+        self.ops['allow_overlap']         = False # Whether or not to extract signals from pixels which belong to two ROIs. By default, any pixels which belong to two ROIs (overlapping pixels)
+                                                  # are excluded from the computation of the ROI trace. 
         self.ops['inner_neuropil_radius'] = 2 # Radius (in pixels) around each cell within which pixels are excluded from the neuropil calculation.
         self.ops['min_neuropil_pixels']   = 350 # Minimum number of pixels used to compute neuropil for each cell
         self.ops['lam_percentile']        = 50 # Percentile of Lambda (pixel weighings) within area to ignore when excluding cell pixels for neuropil extraction
