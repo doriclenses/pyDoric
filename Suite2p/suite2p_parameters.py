@@ -82,11 +82,17 @@ class Suite2pParameters:
                                          # This can help  in avoiding fragmented or disjointed ROIs, which might not correspond to actual cells.
                                          # Set to False (0) for dendrite/boutons.
 
+        with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
+            time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
+            frequency = len(time_)/(time_[-1] - time_[0])
+
+        self.ops['fs'] = frequency
+
         if self.params["CellDetectionAlgorithm"]  == "Functional Detect":
             self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
             self.ops['spatial_hp_detect'] = self.params['SpatialHighPassFilter'] # default: 25, window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
-            self.ops['high_pass']         = self.params['TemporalHighPassFilter'] # default:100, but suggest less than 10 value for 1p images. Temporal high pass filter, running mean subtraction 
-                                                                                  # across time with window of size
+            self.ops['high_pass']         = int(self.params['TemporalHighPassFilter'] * self.ops['fs'])  # default:100, but suggest less than 10 value for 1p images. Temporal high pass filter,
+                                                                                                         # running mean subtraction across time with window of size
             self.ops['anatomical_only']   = 0
         else:
             self.ops['anatomical_only']   = 3 # Sets to use Cellpose algorithm and find masks on enhanced mean image
@@ -124,12 +130,6 @@ class Suite2pParameters:
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
         self.ops['preclassify']            = 0.5 # default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but removes 
                                                  # some of the 'non-cells'
-
-        with h5py.File(self.paths[defs.Parameters.Path.FILEPATH], 'r') as file_:
-            time_ = np.array(file_[self.paths[defs.Parameters.Path.H5PATH][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)])
-            frequency = len(time_)/(time_[-1] - time_[0])
-
-        self.ops['fs'] = frequency
 
         # Remove advanced_settings function keys that are not in the minian functions list
         self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
