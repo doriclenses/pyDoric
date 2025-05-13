@@ -89,7 +89,7 @@ class Suite2pParameters:
 
         self.ops['fs'] = frequency
 
-        if self.params["CellDetectionAlgorithm"]  == "Functional Detect":
+        if self.params["CellDetectionAlgorithm"]  == "Functional Detection":
             self.ops['threshold_scaling'] = self.params['CellThreshold'] # Threshold for ROIs detection
             self.ops['spatial_hp_detect'] = self.params['SpatialHighPassFilter'] # Default: 25. Window for spatial high-pass filtering for neuropil subtracation before ROI detection takes place.
             self.ops['high_pass']         = int(self.params['TemporalHighPassFilter'] * self.ops['fs'])  # Default:100. Suite2p docs suggests less than 10 value for 1p images.
@@ -133,6 +133,8 @@ class Suite2pParameters:
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
         self.ops['preclassify']            = 0.5 # Default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but 
                                                  # removes some of the 'non-cells'
+        self.ops['combined']               = True if "RegistrationType" in self.params else False # Set the 'combined' option False when registartion is false,
+                                                                                                  # as meanImgE needs to be added first
 
         # Remove advanced_settings function keys that are not in the minian functions list
         self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
