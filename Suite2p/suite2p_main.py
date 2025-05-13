@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import h5py
 from typing import Optional
+import suite2p.io
 from tifffile import TiffWriter
 
 sys.path.append("..")
@@ -73,10 +74,30 @@ def save_suite2p_to_doric(
     params_source: dict = {},
     plane_IDs: list[int] = []
 ):
+    path = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'])
+    scales = 3 * 2 ** np.arange(5.0)
+    scale = np.argmin(np.abs(scales - params_doric["CellDiameter"]))
+    spatscale_pix = 3 * 2**scale
+
+    if not output_ops['do_registration']:
+        if len(plane_IDs) > 1:
+            # Calculate meanImgE for each plane
+            for i in range(len(plane_IDs)):
+                options = np.load(path.joinpath(f'plane{i}', 'ops.npy'), allow_pickle=True).item()
+                options["spatscale_pix"] = spatscale_pix if params_doric["CellDetectionAlgorithm"] == "Anatomical Segmentation" else options["spatscale_pix"]
+                options["meanImgE"]      = suite2p.registration.compute_enhanced_mean_image(options["meanImg"].astype(np.float32), options) 
+                np.save(path.joinpath(f'plane{i}', 'ops.npy'), options)
+            suite2p.io.combined(path, save=True) # Create combined folder
+        else:
+            options = np.load(path.joinpath('plane0', 'ops.npy'), allow_pickle=True).item()
+            options["spatscale_pix"] = spatscale_pix if params_doric["CellDetectionAlgorithm"] == "Anatomical Segmentation" else options["spatscale_pix"]
+            options["meanImgE"]       = suite2p.registration.compute_enhanced_mean_image(options["meanImg"].astype(np.float32), options)
+            np.save(path.joinpath('plane0','ops.npy'), options)
+
     if len(plane_IDs) > 1:
-        output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "combined")
+        output_ops['save_path'] = path.joinpath("combined") 
     else:
-        output_ops['save_path'] = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'], "plane0")
+        output_ops['save_path'] = path.joinpath("plane0")
 
     iscell      = np.load(Path(output_ops['save_path']).joinpath('iscell.npy'), allow_pickle=True)[:, 0].astype(bool) #specifies whether an ROI is a cell
     stats       = np.load(Path(output_ops['save_path']).joinpath('stat.npy'), allow_pickle=True) #list of statistics computed for each cell
@@ -84,7 +105,7 @@ def save_suite2p_to_doric(
     f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
     spks        = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
     ops         = np.load(Path(output_ops['save_path']).joinpath('ops.npy'), allow_pickle=True).item()
-  
+    
     n_cells = len(stats)
     Ly = output_ops["Ly"]
     Lx = output_ops["Lx"]
@@ -105,10 +126,6 @@ def save_suite2p_to_doric(
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
     file_ = h5py.File(doric_file_name, 'w')
-
-    # add enhanced mean image
-    if "meanImgE" not in ops:
-        ops["meanImgE"]  = suite2p.registration.compute_enhanced_mean_image(ops["meanImg"].astype(np.float32), ops)
 
     # Check if Suite2p results already exist
     mean_image      = split_by_plane(ops['meanImg'], len(plane_IDs))
