@@ -75,25 +75,10 @@ def save_suite2p_to_doric(
     plane_IDs: list[int] = []
 ):
     path = Path("/".join(output_ops['data_path'])).joinpath(output_ops['save_folder'])
-    scales = 3 * 2 ** np.arange(5.0)
-    scale = np.argmin(np.abs(scales - params_doric["CellDiameter"]))
-    spatscale_pix = 3 * 2**scale
 
     if not output_ops['do_registration']:
-        if len(plane_IDs) > 1:
-            # Calculate meanImgE for each plane
-            for i in range(len(plane_IDs)):
-                options = np.load(path.joinpath(f'plane{i}', 'ops.npy'), allow_pickle=True).item()
-                options["spatscale_pix"] = spatscale_pix if params_doric["CellDetectionAlgorithm"] == "Anatomical Segmentation" else options["spatscale_pix"]
-                options["meanImgE"]      = suite2p.registration.compute_enhanced_mean_image(options["meanImg"].astype(np.float32), options) 
-                np.save(path.joinpath(f'plane{i}', 'ops.npy'), options)
-            suite2p.io.combined(path, save=True) # Create combined folder
-        else:
-            options = np.load(path.joinpath('plane0', 'ops.npy'), allow_pickle=True).item()
-            options["spatscale_pix"] = spatscale_pix if params_doric["CellDetectionAlgorithm"] == "Anatomical Segmentation" else options["spatscale_pix"]
-            options["meanImgE"]       = suite2p.registration.compute_enhanced_mean_image(options["meanImg"].astype(np.float32), options)
-            np.save(path.joinpath('plane0','ops.npy'), options)
-
+        compute_enhanced_mean_image(path, params_doric, plane_IDs)
+        
     if len(plane_IDs) > 1:
         output_ops['save_path'] = path.joinpath("combined") 
     else:
@@ -105,7 +90,7 @@ def save_suite2p_to_doric(
     f_neuropils = np.load(Path(output_ops['save_path']).joinpath('Fneu.npy')) # array of neuropil fluorescence traces (ROIs by timepoints)
     spks        = np.load(Path(output_ops['save_path']).joinpath('spks.npy')) #array of deconvolved traces (ROIs by timepoints)
     ops         = np.load(Path(output_ops['save_path']).joinpath('ops.npy'), allow_pickle=True).item()
-    
+
     n_cells = len(stats)
     Ly = output_ops["Ly"]
     Lx = output_ops["Lx"]
@@ -191,3 +176,26 @@ def split_by_plane(suite2p_image: np.ndarray, plane_count: int) -> np.ndarray:
         images.append(image)
 
     return np.moveaxis(np.array(images), 0, -1)
+
+def compute_enhanced_mean_image(
+        path: Path,
+        params_doric: dict = {},
+        plane_IDs: list[int] = []
+):
+    scales = 3 * 2 ** np.arange(5.0)
+    scale = np.argmin(np.abs(scales - params_doric["CellDiameter"]))
+    spatscale_pix = 3 * 2**scale
+
+    if len(plane_IDs) > 1:
+        # Calculate meanImgE for each plane
+        for i in range(len(plane_IDs)):
+            options = np.load(path.joinpath(f'plane{i}', 'ops.npy'), allow_pickle=True).item()
+            options["spatscale_pix"] = spatscale_pix if params_doric["CellDetectionAlgorithm"] == "Anatomical Segmentation" else options["spatscale_pix"]
+            options["meanImgE"]      = suite2p.registration.compute_enhanced_mean_image(options["meanImg"].astype(np.float32), options) 
+            np.save(path.joinpath(f'plane{i}', 'ops.npy'), options)
+        suite2p.io.combined(path, save=True) # Create combined folder
+    else:
+        options = np.load(path.joinpath('plane0', 'ops.npy'), allow_pickle=True).item()
+        options["spatscale_pix"] = spatscale_pix if params_doric["CellDetectionAlgorithm"] == "Anatomical Segmentation" else options["spatscale_pix"]
+        options["meanImgE"]      = suite2p.registration.compute_enhanced_mean_image(options["meanImg"].astype(np.float32), options)
+        np.save(path.joinpath('plane0','ops.npy'), options)
