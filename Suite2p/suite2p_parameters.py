@@ -36,9 +36,10 @@ class Suite2pParameters:
         self.ops['ignore_flyback']      = [] # Specifies which planes should be ignored as flyback planes during processing
 
         # Bidirectional phase offset, applies to 2P recordings only
-        self.ops['do_bidiphase']   = False
-        self.ops['bidiphase']      = 0 # If set to any value besides 0, then this offset is used
-        self.ops['bidi_corrected'] = False
+        if not self.params["1PImaging"]:
+            self.ops['do_bidiphase']   = True # Estimate the bidirectional phase offset from ops[‘nimg_init’] frames if this is set to 1 
+            self.ops['bidiphase']      = 0 # If set to any value besides 0, then this offset is used
+            self.ops['bidi_corrected'] = self.params["Bidirectional Phase Correction"] # Specifies whether to do bidi correction
 
         # Suite2p Registration Settings
         self.ops['do_registration']       = "RegistrationType" in self.params # Whether or not to run registration
