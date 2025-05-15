@@ -41,7 +41,7 @@ class Suite2pParameters:
         self.ops['bidi_corrected'] = False
 
         # Suite2p Registration Settings
-        self.ops['do_registration']       = True if "RegistrationType" in self.params else False # Whether or not to run registration
+        self.ops['do_registration']       = "RegistrationType" in self.params # Whether or not to run registration
         self.ops['align_by_chan']         = 1
         self.ops['nimg_init']             = int(0.1*self.time_length) # How many frames to use to compute reference image for registration
         self.ops['batch_size']            = 100 # Decrease the batch_size in case low RAM on computer
@@ -55,7 +55,6 @@ class Suite2pParameters:
         self.ops['norm_frames']           = True # Normalize frames when detecting shifts
         self.ops['force_refImg']          = False # If True, use refImg stored in ops['refImg'] 
         self.ops['pad_fft']               = False
-
 
         if self.ops['do_registration']:
             # Suite2p 1P registration
@@ -133,8 +132,8 @@ class Suite2pParameters:
         self.ops['use_builtin_classifier'] = True # Specifies whether or not to use built-in classifier for cell detection.
         self.ops['preclassify']            = 0.5 # Default:0, apply classifier before signal extraction with probability 0.5 (turn off with value 0), does not affect the detected 'cells' but 
                                                  # removes some of the 'non-cells'
-        self.ops['combined']               = True if "RegistrationType" in self.params else False # Set the 'combined' option False when registartion is false,
-                                                                                                  # as meanImgE needs to be added first
+        self.ops['combined']               = "RegistrationType" in self.params # Set the 'combined' option False when registartion is false,
+                                                                               # as meanImgE needs to be added first
 
         # Remove advanced_settings function keys that are not in the minian functions list
         self.advanced_settings = self.params.get(defs.Parameters.danse.ADVANCED_SETTINGS, {})
