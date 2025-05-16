@@ -49,8 +49,8 @@ class Suite2pParameters:
         self.ops['batch_size']            = 100 # Default: 500. Decrease the batch_size in case low RAM on computer
         self.ops['maxregshift']           = 0.1 # Default: 0.1. Maximum shift size - for rigid registration. 0.1 = 10% of the size of the FOV      
         self.ops['smooth_sigma_time']     = 0 # Default: 0. Temporal smoothing, standard deviation for Gaussian kernel; Might need this to be set to 1 or 2 for low SNR data
-        self.ops['smooth_sigma']          = 4 # Default: 1.15. STD in pixels of the gaussian used to smooth the phase correlation between the reference image and the frame which is being registered.
-                                              # A value of >4 is recommended for one-photon recordings.
+        self.ops['smooth_sigma']          = 4 if self.params["1PImaging"] else 1.15 # Default: 1.15. STD in pixels of the gaussian used to smooth the phase correlation between the reference image and 
+                                                                                    # the frame which is being registered. A value of >4 is recommended for one-photon recordings.
         self.ops['keep_movie_raw']        = False
         self.ops['two_step_registration'] = False # Whether or not to run registration twice (for low SNR data). keep_movie_raw must be True for this to work.
         self.ops['subpixel']              = 10 # Default: 10. Precision of Subpixel Registration (1/subpixel steps; default is 10 = 0.1 pixel accuracy)
