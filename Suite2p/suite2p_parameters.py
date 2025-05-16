@@ -38,7 +38,7 @@ class Suite2pParameters:
 
         # Bidirectional phase offset, applies to 2P recordings only
         self.ops['do_bidiphase']   = not self.params["1PImaging"] and self.params["Bidirectional Phase Correction"] # Estimate the bidirectional phase offset from ops[‘nimg_init’] 
-                                                                                                                    # frames if this is set to 1 
+                                                                                                                    # frames if this is set to True 
         self.ops['bidiphase']      = 0 # If set to any value besides 0, then this offset is used
         self.ops['bidi_corrected'] = not self.params["1PImaging"] and self.params["Bidirectional Phase Correction"] # Specifies whether to do bidi correction
 
