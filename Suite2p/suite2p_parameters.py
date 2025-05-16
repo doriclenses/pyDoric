@@ -36,10 +36,10 @@ class Suite2pParameters:
         self.ops['ignore_flyback']      = [] # Specifies which planes should be ignored as flyback planes during processing
 
         # Bidirectional phase offset, applies to 2P recordings only
-        if not self.params["1PImaging"]:
-            self.ops['do_bidiphase']   = True # Estimate the bidirectional phase offset from ops[‘nimg_init’] frames if this is set to 1 
-            self.ops['bidiphase']      = 0 # If set to any value besides 0, then this offset is used
-            self.ops['bidi_corrected'] = self.params["Bidirectional Phase Correction"] # Specifies whether to do bidi correction
+        self.ops['do_bidiphase']   = not self.params["1PImaging"] and self.params["Bidirectional Phase Correction"] # Estimate the bidirectional phase offset from ops[‘nimg_init’] 
+                                                                                                                    # frames if this is set to 1 
+        self.ops['bidiphase']      = 0 # If set to any value besides 0, then this offset is used
+        self.ops['bidi_corrected'] = not self.params["1PImaging"] and self.params["Bidirectional Phase Correction"] # Specifies whether to do bidi correction
 
         # Suite2p Registration Settings
         self.ops['do_registration']       = "RegistrationType" in self.params # Whether or not to run registration
@@ -69,7 +69,7 @@ class Suite2pParameters:
                 self.ops['spatial_taper']  = int(0.03 * min(height, width)) # Default: 40. How many pixels to ignore on edges - they are set to zero
 
             # Suite2p Non-Rigid registration (optional) will approx double the time
-            self.ops['nonrigid'] = True if self.params["RegistrationType"] == "Non-Rigid Registration" else False
+            self.ops['nonrigid'] =  self.params["RegistrationType"] == "Non-Rigid Registration"
             if self.ops['nonrigid']:
                 self.ops['block_size']    = [128,128]  # Can be [64,64], [256,256]. Recommend keeping this a power of 2 and/or 3
                 self.ops['maxregshiftNR'] = int(self.params['CellDiameter']/3)
