@@ -76,7 +76,7 @@ class Suite2pParameters:
                                                          # while an image of 512 × 512 pixels yields a block size of 64 × 64 pixels.
                 block_size = self.nearest_power_of_2(block_size)
                 self.ops['block_size']    = [block_size, block_size]  # Default: [128, 128]. Can be [64, 64], [256, 256]. Recommend keeping this a power of 2 and/or 3
-                self.ops['maxregshiftNR'] = int(self.params['CellDiameter'] / 3)
+                self.ops['maxregshiftNR'] = int(self.params['CellDiameter'] / 3) # Default: 5. Maximum shift in pixels of a block relative to the rigid shift
                 self.ops['snr_thresh']    = 1.5 # Default: 1.2. How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
 
         # Suite2p ROI Detection Settings
