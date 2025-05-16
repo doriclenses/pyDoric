@@ -106,7 +106,10 @@ class Suite2pParameters:
 
         self.ops['max_overlap']    = 0.75 # Default: 0.75. 1 means, no cells are discarded
         self.ops['max_iterations'] = 20 # Default: 20. At most ops[‘max_iterations’] iterations, but usually stops before.
-        self.ops['denoise']        = True # Default: False
+        self.ops['denoise']        = True # Default: False # PCA-based denoising algorithm
+                                                           # Tests on the available data showed that denoising leads to a reduction in the total number of detected ROIs.
+                                                           # However, this decrease was due to fewer non-cell detections, while the number of cells detected remained unchanged.
+                                                           # Denoise = True is especially helpful in volu images data, where the total number of ROIs detected is very high.
 
         # Suite2p Cellpose Detection
         self.ops['diameter']           = self.params['CellDiameter'] # Diameter that will be used for Cellpose
