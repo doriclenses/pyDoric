@@ -3,6 +3,7 @@ import sys
 #import inspect
 import h5py
 import numpy as np
+import math
 
 sys.path.append("..")
 import utilities as utils
@@ -73,7 +74,7 @@ class Suite2pParameters:
             if self.ops['nonrigid']:
                 block_size = int(min(height, width) / 8) # 1/8th of the image size. For example, for an image of 1024 x 1024 pixels the block size will be 128 x 128,
                                                          # while an image of 512 × 512 pixels yields a block size of 64 × 64 pixels.
-                block_size -= block_size % 2
+                block_size = self.nearest_power_of_2(block_size)
                 self.ops['block_size']    = [block_size, block_size]  # Default: [128, 128]. Can be [64, 64], [256, 256]. Recommend keeping this a power of 2 and/or 3
                 self.ops['maxregshiftNR'] = int(self.params['CellDiameter'] / 3)
                 self.ops['snr_thresh']    = 1.5 # Default: 1.2. How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
@@ -181,3 +182,12 @@ class Suite2pParameters:
                     time_count = min(time_count, time_count)
 
         return [height, width, time_count]
+    
+    def nearest_power_of_2(self, n: int):
+        if n <= 2:
+            return 2
+        
+        lower = 2 ** math.floor(math.log2(n))
+        upper = 2 ** math.ceil(math.log2(n))
+
+        return lower if (n - lower) < (upper - n) else upper
