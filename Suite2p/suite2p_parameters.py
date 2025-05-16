@@ -71,8 +71,11 @@ class Suite2pParameters:
             # Suite2p Non-Rigid registration (optional) will approx double the time
             self.ops['nonrigid'] =  self.params["RegistrationType"] == "Non-Rigid Registration"
             if self.ops['nonrigid']:
-                self.ops['block_size']    = [128,128]  # Can be [64,64], [256,256]. Recommend keeping this a power of 2 and/or 3
-                self.ops['maxregshiftNR'] = int(self.params['CellDiameter']/3)
+                block_size = int(min(height, width) / 8) # 1/8th of the image size. For example, for an image of 1024 x 1024 pixels the block size will be 128 x 128,
+                                                         # while an image of 512 × 512 pixels yields a block size of 64 × 64 pixels.
+                block_size -= block_size % 2
+                self.ops['block_size']    = [block_size, block_size]  # Default: [128, 128]. Can be [64, 64], [256, 256]. Recommend keeping this a power of 2 and/or 3
+                self.ops['maxregshiftNR'] = int(self.params['CellDiameter'] / 3)
                 self.ops['snr_thresh']    = 1.5 # Default: 1.2. How big the phase correlation peak has to be relative to the noise in the phase correlation map for the block shift to be accepted.
 
         # Suite2p ROI Detection Settings
