@@ -6,6 +6,30 @@ This repository contains python scripts and [Pyinstaller](https://pyinstaller.or
 
 [Install MiniAn](https://minian.readthedocs.io/en/stable/start_guide/install.html) and Pyinstaller in the same anaconda environment.
 
+### To install MiniAn
+
+To install MiniAn fallow the fallowing steps.
+
+Open a command prompt in Anaconda then type 
+
+```
+conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 --yes
+```
+
+then
+
+```
+conda activate minian_pyinstaller
+```
+
+then
+
+```
+conda install minian h5py pyinstaller pefile=2023.2.7 --yes
+```
+
+### To Package MiniAn using pyinstaller
+
 Start a command prompt in Minian environment and go to the git directory.
 
 ```
@@ -23,6 +47,17 @@ pyinstaller pack_minian_run.spec
 
 [Install CaImAn](https://caiman.readthedocs.io/en/latest/Installation.html) and Pyinstaller in the same anaconda environment and set up caimanmanager to get **caiman_data** folder. ⚠️Then copy **caiman_data** folder into the folder where CaImAn will be compiled (git folder)
 
+### To install CaImAn
+
+To install CaImAn fallow the fallowing steps.
+
+Open a command prompt in Anaconda then type 
+
+```
+conda create -n caiman_pyinstaller -c conda-forge caiman pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
+```
+
+### To Package CaImAn using pyinstaller
 Start a command prompt in CaImAn environment and go to the git directory.
 
 ```
