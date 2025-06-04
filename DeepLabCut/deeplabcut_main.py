@@ -65,8 +65,8 @@ def create_project(
     """
     video_filepaths = []
     for filepath in data_filepaths:
-        for datapath in datapaths:
-            with h5py.File(filepath, 'r') as file_:
+        with h5py.File(filepath, 'r') as file_:
+            for datapath in datapaths:
                 relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
                 video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
 
