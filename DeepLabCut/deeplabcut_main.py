@@ -67,8 +67,9 @@ def create_project(
     for filepath in data_filepaths:
         with h5py.File(filepath, 'r') as file_:
             for datapath in datapaths:
-                relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
-                video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
+                if datapath in file_:
+                    relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
+                    video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
 
     path = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
     task = os.path.splitext(os.path.basename(path))[0]
