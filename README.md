@@ -64,6 +64,25 @@ pyinstaller pack_caiman_run.spec
 
 [Install Suite2p](https://suite2p.readthedocs.io/en/latest/installation.html) and Pyinstaller in the same anaconda environment.
 
+### To install Suite2p
+To install Suite2p fallow the fallowing steps.  ⚠️ It could take some time to install.
+
+Open a command prompt in Anaconda then type
+```
+conda create --name suite2p python=3.9
+```
+
+Then activate the newly created environement
+```
+conda activate suite2p
+```
+
+Then install suite2p 
+```
+python -m pip install suite2p
+```
+
+### To Package Suite2p using pyinstaller
 Start a command prompt in Suite2p environment and go to the git directory.
 
 ```
