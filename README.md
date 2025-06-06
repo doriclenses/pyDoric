@@ -8,7 +8,7 @@ This repository contains python scripts and [Pyinstaller](https://pyinstaller.or
 
 ### To install MiniAn
 
-To install MiniAn fallow the fallowing steps.
+To install MiniAn fallow the fallowing steps. ⚠️ It could take some time to install.
 
 Open a command prompt in Anaconda then type 
 
@@ -49,7 +49,7 @@ pyinstaller pack_minian_run.spec
 
 ### To install CaImAn
 
-To install CaImAn fallow the fallowing steps.
+To install CaImAn fallow the fallowing steps.  ⚠️ It could take some time to install.
 
 Open a command prompt in Anaconda then type 
 
