@@ -5,7 +5,7 @@ This repository contains python scripts and [Pyinstaller](https://pyinstaller.or
 ---
 To create MiniAn executable, follow the steps: 
 
-2. Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
+1. Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
 ```
 conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian h5py pyinstaller pefile=2023.2.7 --yes
 ```
