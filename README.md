@@ -3,32 +3,21 @@ This repository contains python scripts and [Pyinstaller](https://pyinstaller.or
 
 ## MiniAn
 ---
+To create MiniAn executable, follow the steps: 
 
-[Install MiniAn](https://minian.readthedocs.io/en/stable/start_guide/install.html) and Pyinstaller in the same anaconda environment.
-
-### To install MiniAn
-
-To install MiniAn fallow the fallowing steps. ⚠️ It could take some time to install.
-
-Open a command prompt in Anaconda then type 
-
+2. Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
 ```
 conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian h5py pyinstaller pefile=2023.2.7 --yes
 ```
+For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html)
+⚠️ It may take some time to install.
 
+2. Clone this repositiry. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-### To Package MiniAn using pyinstaller
-
-Start a command prompt in Minian environment and go to the git directory.
-
-```
-cd PATHTOGITFOLDER/Deploy
-```
-
-run the command pyinstaller
+3. Package the code into executable by using pyinstaller spec file created for MiniAn:
 
 ```
-pyinstaller pack_minian_run.spec
+pyinstaller /Deploy/pack_minian_run.spec
 ```
 
 ## CaImAn
