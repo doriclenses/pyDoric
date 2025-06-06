@@ -65,11 +65,16 @@ def create_project(
     """
     video_filepaths = []
     for filepath in data_filepaths:
-        with h5py.File(filepath, 'r') as file_:
-            for datapath in datapaths:
-                if datapath in file_:
-                    relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
-                    video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
+        try:
+            file_ = h5py.File(filepath, 'r')
+        except OSError as e:
+            utils.print_error(e, dlc_defs.Messages.FILE_OPENING_ERROR.format(file = filepath))
+            continue
+        for datapath in datapaths:
+            if datapath in file_:
+                relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
+                video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
+        file_.close()
 
     path = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
     task = os.path.splitext(os.path.basename(path))[0]
@@ -210,13 +215,9 @@ def save_coords_to_doric(
 
     # Save results to doric data files
     for filepath in filepaths:
-        try:
-            file_ = h5py.File(filepath, 'a')
-        except OSError as e:
-            utils.print_error(e, dlc_defs.Messages.FILE_OPENING_ERROR.format(file = filepath))
-            continue
-
+        file_ = h5py.File(filepath, 'a')
         for datapath in datapaths:
+            print(f'*************datapath*****************{datapath}*************************')
             deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
             # Define correct paths for saving operaion results
             _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names(datapath)
