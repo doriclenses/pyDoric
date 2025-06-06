@@ -13,20 +13,9 @@ To install MiniAn fallow the fallowing steps. ⚠️ It could take some time to 
 Open a command prompt in Anaconda then type 
 
 ```
-conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 --yes
+conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian h5py pyinstaller pefile=2023.2.7 --yes
 ```
 
-then
-
-```
-conda activate minian_pyinstaller
-```
-
-then
-
-```
-conda install minian h5py pyinstaller pefile=2023.2.7 --yes
-```
 
 ### To Package MiniAn using pyinstaller
 
