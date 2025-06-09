@@ -9,12 +9,13 @@ To create MiniAn executable, follow the steps:
 ```
 conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian h5py pyinstaller pefile=2023.2.7 --yes
 ```
-For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html)
 ⚠️ It may take some time to install.
+
+For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html)
 
 2. Clone this repositiry. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-3. Package the code into executable by using pyinstaller spec file created for MiniAn:
+3. Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
 ```
 pyinstaller /Deploy/pack_minian_run.spec
