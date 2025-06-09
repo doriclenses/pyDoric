@@ -7,7 +7,7 @@ To create MiniAn executable, follow the steps:
 
 1.  Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
     ```
-    conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian h5py pyinstaller pefile=2023.2.7 --yes
+    conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian=1.2.1 h5py pyinstaller pefile=2023.2.7 --yes
     ```
     ⚠️ It may take some time to install.    
 
@@ -27,7 +27,7 @@ To create CaImAn executable, follow the steps:
 
 1.  Create new environment, and install CaImAn and PyInstaller by running the following in Anaconda prompt:
     ```
-    conda create -n caiman_pyinstaller -c conda-forge caiman pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
+    conda create -n caiman_pyinstaller -c conda-forge caiman=1.11.4 pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
     ```
     ⚠️ It may take some time to install.
 
