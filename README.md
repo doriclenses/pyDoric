@@ -5,102 +5,86 @@ This repository contains python scripts and [Pyinstaller](https://pyinstaller.or
 ---
 To create MiniAn executable, follow the steps: 
 
-1. Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
-```
-conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian h5py pyinstaller pefile=2023.2.7 --yes
-```
-⚠️ It may take some time to install.
+1.  Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
+    ```
+    conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian h5py pyinstaller pefile=2023.2.7 --yes
+    ```
+    ⚠️ It may take some time to install.    
 
-For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html).
+    For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html).
 
-2. Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
+2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-3. Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
+3.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
-```
-pyinstaller /Deploy/pack_minian_run.spec
-```
+    ```
+    pyinstaller /Deploy/pack_minian_run.spec
+    ```
 
 ## CaImAn
 ---
+To create CaImAn executable, follow the steps:
 
-[Install CaImAn](https://caiman.readthedocs.io/en/latest/Installation.html) and Pyinstaller in the same anaconda environment and set up caimanmanager to get **caiman_data** folder. ⚠️Then copy **caiman_data** folder into the folder where CaImAn will be compiled (git folder)
+1.  Create new environment, and install CaImAn and PyInstaller by running the following in Anaconda prompt:
+    ```
+    conda create -n caiman_pyinstaller -c conda-forge caiman pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
+    ```
+    ⚠️ It may take some time to install.
 
-### To install CaImAn
+    For more information about the library, please read [CaImAn docs](https://caiman.readthedocs.io/en/latest/Installation.html).
 
-To install CaImAn fallow the fallowing steps.  ⚠️ It could take some time to install.
+2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-Open a command prompt in Anaconda then type 
+3.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
-```
-conda create -n caiman_pyinstaller -c conda-forge caiman pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
-```
-
-### To Package CaImAn using pyinstaller
-Start a command prompt in CaImAn environment and go to the git directory.
-
-```
-cd PATHTOGITFOLDER/Deploy
-```
-
-then run pyinstaller
-
-```
-pyinstaller pack_caiman_run.spec
-```
+    ```
+    pyinstaller /Deploy/pack_caiman_run.spec
+    ```
 
 ## Suite2p
 ---
 
-[Install Suite2p](https://suite2p.readthedocs.io/en/latest/installation.html) and Pyinstaller in the same anaconda environment.
+To create Suite2p executable, follow the steps:
 
-### To install Suite2p
-To install Suite2p fallow the fallowing steps.  ⚠️ It could take some time to install.
+1.  Create new environment, and install CaImAn and PyInstaller by running the following in Anaconda prompts:
+    1.  ```
+        conda create --name suite2p python=3.9 pyinstaller
+        ```
 
-Open a command prompt in Anaconda then type
-```
-conda create --name suite2p python=3.9
-```
+    2.  ```
+        conda activate suite2p
+        ```
 
-Then activate the newly created environement
-```
-conda activate suite2p
-```
+    3.  ```
+        python -m pip install suite2p
+        ```
 
-Then install suite2p 
-```
-python -m pip install suite2p
-```
+    For more information about the library, please read [Suite2p docs ](https://suite2p.readthedocs.io/en/latest/installation.html).
 
-### To Package Suite2p using pyinstaller
-Start a command prompt in Suite2p environment and go to the git directory.
+2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-```
-cd PATHTOGITFOLDER/Deploy
-```
+3.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
-then run pyinstaller
-
-```
-pyinstaller pack_suite2p_run.spec
-```
+    ```
+    pyinstaller /Deploy/pack_suite2p_run.spec
+    ```
 
 ## DeepLabCut
 ---
 
-1. [Install CUDA v12.4 or higher](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_network)
+1.  [Install CUDA v12.4 or higher](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_network)
    
-2. [Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
+2.  [Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
    
-3. Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
-```
-conda create -n deeplabcut_pyinstaller ??? python=??? ??? pyinstaller ??? --yes
-```
-For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
+3.  Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
+    ```
+    conda create -n deeplabcut_pyinstaller ??? python=??? ??? pyinstaller ??? --yes
+    ```
+    For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
 
-4. Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
+4.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-5. Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
-```
-pyinstaller Deploy/pack_deeplabcut_run.spec
-```
+5.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
+    ```
+    pyinstaller Deploy/pack_deeplabcut_run.spec
+    ```
