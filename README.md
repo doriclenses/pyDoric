@@ -48,18 +48,18 @@ To create Suite2p executable, follow the steps:
 
 1.  Create new environment, and install CaImAn and PyInstaller by running the following in Anaconda prompts:
     1.  ```
-        conda create --name suite2p python=3.9 pyinstaller
+        conda create --name suite2p_pyinstaller python=3.9 pyinstaller h5py --yes
         ```
 
     2.  ```
-        conda activate suite2p
+        conda activate suite2p_pyinstaller
         ```
 
     3.  ```
         python -m pip install suite2p
         ```
 
-    For more information about the library, please read [Suite2p docs ](https://suite2p.readthedocs.io/en/latest/installation.html).
+    For more information about the library, please read [Suite2p docs](https://suite2p.readthedocs.io/en/latest/installation.html).
 
 2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
