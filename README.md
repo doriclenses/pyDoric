@@ -11,9 +11,9 @@ conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian 
 ```
 ⚠️ It may take some time to install.
 
-For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html)
+For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html).
 
-2. Clone this repositiry. In Anaconda prompt, navigate to the directory where the repository was cloned.
+2. Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
 3. Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
@@ -88,20 +88,19 @@ pyinstaller pack_suite2p_run.spec
 ## DeepLabCut
 ---
 
-[Install CUDA v12.4 or higher](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_network)
-
-[Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
-
-[Install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html) and Pyinstaller in the same anaconda environment.
-
-Start a command prompt in DeepLabCut environment and go to the git directory.
-
+1. [Install CUDA v12.4 or higher](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_network)
+   
+2. [Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
+   
+3. Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
 ```
-cd PATHTOGITFOLDER/Deploy
+conda create -n deeplabcut_pyinstaller ??? python=??? ??? pyinstaller ??? --yes
 ```
+For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
 
-run the command pyinstaller
+4. Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
+5. Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 ```
-pyinstaller pack_poseEstimation_run.spec
+pyinstaller Deploy/pack_deeplabcut_run.spec
 ```
