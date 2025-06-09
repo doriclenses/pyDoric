@@ -14,6 +14,7 @@ class DeepLabCutParameters:
         
         self.paths: dict  = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params: dict = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
+        self.stage: str   = danse_params.get(defs.Parameters.Main.STAGE)
         
     def get_h5path_names(self):
 

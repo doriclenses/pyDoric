@@ -64,6 +64,7 @@ class Parameters:
         PARAMETERS    = "Parameters"
         PATHS         = "Paths"
         PREVIEW       = "Preview"
+        STAGE         = "Stage"
         IS_MICROSCOPE = "IsMicroscope"
 
 

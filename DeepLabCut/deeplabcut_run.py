@@ -49,11 +49,24 @@ except Exception as error:
     sys.exit()
 
 if __name__ == "__main__":
-    deeplabcut_params = dlc_params.DeepLabCutParameters(danse_params)
+    params = dlc_params.DeepLabCutParameters(danse_params)
 
-    # if deeplabcut_params.preview_params:
-    # dlc_main.preview(deeplabcut_params)
-    # else:
-    dlc_main.main(deeplabcut_params)
+    if params.stage == "CreateProject":
+        dlc_main.create_project(params)
+
+    elif params.stage == "SaveLabels":
+        dlc_main.save_labels(params)
+
+    elif params.stage == "TrainEvaluate":
+        dlc_main.train_evaluate(params)
+
+    elif params.stage == "AnalyzeVideos":
+        dlc_main.analyze_videos(params)
+
+    elif params.stage == "SaveCoordinates":
+        dlc_main.save_coordinates(params)
+
+    else:
+        dlc_main.main(params)
 
     print(dlc_defs.Messages.PROCESS_DONE, flush=True)
