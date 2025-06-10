@@ -77,9 +77,19 @@ To create Suite2p executable, follow the steps:
 2.  [Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
    
 3.  Create new environment, and install DeepLabCut and PyInstaller by running the following in Anaconda prompt:
-    ```
-    conda create -n deeplabcut_pyinstaller ??? python=??? ??? pyinstaller ??? --yes
-    ```
+    1.  ```
+        conda create -n deeplabcut_pyinstaller -c conda-forge python=3.10 pytables==3.8.0 pyinstaller --yes
+        ```
+    2.  ```
+        conda activate deeplabcut_pyinstaller
+        ```
+    3.  ```
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+        ```
+    4.  ```
+        pip install "deeplabcut[gui,modelzoo,wandb]"
+        ```
+
     For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
 
 4.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
