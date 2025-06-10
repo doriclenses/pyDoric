@@ -78,7 +78,7 @@ To create Suite2p executable, follow the steps:
    
 3.  Create new environment, and install DeepLabCut and PyInstaller by running the following in Anaconda prompt:
     1.  ```
-        conda create -n deeplabcut_pyinstaller -c conda-forge python=3.10 pytables==3.8.0 pyinstaller --yes
+        conda create -n deeplabcut_pyinstaller -c conda-forge python=3.10 pytables==3.8.0 pyinstaller h5py --yes
         ```
     2.  ```
         conda activate deeplabcut_pyinstaller
