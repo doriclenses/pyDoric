@@ -9,6 +9,9 @@ To create MiniAn executable, follow the steps:
     ```
     conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian=1.2.1 h5py pyinstaller pefile=2023.2.7 --yes
     ```
+    ```
+    conda activate minian_pyinstaller
+    ```
     ⚠️ It may take some time to install.    
 
     For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html).
@@ -26,29 +29,26 @@ To create MiniAn executable, follow the steps:
 To create CaImAn executable, follow the steps:
 
 1.  Create new environment, and install CaImAn and PyInstaller by running the following in Anaconda prompt:
-    1.  ```
-        conda create -n caiman_pyinstaller -c conda-forge python=3.10.8 caiman=1.11.4 pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
-        ```
-        ⚠️ It may take some time to install.
-
-    2.  Then insall CaImAn data sets folder `caiman_data` by fallowing:
-        1.  ```
-            conda activate caiman_pyinstaller
-            ```
-
-        2.  ```
-            caimanmanager install
-            ```
-    
+    ```
+    conda create -n caiman_pyinstaller -c conda-forge python=3.10.8 caiman=1.11.4 pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
+    ```
+    ```
+    conda activate caiman_pyinstaller
+    ```
+    ⚠️ It may take some time to install.
+   
     For more information about the library, please read [CaImAn docs](https://caiman.readthedocs.io/en/latest/Installation.html).
 
 2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-3.  Copy caiman_data folder: `C:\Users\your_user_name\caiman_data`
-    into the `CaImAn` folder.
+3.  Use CaImAn manager to finish the istallation by running in Anaconda prompt:
+    ```
+    caimanmanager install
+    ```
+    This would add 'caiman_data' folder into your user folder 'C:\Users\your_user_name\'. Copy this this folder into your cloned 'CaImAn' folder. 
+
 
 4.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
-
     ```
     pyinstaller /Deploy/pack_caiman_run.spec
     ```
@@ -58,24 +58,21 @@ To create CaImAn executable, follow the steps:
 
 To create Suite2p executable, follow the steps:
 
-1.  Create new environment, and install CaImAn and PyInstaller by running the following in Anaconda prompts:
-    1.  ```
-        conda create --name suite2p_pyinstaller python=3.9 pyinstaller h5py --yes
-        ```
-
-    2.  ```
-        conda activate suite2p_pyinstaller
-        ```
-
-    3.  ```
-        python -m pip install suite2p
-        ```
-
+1.  Create new environment, and install CaImAn and PyInstaller by running the following lines in Anaconda prompt:
+    ```
+    conda create --name suite2p_pyinstaller python=3.9 pyinstaller h5py --yes
+    ```
+    ```
+    conda activate suite2p_pyinstaller
+    ```
+    ```
+    python -m pip install suite2p
+    ```
     For more information about the library, please read [Suite2p docs](https://suite2p.readthedocs.io/en/latest/installation.html).
 
-2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
+3.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-3.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
+4.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
     ```
     pyinstaller /Deploy/pack_suite2p_run.spec
@@ -89,18 +86,18 @@ To create Suite2p executable, follow the steps:
 2.  [Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
    
 3.  Create new environment, and install DeepLabCut and PyInstaller by running the following in Anaconda prompt:
-    1.  ```
-        conda create -n deeplabcut_pyinstaller -c conda-forge python=3.10 pytables==3.8.0 pyinstaller h5py --yes
-        ```
-    2.  ```
-        conda activate deeplabcut_pyinstaller
-        ```
-    3.  ```
-        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
-        ```
-    4.  ```
-        pip install "deeplabcut[gui,modelzoo,wandb]==3.0.0rc8"
-        ```
+    ```
+    conda create -n deeplabcut_pyinstaller -c conda-forge python=3.10 pytables==3.8.0 pyinstaller h5py --yes
+    ```
+    ```
+    conda activate deeplabcut_pyinstaller
+    ```
+    ```
+    pip install torch torchvision
+    ```
+    ```
+    pip install "deeplabcut[gui,modelzoo,wandb]==3.0.0rc8"
+    ```
 
     For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
 
