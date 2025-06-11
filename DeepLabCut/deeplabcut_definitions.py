@@ -24,9 +24,14 @@ class Parameters:
         COORDINATES            = "Coordinates"
         EXTRACTED_FRAMES       = "ExtractedFrames"
         EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
-        VIDEO_DATAPATH         = "VideoDatapath"
-        RELATIVE_FILEPATH      = "RelativeFilePath" 
-        VIDEO_RANGE            = "VideoRange"
+        VIDEO_FILEPATHS        = "VideoFilepaths"
+
+        SHUFFLE       = "Shuffle"
+        BEST_SNAPSHOT = "BestSnapshot"
+
+        RELATIVE_FILEPATH = "RelativeFilePath" 
+        VIDEO_DATAPATH    = "VideoDatapath"
+        VIDEO_RANGE       = "VideoRange"
         
 class DoricFile:
 
