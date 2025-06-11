@@ -2,7 +2,6 @@ import sys
 sys.path.append("..")
 import utilities as utils
 import definitions as defs
-import DeepLabCut.deeplabcut_definitions as poseEst_defs
 
 class DeepLabCutParameters:
 
