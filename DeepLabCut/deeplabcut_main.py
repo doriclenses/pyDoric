@@ -84,89 +84,29 @@ def analyze_videos(deeplabcut_params: dlc_params.DeepLabCutParameters):
     # Read danse parameters 
     video_filepaths: list[str] = deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
     project_folder: str        = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-
+    shuffle: int               = deeplabcut_params.params[dlc_defs.Parameters.danse.SHUFFLE]
+    
     config_filepath = os.path.join(project_folder, 'config.yaml')
 
     deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder=project_folder, shuffle=shuffle)
 
 
-def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
+
+def save_coordinates(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     """
-    DeepLabCut algorithm
-    """
-    # Read danse parameters 
-    datapath: str               = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
-    data_filepaths: list[str]   = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
-    exp_filepath:  str          = deeplabcut_params.params.get(defs.Parameters.Path.EXP_FILE, "")
-    project_folder: str         = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    bodypart_names: list        = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    extracted_frames: list      = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
-    extracted_frames_count: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
-
-    save_coords_to_doric(data_filepaths, datapath, deeplabcut_params, config_filepath, shuffle)
-
-
-
-def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
-
-    """
-    DeepLabCut algorithm
+    Save DeepLabCut analyzed video labels in doric file.
     """
     # Read danse parameters 
-    datapath: str               = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
-    data_filepaths: list[str]   = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
-    exp_filepath:  str          = deeplabcut_params.params.get(defs.Parameters.Path.EXP_FILE, "")
-    project_folder: str         = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    bodypart_names: list        = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    extracted_frames: list      = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
-    extracted_frames_count: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
+    datapath: str             = deeplabcut_params.paths[defs.Parameters.Path.H5PATH]
+    data_filepaths: list[str] = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
 
-    # Create project and train network
-    video_filepaths, config_filepath = create_project(datapath, data_filepaths, exp_filepath, project_folder, bodypart_names, extracted_frames_count, extracted_frames, deeplabcut_params.params)
-    training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
-    
-    shuffle: int = training_dataset_info[0][1]
-    update_pytorch_config_file(config_filepath, shuffle) 
-    deeplabcut.train_network(config_filepath, batch_size=8, shuffle = shuffle)
-    deeplabcut.evaluate_network(config_filepath, Shuffles = [shuffle])
+    project_folder: str = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
+    shuffle: int        = deeplabcut_params.params[dlc_defs.Parameters.danse.SHUFFLE]
+    best_snapshot: str  = deeplabcut_params.params.get(dlc_defs.Parameters.danse.BEST_SNAPSHOT, None)
 
-    # Analyze video and save the result
-    deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder = os.path.dirname(config_filepath), shuffle = shuffle)
-
-    save_coords_to_doric(data_filepaths, datapath, deeplabcut_params, config_filepath, shuffle)
-
-
-def create_project(
-    datapath: str, 
-    data_filepaths: list,
-    exp_filepath: str,
-    project_folder: str,
-    bodypart_names: list,
-    extracted_frames_count: int, 
-    extracted_frames: list,
-    params: dict
-):
-    """
-    Create DeepLabCut project folder with config file and labeled data
-    """
-    video_filepaths = []
-    for filepath in data_filepaths:
-        with h5py.File(filepath, 'r') as file_:
-            relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
-            video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
-
-    path = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
-    task = os.path.splitext(os.path.basename(path))[0]
-    user = "danse"
-
-    config_filepath = deeplabcut.create_new_project(task, user, video_filepaths, project_folder, copy_videos = False)
-    
-    update_config_file(config_filepath, bodypart_names)
-
-    create_labeled_data(config_filepath, extracted_frames_count, extracted_frames, bodypart_names, user, params, video_filepaths)
-
-    return video_filepaths, config_filepath
+    config_filepath = os.path.join(project_folder, 'config.yaml')
+    save_coords_to_doric(data_filepaths, datapath, deeplabcut_params, config_filepath, shuffle, best_snapshot)
 
 
 def update_config_file(config_filepath, bodypart_names):
