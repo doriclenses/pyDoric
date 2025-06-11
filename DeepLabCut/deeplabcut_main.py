@@ -207,7 +207,8 @@ def save_coords_to_doric(
     datapath: str, 
     deeplabcut_params, 
     config_filepath: str, 
-    shuffle: int
+    shuffle: int,
+    best_snapshot: str = None
 ):
     """
     Save DeepLabCut analyzed video labels in doric file
@@ -240,7 +241,7 @@ def save_coords_to_doric(
         pytorch_data = yaml.safe_load(file)
 
     model  = pytorch_data['net_type'].replace("_", "").capitalize()
-    epochs = pytorch_data['train_settings']['epochs']
+    epochs = best_snapshot if best_snapshot != None else pytorch_data['train_settings']['epochs']
 
     # Save results to doric data files
     for filepath in filepaths:
