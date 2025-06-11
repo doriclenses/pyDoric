@@ -57,6 +57,7 @@ def save_labels(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     create_labeled_data(config_filepath, extracted_frames_count, extracted_frames, bodypart_names, deeplabcut_params.params, video_filepaths)
 
+    utils.print_to_intercept("Labels added successfully. You can now train the network.")
 
 def train_evaluate(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
@@ -74,6 +75,8 @@ def train_evaluate(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
     deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
+
+    utils.print_to_intercept("Training and evaluation completed successfully. You can now analyze videos.")
 
 
 def analyze_videos(deeplabcut_params: dlc_params.DeepLabCutParameters):
