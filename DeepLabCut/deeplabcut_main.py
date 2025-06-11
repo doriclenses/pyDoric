@@ -5,7 +5,6 @@ import pandas as pd
 import h5py
 import yaml
 import cv2
-import glob
 
 sys.path.append("..")
 import utilities as utils
@@ -25,6 +24,7 @@ def create_project(deeplabcut_params: dlc_params.DeepLabCutParameters):
     """
     # Read danse parameters
     data_filepaths: list[str] = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
+    
     exp_filepath:  str        = deeplabcut_params.params.get(defs.Parameters.Path.EXP_FILE, "")
     video_filepaths: str      = deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
 
@@ -68,7 +68,6 @@ def train_evaluate(deeplabcut_params: dlc_params.DeepLabCutParameters):
     project_folder: str = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
-
     training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
     shuffle: int = training_dataset_info[0][1]
     update_pytorch_config_file(config_filepath, shuffle)
