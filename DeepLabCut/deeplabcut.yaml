@@ -1,0 +1,40 @@
+# deeplabcut.yaml
+
+#DeepLabCut Toolbox (deeplabcut.org)
+#© A. & M.W. Mathis Labs
+#https://github.com/DeepLabCut/DeepLabCut
+#Please see AUTHORS for contributors.
+
+#https://github.com/DeepLabCut/DeepLabCut/blob/main/AUTHORS
+#Licensed under GNU Lesser General Public License v3.0
+#
+# DeepLabCut environment
+#
+# FIRST: If you have an NVIDIA GPU and want to use it, check that you have drivers installed!
+# To check if your GPUs are visible to PyTorch (and thus DeepLabCut), run:
+# >>> python -c "import torch; print(torch.cuda.is_available())"
+#
+# If "False" is printed, PyTorch (and thus DeepLabCut) cannot access your GPU. For
+# more information, see: https://pytorch.org/get-started/locally/
+#
+# install: conda env create -f deeplabcut.yaml
+# update:  conda env update -f deeplabcut.yaml
+name: deeplabcut
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - ipython
+  - jupyter
+  - nb_conda
+  - notebook<7.0.0
+  - ffmpeg
+  - pytables==3.8.0
+  - h5py
+  - pyinstaller
+  - pip:
+    - torch
+    - torchvision
+    - deeplabcut[gui,modelzoo,wandb]==3.0.0rc8
