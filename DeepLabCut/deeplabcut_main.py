@@ -34,7 +34,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     video_filepaths: list[str]  = deeplabcut_params.params[dlc_defs.Parameters.danse.LABELED_VIDEOS].split(', ')                          
 
     # Create project and train network
-    config_filepath = create_project(datapaths, data_filepaths, exp_filepath, project_folder, bodypart_names, extracted_frames_count, extracted_frames, video_filepaths, deeplabcut_params.params)
+    valid_filepaths, config_filepath = create_project(datapaths, data_filepaths, exp_filepath, project_folder, bodypart_names, extracted_frames_count, extracted_frames, video_filepaths, deeplabcut_params.params)
 
     training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
     
@@ -46,7 +46,7 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     # Analyze video and save the result
     deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder = os.path.dirname(config_filepath), shuffle = shuffle)
 
-    save_coords_to_doric(data_filepaths, datapaths, deeplabcut_params, config_filepath, shuffle)
+    save_coords_to_doric(valid_filepaths, datapaths, deeplabcut_params, config_filepath, shuffle)
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
     print("hello preview")
@@ -66,15 +66,21 @@ def create_project(
     """
     Create DeepLabCut project folder with config file and labeled data
     """
+    valid_filepaths = []
     for filepath in data_filepaths:
         try:
             file_ = h5py.File(filepath, 'r')
+            file_.close()
+            valid_filepaths.append(filepath)
         except OSError as e:
             utils.print_error(e, dlc_defs.Messages.FILE_OPENING_ERROR.format(file = filepath))
             continue
-        file_.close()
 
-    path = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
+    # Exit early if no valid files are found
+    if not valid_filepaths: 
+        sys.exit()
+
+    path = exp_filepath if len(valid_filepaths) > 1 else valid_filepaths[0]
     task = os.path.splitext(os.path.basename(path))[0]
     user = "danse"
 
@@ -84,7 +90,7 @@ def create_project(
 
     create_labeled_data(config_filepath, extracted_frames_count, extracted_frames, bodypart_names, user, params, video_filepaths)
 
-    return config_filepath
+    return valid_filepaths, config_filepath
 
 
 def update_config_file(config_filepath, bodypart_names):
