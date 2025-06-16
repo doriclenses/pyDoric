@@ -77,7 +77,8 @@ def create_project(
             continue
 
     # Exit early if no valid files are found
-    if not valid_filepaths: 
+    if not valid_filepaths:
+        utils.print_error(dlc_defs.Messages.NO_VALID_FILE, dlc_defs.Messages.FILE_OPENING_ERROR.format(file = exp_filepath))
         sys.exit()
 
     path = exp_filepath if len(valid_filepaths) > 1 else valid_filepaths[0]
