@@ -31,9 +31,11 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     bodypart_names: list        = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     extracted_frames: list      = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
     extracted_frames_count: int = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
+    video_filepaths: list[str]  = deeplabcut_params.params[dlc_defs.Parameters.danse.LABELED_VIDEOS].split(', ')                          
 
     # Create project and train network
-    video_filepaths, config_filepath = create_project(datapaths, data_filepaths, exp_filepath, project_folder, bodypart_names, extracted_frames_count, extracted_frames, deeplabcut_params.params)
+    config_filepath = create_project(datapaths, data_filepaths, exp_filepath, project_folder, bodypart_names, extracted_frames_count, extracted_frames, video_filepaths, deeplabcut_params.params)
+
     training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
     
     shuffle: int = training_dataset_info[0][1]
@@ -58,22 +60,18 @@ def create_project(
     bodypart_names: list,
     extracted_frames_count: int, 
     extracted_frames: list,
+    video_filepaths: list,
     params: dict
 ):
     """
     Create DeepLabCut project folder with config file and labeled data
     """
-    video_filepaths = []
     for filepath in data_filepaths:
         try:
             file_ = h5py.File(filepath, 'r')
         except OSError as e:
             utils.print_error(e, dlc_defs.Messages.FILE_OPENING_ERROR.format(file = filepath))
             continue
-        for datapath in datapaths:
-            if datapath in file_:
-                relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
-                video_filepaths.append(os.path.join(os.path.dirname(filepath), relative_path.lstrip('/')))
         file_.close()
 
     path = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
@@ -86,7 +84,7 @@ def create_project(
 
     create_labeled_data(config_filepath, extracted_frames_count, extracted_frames, bodypart_names, user, params, video_filepaths)
 
-    return video_filepaths, config_filepath
+    return config_filepath
 
 
 def update_config_file(config_filepath, bodypart_names):
@@ -180,7 +178,6 @@ def create_labeled_data(
 
 def save_coords_to_doric(
     filepaths: list, 
-    # datapath: str,
     datapaths: list,
     deeplabcut_params, 
     config_filepath: str, 
@@ -217,7 +214,6 @@ def save_coords_to_doric(
     for filepath in filepaths:
         file_ = h5py.File(filepath, 'a')
         for datapath in datapaths:
-            print(f'*************datapath*****************{datapath}*************************')
             deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
             # Define correct paths for saving operaion results
             _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names(datapath)

@@ -27,6 +27,7 @@ class Parameters:
         VIDEO_DATAPATH         = "VideoDatapath"
         RELATIVE_FILEPATH      = "RelativeFilePath" 
         VIDEO_RANGE            = "VideoRange"
+        LABELED_VIDEOS         = "LabeledVideos"
         
 class DoricFile:
 
