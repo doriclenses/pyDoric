@@ -214,50 +214,51 @@ def save_coords_to_doric(
     for filepath in filepaths:
         file_ = h5py.File(filepath, 'a')
         for datapath in datapaths:
-            deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
-            # Define correct paths for saving operaion results
-            _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names(datapath)
-            group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
-            operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
+            if datapath in file_:
+                deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
+                # Define correct paths for saving operaion results
+                _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names(datapath)
+                group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
+                operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
 
-            operation_count = utils.operation_count(group_path, file_, operation_name, deeplabcut_params.params, {})    
-            operation_path  = f'{group_path}/{operation_name + operation_count}'
+                operation_count = utils.operation_count(group_path, file_, operation_name, deeplabcut_params.params, {})    
+                operation_path  = f'{group_path}/{operation_name + operation_count}'
 
-            # Save time
-            video_time = np.array(file_[f"{datapath[:datapath.rfind('/')]}/{defs.DoricFile.Dataset.TIME}"])
-            time_datapath = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
-            if time_datapath not in file_:
-                file_.create_dataset(time_datapath, data=video_time, dtype="float64", chunks=utils.def_chunk_size(video_time.shape), maxshape=None)
+                # Save time
+                video_time = np.array(file_[f"{datapath[:datapath.rfind('/')]}/{defs.DoricFile.Dataset.TIME}"])
+                time_datapath = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
+                if time_datapath not in file_:
+                    file_.create_dataset(time_datapath, data=video_time, dtype="float64", chunks=utils.def_chunk_size(video_time.shape), maxshape=None)
 
-            # Save operation attributes
-            utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
+                # Save operation attributes
+                utils.save_attributes(utils.merge_params(params_current = deeplabcut_params.params), file_, operation_path)
 
-            relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
-            video_range   = file_[datapath].attrs[dlc_defs.Parameters.danse.VIDEO_RANGE]
+                relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
+                video_range   = file_[datapath].attrs[dlc_defs.Parameters.danse.VIDEO_RANGE]
 
-            video_filepath = os.path.join(os.path.dirname(filepath), relative_path.lstrip('/'))
-            video_filename = os.path.splitext(os.path.basename(video_filepath))[0]
+                video_filepath = os.path.join(os.path.dirname(filepath), relative_path.lstrip('/'))
+                video_filename = os.path.splitext(os.path.basename(video_filepath))[0]
 
-            # Get coords from hdf file using info (above) from config and pytorch config files
-            hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
-            hdf_data_file = os.path.join(os.path.dirname(config_filepath), hdf_data_file)
-            df_coords = pd.read_hdf(hdf_data_file)
-            df_coords = df_coords[video_range[0]: video_range[1] + 1]
+                # Get coords from hdf file using info (above) from config and pytorch config files
+                hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
+                hdf_data_file = os.path.join(os.path.dirname(config_filepath), hdf_data_file)
+                df_coords = pd.read_hdf(hdf_data_file)
+                df_coords = df_coords[video_range[0]: video_range[1] + 1]
 
-            # Save coordinates for each body part
-            for index, bodypart_name in enumerate(bodypart_names):
-                coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
-                coord_datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
-                if coord_datapath in file_: 
-                    del file_[coord_datapath] # Remove existing dataset if it exists 
-                file_.create_dataset(coord_datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords.shape), maxshape=(h5py.UNLIMITED, 2))
-                attrs = {
-                    defs.DoricFile.Attribute.Dataset.USERNAME: bodypart_name,
-                    defs.DoricFile.Attribute.Dataset.COLOR   : bodypart_colors[index]
-                }
-                utils.save_attributes(attrs, file_, coord_datapath)
+                # Save coordinates for each body part
+                for index, bodypart_name in enumerate(bodypart_names):
+                    coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
+                    coord_datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
+                    if coord_datapath in file_: 
+                        del file_[coord_datapath] # Remove existing dataset if it exists 
+                    file_.create_dataset(coord_datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords.shape), maxshape=(h5py.UNLIMITED, 2))
+                    attrs = {
+                        defs.DoricFile.Attribute.Dataset.USERNAME: bodypart_name,
+                        defs.DoricFile.Attribute.Dataset.COLOR   : bodypart_colors[index]
+                    }
+                    utils.save_attributes(attrs, file_, coord_datapath)
 
-            utils.print_group_path_for_DANSE(operation_path)
+                utils.print_group_path_for_DANSE(operation_path)
         
         file_.close()
 
