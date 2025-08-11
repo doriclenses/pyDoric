@@ -30,7 +30,8 @@ class Parameters:
         RELATIVE_FILEPATH      = "RelativeFilePath" 
         VIDEO_RANGE            = "VideoRange"
         LABELED_VIDEOS         = "LabeledVideos"
-        
+
+
 class DoricFile:
 
     class Group:
