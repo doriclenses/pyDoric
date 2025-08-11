@@ -77,6 +77,7 @@ class Parameters:
         FILEPATH  = "Filepath"
         FILEPATHS = "Filepaths"
         H5PATH    = "HDF5Path"
+        H5PATHS   = "HDF5Paths"
         EXP_FILE  = "ExperimentFile"
 
 
