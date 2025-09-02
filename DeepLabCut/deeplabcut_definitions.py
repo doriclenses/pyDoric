@@ -7,6 +7,8 @@ class Messages:
     PROCESS_DONE       = "Pose Estimation process is done"
     SAVING_TO_DORIC    = "Saving data to doric file..."
     FILE_OPENING_ERROR = "Error opening file - {file}"
+    NO_VALID_FILE      = "No valid files were found. Exiting..."
+
 
 class Parameters:
 
@@ -33,7 +35,9 @@ class Parameters:
         RELATIVE_FILEPATH = "RelativeFilePath" 
         VIDEO_DATAPATH    = "VideoDatapath"
         VIDEO_RANGE       = "VideoRange"
-        
+        LABELED_VIDEOS         = "LabeledVideos"
+
+
 class DoricFile:
 
     class Group:

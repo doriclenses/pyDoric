@@ -23,6 +23,7 @@ def create_project(deeplabcut_params: dlc_params.DeepLabCutParameters):
     Create a new DeepLabCut project.
     """
     # Read danse parameters
+    datapaths: list             = deeplabcut_params.paths[defs.Parameters.Path.H5PATHS]
     data_filepaths: list[str]  = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
     video_filepaths: list[str] = deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
     exp_filepath:  str         = deeplabcut_params.params.get(dlc_defs.Parameters.danse.EXP_FILE, "")
@@ -215,7 +216,7 @@ def create_labeled_data(
 
 def save_coords_to_doric(
     filepaths: list, 
-    datapath: str, 
+    datapaths: list,
     deeplabcut_params, 
     config_filepath: str, 
     shuffle: int,

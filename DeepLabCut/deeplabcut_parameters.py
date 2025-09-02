@@ -15,12 +15,12 @@ class DeepLabCutParameters:
         self.params: dict = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.stage: str   = danse_params.get(defs.Parameters.Main.STAGE)
         
-    def get_h5path_names(self):
+    def get_h5path_names(self, datapath):
 
         """
         Split the path to dataset into relevant names
         """
-        h5path_names = self.paths[defs.Parameters.Path.H5PATH].split('/')
+        h5path_names = datapath.split('/')
 
         data     = h5path_names[0]
         driver   = h5path_names[1]

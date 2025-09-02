@@ -3,72 +3,107 @@ This repository contains python scripts and [Pyinstaller](https://pyinstaller.or
 
 ## MiniAn
 ---
+To create MiniAn executable, follow the steps: 
 
-[Install MiniAn](https://minian.readthedocs.io/en/stable/start_guide/install.html) and Pyinstaller in the same anaconda environment.
+1.  Create new environment, and install MiniAn and PyInstaller by running the following in Anaconda prompt:
+    ```
+    conda create -n minian_pyinstaller -c bioconda -c conda-forge python=3.8 minian=1.2.1 h5py pyinstaller pefile=2023.2.7 --yes
+    ```
+    ```
+    conda activate minian_pyinstaller
+    ```
+    ⚠️ It may take some time to install.    
 
-Start a command prompt in Minian environment and go to the git directory.
+    For more information about the library, please read [MiniAn docs](https://minian.readthedocs.io/en/stable/start_guide/install.html).
 
-```
-cd PATHTOGITFOLDER/Deploy
-```
+2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-run the command pyinstaller
+3.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
-```
-pyinstaller pack_minian_run.spec
-```
+    ```
+    pyinstaller /Deploy/pack_minian_run.spec
+    ```
 
 ## CaImAn
 ---
+To create CaImAn executable, follow the steps:
 
-[Install CaImAn](https://caiman.readthedocs.io/en/latest/Installation.html) and Pyinstaller in the same anaconda environment and set up caimanmanager to get **caiman_data** folder. ⚠️Then copy **caiman_data** folder into the folder where CaImAn will be compiled (git folder)
+1.  Create new environment, and install CaImAn and PyInstaller by running the following in Anaconda prompt:
+    ```
+    conda create -n caiman_pyinstaller -c conda-forge python=3.10.8 caiman=1.11.4 pyinstaller pefile=2023.2.7 ipyparallel=8.8.0 --yes
+    ```
+    ```
+    conda activate caiman_pyinstaller
+    ```
+    ⚠️ It may take some time to install.
+   
+    For more information about the library, please read [CaImAn docs](https://caiman.readthedocs.io/en/latest/Installation.html).
 
-Start a command prompt in CaImAn environment and go to the git directory.
+2.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-```
-cd PATHTOGITFOLDER/Deploy
-```
+3.  Use CaImAn manager to finish the istallation by running in Anaconda prompt:
+    ```
+    caimanmanager install
+    ```
+    This would add 'caiman_data' folder into your user folder 'C:\Users\your_user_name\'. Copy this this folder into your cloned 'CaImAn' folder. 
 
-then run pyinstaller
 
-```
-pyinstaller pack_caiman_run.spec
-```
+4.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
+    ```
+    pyinstaller /Deploy/pack_caiman_run.spec
+    ```
 
 ## Suite2p
 ---
 
-[Install Suite2p](https://suite2p.readthedocs.io/en/latest/installation.html) and Pyinstaller in the same anaconda environment.
+To create Suite2p executable, follow the steps:
 
-Start a command prompt in Suite2p environment and go to the git directory.
+1.  Create new environment, and install CaImAn and PyInstaller by running the following lines in Anaconda prompt:
+    ```
+    conda create --name suite2p_pyinstaller python=3.9 pyinstaller h5py --yes
+    ```
+    ```
+    conda activate suite2p_pyinstaller
+    ```
+    ```
+    python -m pip install suite2p
+    ```
+    For more information about the library, please read [Suite2p docs](https://suite2p.readthedocs.io/en/latest/installation.html).
 
-```
-cd PATHTOGITFOLDER/Deploy
-```
+3.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-then run pyinstaller
+4.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
-```
-pyinstaller pack_suite2p_run.spec
-```
+    ```
+    pyinstaller /Deploy/pack_suite2p_run.spec
+    ```
 
 ## DeepLabCut
 ---
 
-[Install CUDA v12.4 or higher](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_network)
+1.  [Install CUDA v12.4 or higher](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_network)
+   
+2.  [Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
+   
+3.  Create new environment, and install DeepLabCut and PyInstaller by running the following in Anaconda prompt:
+    ```
+    conda create -n deeplabcut_pyinstaller -c conda-forge python=3.10 pytables==3.8.0 pyinstaller h5py --yes
+    ```
+    ```
+    conda activate deeplabcut_pyinstaller
+    ```
+    ```
+    pip install torch torchvision
+    ```
+    ```
+    pip install "deeplabcut[gui,modelzoo,wandb]==3.0.0rc8"
+    ```
 
-[Install cuDNN v9.1 or higher](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
+    For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
 
-[Install DeepLabCut](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html) and Pyinstaller in the same anaconda environment.
+4.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
-Start a command prompt in DeepLabCut environment and go to the git directory.
-
-```
-cd PATHTOGITFOLDER/Deploy
-```
-
-run the command pyinstaller
-
-```
-pyinstaller pack_poseEstimation_run.spec
-```
+5.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
+    ```
+    pyinstaller Deploy/pack_deeplabcut_run.spec
+    ```
