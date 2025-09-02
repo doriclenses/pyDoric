@@ -25,7 +25,8 @@ class Parameters:
         EXTRACTED_FRAMES       = "ExtractedFrames"
         EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
         VIDEO_FILEPATHS        = "VideoFilepaths"
-
+        EXP_FILE               = "ExperimentFile"
+        
         SHUFFLE       = "Shuffle"
         BEST_SNAPSHOT = "BestSnapshot"
 

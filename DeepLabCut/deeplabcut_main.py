@@ -23,20 +23,18 @@ def create_project(deeplabcut_params: dlc_params.DeepLabCutParameters):
     Create a new DeepLabCut project.
     """
     # Read danse parameters
-    data_filepaths: list[str] = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
-    
-    exp_filepath:  str        = deeplabcut_params.params.get(defs.Parameters.Path.EXP_FILE, "")
-    video_filepaths: str      = deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
+    data_filepaths: list[str]  = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
+    video_filepaths: list[str] = deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
+    exp_filepath:  str         = deeplabcut_params.params.get(dlc_defs.Parameters.danse.EXP_FILE, "")
 
     main_filepath  = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
     project_folder = os.path.dirname(main_filepath)
+    project_name   = os.path.splitext(os.path.basename(main_filepath))[0]
+    experimenter   = "danse"
 
-    task = os.path.splitext(os.path.basename(main_filepath))[0]
-    user = "danse"
+    config_filepath = deeplabcut.create_new_project(project_name, experimenter, video_filepaths, project_folder, copy_videos = False)
 
-    config_filepath = deeplabcut.create_new_project(task, user, video_filepaths, project_folder, copy_videos = False)
-
-    utils.print_to_intercept(config_filepath)
+    utils.print_to_intercept("[project path]" + os.path.dirname(config_filepath))
 
 
 def save_labels(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -45,7 +43,7 @@ def save_labels(deeplabcut_params: dlc_params.DeepLabCutParameters):
     Save labels in DeepLabCut format.
     """
     # Read danse parameters
-    video_filepaths: list[str]  = deeplabcut_params.params[dlc_defs.Parameters.Path.FILEPATHS]
+    video_filepaths: list[str]  = deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
     project_folder: str         = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
     bodypart_names: list        = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
     extracted_frames: list      = deeplabcut_params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
@@ -54,28 +52,36 @@ def save_labels(deeplabcut_params: dlc_params.DeepLabCutParameters):
     config_filepath = os.path.join(project_folder, 'config.yaml')
 
     update_config_file(config_filepath, bodypart_names)
-
     create_labeled_data(config_filepath, extracted_frames_count, extracted_frames, bodypart_names, deeplabcut_params.params, video_filepaths)
 
-    utils.print_to_intercept("Labels added successfully. You can now train the network.")
+    video_names = []
+    for video_filepath in video_filepaths:
+        video_names.append(os.path.splitext(os.path.basename(video_filepath))[0])
+
+    utils.print_to_intercept("[labeled videos]" + ', '.join(video_names))
+
 
 def train_evaluate(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     """
     Train and evaluate the DeepLabCut network.
     """
-    # Read danse parameters 
-    project_folder: str = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
 
+    project_folder: str = deeplabcut_params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
     config_filepath = os.path.join(project_folder, 'config.yaml')
+
     training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
     shuffle: int = training_dataset_info[0][1]
     update_pytorch_config_file(config_filepath, shuffle)
 
+    with open(config_filepath, 'r') as cfg:
+        data = yaml.safe_load(cfg)
+    iteration = data['iteration']
+
     deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
     deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
 
-    utils.print_to_intercept("Training and evaluation completed successfully. You can now analyze videos.")
+    utils.print_to_intercept(f"[train info]{iteration}, shuffle-{shuffle}")
 
 
 def analyze_videos(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -92,6 +98,11 @@ def analyze_videos(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder=project_folder, shuffle=shuffle)
 
+    video_names = []
+    for video_filepath in video_filepaths:
+        video_names.append(os.path.splitext(os.path.basename(video_filepath))[0])
+
+    utils.print_to_intercept("[analyzed videos]" + ', '.join(video_names))
 
 
 def save_coordinates(deeplabcut_params: dlc_params.DeepLabCutParameters):
@@ -108,8 +119,9 @@ def save_coordinates(deeplabcut_params: dlc_params.DeepLabCutParameters):
     best_snapshot: str  = deeplabcut_params.params.get(dlc_defs.Parameters.danse.BEST_SNAPSHOT, None)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
-    save_coords_to_doric(data_filepaths, datapath, deeplabcut_params, config_filepath, shuffle, best_snapshot)
+    coords_datapaths = save_coords_to_doric(data_filepaths, datapath, deeplabcut_params, config_filepath, shuffle, best_snapshot)
 
+    utils.print_to_intercept("[coordinates datapaths]" + ', '.join(coords_datapaths))
 
 def update_config_file(config_filepath, bodypart_names):
     """
@@ -212,6 +224,7 @@ def save_coords_to_doric(
     """
     Save DeepLabCut analyzed video labels in doric file
     """
+    all_saved_datapaths = []
 
     print(dlc_defs.Messages.SAVING_TO_DORIC, flush=True)
     
@@ -275,6 +288,7 @@ def save_coords_to_doric(
         df_coords = df_coords[video_range[0]: video_range[1] + 1]
 
         # Save coordinates for each body part
+        coords_datapaths = []
         for index, bodypart_name in enumerate(bodypart_names):
             coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
             coord_datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
@@ -287,10 +301,13 @@ def save_coords_to_doric(
             }
             utils.save_attributes(attrs, file_, coord_datapath)
 
-        utils.print_group_path_for_DANSE(operation_path)
-    
+            coords_datapaths.append(coord_datapath)
+
         file_.close()
 
+        return all_saved_datapaths
+
+    
 
 def get_pytorch_config_file(config_filepath, shuffle):
 

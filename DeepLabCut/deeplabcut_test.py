@@ -14,8 +14,8 @@ dict_params = {
         dlc_defs.Parameters.danse.BODY_PART_NAMES : 'Head, Body, Tail',
         dlc_defs.Parameters.danse.EXTRACTED_FRAMES : [3165,3750,1061,3980,1887,214,4032,2267,2628,2335,1493,755,4014,2822,599,3698,532,2305,2536,1578],
         dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT : 20,
-        dlc_defs.Parameters.danse.VIDEO_FILEPATHS : 'C:/Users/ING55/dataFiles/Clients/SusanaLima/allResaved/Video/animal1115_NSF.mp4',
-        dlc_defs.Parameters.danse.PROJECT_FOLDER : 'C:/Users/ING55/dataFiles/Clients/SusanaLima/animal1115_NSF-danse-2025-06-10',
+        dlc_defs.Parameters.danse.VIDEO_FILEPATHS : ['C:/Users/ING55/dataFiles/Clients/SusanaLima/allResaved/Video/animal1115_NSF.mp4'],
+        dlc_defs.Parameters.danse.PROJECT_FOLDER : 'C:/Users/ING55/dataFiles/Clients/SusanaLima/animal1115_NSF-danse-2025-06-11',
         dlc_defs.Parameters.danse.SHUFFLE: 2,
         dlc_defs.Parameters.danse.BEST_SNAPSHOT: '030',
         defs.DoricFile.Attribute.Group.OPERATIONS : "DeepLabCut Pose Estimation"
@@ -26,8 +26,8 @@ dict_params = {
     }
 }
 
-dlc_main.create_project(dlc_params.DeepLabCutParameters(dict_params))
-# dlc_main.add_labels(dlc_params.DeepLabCutParameters(dict_params))
-# dlc_main.train_evaluate(dlc_params.DeepLabCutParameters(dict_params))
+# dlc_main.create_project(dlc_params.DeepLabCutParameters(dict_params))
+# dlc_main.save_labels(dlc_params.DeepLabCutParameters(dict_params))
+dlc_main.train_evaluate(dlc_params.DeepLabCutParameters(dict_params))
 # dlc_main.analyze_videos(dlc_params.DeepLabCutParameters(dict_params))
 # dlc_main.save_coordinates(dlc_params.DeepLabCutParameters(dict_params))

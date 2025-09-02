@@ -78,7 +78,6 @@ class Parameters:
         FILEPATH  = "Filepath"
         FILEPATHS = "Filepaths"
         H5PATH    = "HDF5Path"
-        EXP_FILE  = "ExperimentFile"
 
 
     class danse:
