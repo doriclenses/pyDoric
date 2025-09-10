@@ -106,7 +106,7 @@ To create Suite2p executable, follow the steps:
     pip install torch torchvision
     ```
     ```
-    pip install "deeplabcut[gui,modelzoo,wandb]==3.0.0rc8"
+    pip install "deeplabcut==3.0.0rc8"
     ```
 
     For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
