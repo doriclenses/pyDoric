@@ -23,7 +23,6 @@ def create_project(deeplabcut_params: dlc_params.DeepLabCutParameters):
     Create a new DeepLabCut project.
     """
     # Read danse parameters
-    datapaths: list             = deeplabcut_params.paths[defs.Parameters.Path.H5PATHS]
     data_filepaths: list[str]  = deeplabcut_params.paths[defs.Parameters.Path.FILEPATHS]
     video_filepaths: list[str] = deeplabcut_params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
     exp_filepath:  str         = deeplabcut_params.params.get(dlc_defs.Parameters.danse.EXP_FILE, "")
@@ -124,6 +123,7 @@ def save_coordinates(deeplabcut_params: dlc_params.DeepLabCutParameters):
 
     utils.print_to_intercept("[coordinates datapaths]" + ', '.join(coords_datapaths))
 
+
 def update_config_file(config_filepath, bodypart_names):
     """
     Update label names in the config file
@@ -169,7 +169,6 @@ def create_labeled_data(
     Create labeled data in DeepLabCut format
     """
 
-    # Create folder for labeled data
     project_path = os.path.dirname(config_filepath)
     experimenter = "danse"
 
@@ -216,7 +215,7 @@ def create_labeled_data(
 
 def save_coords_to_doric(
     filepaths: list, 
-    datapaths: list,
+    datapath: str,
     deeplabcut_params, 
     config_filepath: str, 
     shuffle: int,
@@ -233,7 +232,7 @@ def save_coords_to_doric(
     bodypart_colors = deeplabcut_params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
 
     # Define correct paths for saving operaion results
-    _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names()
+    _, _, _, series, video_group_name = deeplabcut_params.get_h5path_names(datapath)
     group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
     operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
 
