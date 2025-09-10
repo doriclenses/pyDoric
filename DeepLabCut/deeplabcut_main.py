@@ -283,7 +283,7 @@ def save_coords_to_doric(
 
         # Get coords from hdf file using info (above) from config and pytorch config files
         hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
-        hdf_data_file = os.path.join(os.path.dirname(config_filepath), hdf_data_file)
+        hdf_data_file = os.path.join(os.path.dirname(config_filepath+'/analyzed-data'), hdf_data_file)
         df_coords = pd.read_hdf(hdf_data_file)
         df_coords = df_coords[video_range[0]: video_range[1] + 1]
 
