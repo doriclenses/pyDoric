@@ -8,6 +8,8 @@ __pycache__/
 *.zip
 .vscode/settings.json
 .mypy_cache
+.deeplabcut
+__pycache__
 
 Deploy/dist
 Deploy/build

@@ -1,0 +1,6 @@
+pyinstaller
+h5py
+torch
+torchvision
+tensorboard
+deeplabcut==3.0.0rc8
