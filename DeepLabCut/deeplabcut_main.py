@@ -96,7 +96,7 @@ def analyze_videos(deeplabcut_params: dlc_params.DeepLabCutParameters):
     
     config_filepath = os.path.join(project_folder, 'config.yaml')
 
-    deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder=project_folder, shuffle=shuffle)
+    deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder=project_folder+'/analyzed-data', shuffle=shuffle)
 
     video_names = []
     for video_filepath in video_filepaths:
