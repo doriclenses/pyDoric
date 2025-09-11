@@ -9,6 +9,7 @@ __pycache__/
 .vscode/settings.json
 .mypy_cache
 .deeplabcut
+.dlcenv
 __pycache__
 
 Deploy/dist
