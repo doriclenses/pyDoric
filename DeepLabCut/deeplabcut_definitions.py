@@ -1,6 +1,8 @@
+"""Definitions for DeepLabCut"""
+
 class Messages:
     """
-    Messages
+    Messages showed in danse software
     """
     ADVANCED_BAD_TYPE  = "One of the advanced parameters is not of a python type"
     LOADING_ARGUMENTS  = "Loading parameters"
@@ -40,7 +42,11 @@ class Parameters:
 
 class DoricFile:
 
+    """Definitions for Doric file format"""
+
     class Group:
+
+        """Group names in Doric file"""
+        
         POSE_ESTIMATION = "PoseEstimation"
-
-
+        
