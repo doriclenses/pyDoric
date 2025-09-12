@@ -266,7 +266,11 @@ def penalties_preview(minian_params):
     C = save_minian(C_new.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
 
-    units = np.random.choice(A.coords["unit_id"], 10, replace=False)
+    unit_ids = A.coords["unit_id"].values
+    n_units = len(unit_ids)
+    n_sample = min(10, n_units)
+
+    units = np.random.choice(unit_ids, n_sample, replace=False)
     units.sort()
     A_sub = A.sel(unit_id=units).persist()
     C_sub = C_chk.sel(unit_id=units).persist()
