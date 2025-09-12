@@ -48,9 +48,9 @@ def main(minian_params):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    subset = {"frame": slice(0, None)}
+    # subset = {"frame": slice(0, None)}
 
-    file_, chk, varr_ref = load_chunk(intpath, subset, minian_params)
+    file_, chk, varr_ref = load_chunk(intpath, minian_params)
 
     varr_ref = preprocess(varr_ref, intpath, minian_params)
 
@@ -140,9 +140,9 @@ def init_preview(minian_params):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    subset = {"frame": slice(*minian_params.preview_params[defs.Parameters.Preview.RANGE])}
+    # subset = {"frame": slice(*minian_params.preview_params[defs.Parameters.Preview.RANGE])}
 
-    file_, chk, varr_ref = load_chunk(intpath, subset, minian_params)
+    file_, chk, varr_ref = load_chunk(intpath, minian_params)
 
     varr_ref = preprocess(varr_ref, intpath, minian_params)
 
@@ -302,16 +302,17 @@ def penalties_preview(minian_params):
     return 0
 
 
-def load_chunk(intpath, subset, minian_params):
+def load_chunk(intpath, minian_params):
 
     print(mn_defs.Messages.LOAD_DATA, flush=True)
     varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
-    varr_ref = varr.sel(subset)
-
-    return file_, chk, varr_ref
+    
+    # varr_ref = varr.sel(subset)
+    # return file_, chk, varr_ref
+    return file_, chk, varr
 
 
 def preprocess(varr_ref, intpath, minian_params):
@@ -537,6 +538,7 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
 def load_doric_to_xarray(
     fname: str,
     h5path: str,
+    range: dict,
     dtype: type = np.float64,
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
@@ -574,6 +576,7 @@ def load_doric_to_xarray(
 
         varr = varr.astype(dtype)
 
+    varr = varr.sel(range)
     if downsample:
         if downsample_strategy == "mean":
             varr = varr.coarsen(**downsample, boundary="trim", coord_func="min").mean()
