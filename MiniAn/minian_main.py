@@ -596,7 +596,7 @@ def load_doric_to_xarray(
     arr_opt = fct.partial(custom_arr_optimize, keep_patterns=["^load_avi_ffmpeg"])
 
     with da.config.set(array_optimize=arr_opt):
-        varr = da.optimize(varr)[0]
+        varr.data = da.optimize(varr.data)[0]
 
     varr = varr.assign_coords({"height" : np.arange(varr.sizes["height"]),
                                 "width" : np.arange(varr.sizes["width"]),
