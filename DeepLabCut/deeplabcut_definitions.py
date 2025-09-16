@@ -30,14 +30,14 @@ class Parameters:
         EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
         VIDEO_FILEPATHS        = "VideoFilepaths"
         EXP_FILE               = "ExperimentFile"
-        
+
         SHUFFLE       = "Shuffle"
         BEST_SNAPSHOT = "BestSnapshot"
 
-        RELATIVE_FILEPATH = "RelativeFilePath" 
+        RELATIVE_FILEPATH = "RelativeFilePath"
         VIDEO_DATAPATH    = "VideoDatapath"
         VIDEO_RANGE       = "VideoRange"
-        LABELED_VIDEOS         = "LabeledVideos"
+        LABELED_VIDEOS    = "LabeledVideos"
 
 
 class DoricFile:
@@ -47,6 +47,6 @@ class DoricFile:
     class Group:
 
         """Group names in Doric file"""
-        
+
         POSE_ESTIMATION = "PoseEstimation"
         
