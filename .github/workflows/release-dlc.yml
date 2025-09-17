@@ -8,57 +8,51 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: dlc-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: [self-hosted, Windows, X64, GPU]
     timeout-minutes: 180
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Extract version from tag (cmd)
+      - name: Extract version from tag
         shell: cmd
         run: |
           set VERSION=%GITHUB_REF_NAME:deeplabcut-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          auto-activate-base: true
+          python-version: "3.10"
 
-      - name: Create env (cmd)
+      - name: Create venv
         shell: cmd
-        run: conda create -n dlc_pyinstaller python=3.10 -y
+        run: python -m venv venv
 
-      - name: Install deps from requirements + GPU Torch (cmd)
+      - name: Install deps
         shell: cmd
         run: |
-          conda run -n dlc_pyinstaller python -m pip install --upgrade pip
-          conda run -n dlc_pyinstaller pip install -r DeepLabCut/requirements.txt
-          conda install -n dlc_pyinstaller -y -c conda-forge pyinstaller
-          conda run -n dlc_pyinstaller pip install --upgrade --index-url https://download.pytorch.org/whl/cu124 torch torchvision
-          conda run -n dlc_pyinstaller python - <<PY
+          venv\Scripts\python -m pip install --upgrade pip
+          venv\Scripts\pip install -r DeepLabCut/requirements.txt
+          venv\Scripts\pip install pyinstaller
+          venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu124 torch torchvision
+          venv\Scripts\python - <<PY
           import torch
           print("Torch:", torch.__version__)
           print("CUDA build:", getattr(torch.version, "cuda", None))
           print("CUDA available at runtime:", torch.cuda.is_available())
           PY
 
-      - name: Build DeepLabCut exe (cmd)
+      - name: Build exe
         shell: cmd
         working-directory: Deploy
         run: |
-          conda run -n dlc_pyinstaller pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
-          rem zip using built-in tar (no PowerShell needed)
+          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
           tar -a -c -f DeepLabCut-%VERSION%.zip -C dist .
 
-      - name: Create GitHub Release (attach zip)
+      - name: Release
         uses: softprops/action-gh-release@v2
         with:
           name: DeepLabCut ${{ env.VERSION }}
