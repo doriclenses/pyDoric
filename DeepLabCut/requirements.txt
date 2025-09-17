@@ -1,6 +1,7 @@
-pyinstaller
+-f https://download.pytorch.org/whl/cu126
+torch==2.8.0+cu126
+torchvision==2.8.0+cu126
+
 h5py
-torch
-torchvision
-tensorboard
+pyinstaller
 deeplabcut==3.0.0rc8
