@@ -1,0 +1,68 @@
+name: Release DeepLabCut
+
+on:
+  push:
+    tags: ['deeplabcut-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write  # needed to create GitHub Releases
+
+concurrency:
+  group: dlc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, Windows, X64, GPU]
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".Replace("deeplabcut-v","")
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: true
+
+      - name: Create env
+        shell: pwsh
+        run: conda create -n dlc_pyinstaller python=3.10 -y
+
+      - name: Install deps from requirements + GPU Torch
+        shell: pwsh
+        run: |
+          # Upgrade pip
+          conda run -n dlc_pyinstaller python -m pip install --upgrade pip
+
+          # Install everything from your repo's requirements file
+          conda run -n dlc_pyinstaller pip install -r DeepLabCut/requirements.txt
+
+          # Sanity check
+          conda run -n dlc_pyinstaller python - << 'PY'
+          import torch
+          print("Torch:", torch.__version__)
+          print("CUDA build:", torch.version.cuda)
+          print("CUDA available at runtime:", torch.cuda.is_available())
+          PY
+
+      - name: Build DeepLabCut exe (PyInstaller)
+        shell: pwsh
+        working-directory: Deploy
+        run: |
+          conda run -n dlc_pyinstaller pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
+          Compress-Archive -Path dist\* -DestinationPath "DeepLabCut-${env:VERSION}.zip"
+
+      - name: Create GitHub Release (attach zip)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: DeepLabCut ${{ env.VERSION }}
+          body: "Automated DeepLabCut release for tag ${{ github.ref_name }}."
+          files: Deploy/DeepLabCut-${{ env.VERSION }}.zip
