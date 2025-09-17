@@ -8,51 +8,50 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: dlc-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: [self-hosted, Windows, X64, GPU]
     timeout-minutes: 180
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Extract version from tag
+      - name: Extract version from tag (cmd)
         shell: cmd
         run: |
           set VERSION=%GITHUB_REF_NAME:deeplabcut-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Create venv
+      - name: Create venv (cmd)
         shell: cmd
-        run: python -m venv venv
+        run: |
+          py -3.10 -V
+          py -3.10 -m venv venv
 
-      - name: Install deps
+      - name: Install deps (cmd)
         shell: cmd
         run: |
           venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install -r DeepLabCut/requirements.txt
+          venv\Scripts\pip install -r DeepLabCut\requirements.txt
           venv\Scripts\pip install pyinstaller
-          venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu124 torch torchvision
-          venv\Scripts\python - <<PY
-          import torch
-          print("Torch:", torch.__version__)
-          print("CUDA build:", getattr(torch.version, "cuda", None))
-          print("CUDA available at runtime:", torch.cuda.is_available())
-          PY
+          rem Ensure CUDA wheel of torch (CUDA 12.6 build)
+          venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch torchvision
+          venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);import sys;print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available at runtime:',torch.cuda.is_available())"
 
-      - name: Build exe
+      - name: Build DeepLabCut exe (cmd)
         shell: cmd
         working-directory: Deploy
         run: |
           ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
+          rem Zip using Windows tar (no PowerShell)
           tar -a -c -f DeepLabCut-%VERSION%.zip -C dist .
 
-      - name: Release
+      - name: Create GitHub Release (attach zip)
         uses: softprops/action-gh-release@v2
         with:
           name: DeepLabCut ${{ env.VERSION }}
