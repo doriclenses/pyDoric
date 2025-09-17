@@ -193,7 +193,7 @@ def create_labeled_data(
         for name in bodypart_names:
             coords = params[name+dlc_defs.Parameters.danse.COORDINATES][frames_range[0]:frames_range[1]]
             data.append([x for x, y in coords])
-            data.append([y for x, y in coords]) 
+            data.append([y for x, y in coords])
         dataT = list(map(list, zip(*data))) # [[bp1_x1, bp1_y1, bp2_x1, bp2_y1, ...], ..., [bp1_xn, bp1_yn, bp2_xn, bp2_yn, ...]]
 
         frames = extracted_frames[frames_range[0]:frames_range[1]]
@@ -301,7 +301,7 @@ def save_coords_to_doric(
             coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
             coord_datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
             if coord_datapath in file_:
-                del file_[coord_datapath] # Remove existing dataset if it exists 
+                del file_[coord_datapath] # Remove existing dataset if it exists
             file_.create_dataset(coord_datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords.shape), maxshape=(h5py.UNLIMITED, 2))
             attrs = {
                 defs.DoricFile.Attribute.Dataset.USERNAME: bodypart_name,

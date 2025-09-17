@@ -67,3 +67,4 @@ if __name__ == "__main__":
         dlc_main.save_coordinates(params)
 
     print(dlc_defs.Messages.PROCESS_DONE, flush=True)
+    
