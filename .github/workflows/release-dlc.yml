@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # needed to create GitHub Releases
+  contents: write
 
 concurrency:
   group: dlc-${{ github.ref }}
@@ -21,45 +21,42 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract version from tag
+      - name: Extract version from tag (cmd)
         shell: cmd
         run: |
-          set VERSION=%GITHUB_REF_NAME:deeplabcut-v=% 
+          set VERSION=%GITHUB_REF_NAME:deeplabcut-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
-
 
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: true
 
-      - name: Create env
-        shell: powershell
+      - name: Create env (cmd)
+        shell: cmd
         run: conda create -n dlc_pyinstaller python=3.10 -y
 
-      - name: Install deps from requirements + GPU Torch
-        shell: powershell
+      - name: Install deps from requirements + GPU Torch (cmd)
+        shell: cmd
         run: |
           conda run -n dlc_pyinstaller python -m pip install --upgrade pip
           conda run -n dlc_pyinstaller pip install -r DeepLabCut/requirements.txt
-          # ensure pyinstaller is present (remove if it's already in your requirements)
           conda install -n dlc_pyinstaller -y -c conda-forge pyinstaller
-          # force CUDA build of torch
           conda run -n dlc_pyinstaller pip install --upgrade --index-url https://download.pytorch.org/whl/cu124 torch torchvision
-          # sanity check
-          conda run -n dlc_pyinstaller python - << 'PY'
-          import torch, sys
+          conda run -n dlc_pyinstaller python - <<PY
+          import torch
           print("Torch:", torch.__version__)
           print("CUDA build:", getattr(torch.version, "cuda", None))
           print("CUDA available at runtime:", torch.cuda.is_available())
           PY
 
-      - name: Build DeepLabCut exe (PyInstaller)
-        shell: powershell
+      - name: Build DeepLabCut exe (cmd)
+        shell: cmd
         working-directory: Deploy
         run: |
           conda run -n dlc_pyinstaller pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
-          Compress-Archive -Path dist\* -DestinationPath ("DeepLabCut-" + $env:VERSION + ".zip")
+          rem zip using built-in tar (no PowerShell needed)
+          tar -a -c -f DeepLabCut-%VERSION%.zip -C dist .
 
       - name: Create GitHub Release (attach zip)
         uses: softprops/action-gh-release@v2
