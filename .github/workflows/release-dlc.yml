@@ -22,10 +22,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Extract version from tag
-        shell: bash
+        shell: powershell
         run: |
-          version="${GITHUB_REF_NAME#deeplabcut-v}"
-          echo "VERSION=$version" >> $GITHUB_ENV
+          $version = "$env:GITHUB_REF_NAME".Replace("deeplabcut-v","")
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding ascii
 
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
@@ -33,32 +33,32 @@ jobs:
           auto-activate-base: true
 
       - name: Create env
-        shell: bash
+        shell: powershell
         run: conda create -n dlc_pyinstaller python=3.10 -y
 
       - name: Install deps from requirements + GPU Torch
-        shell: bash
+        shell: powershell
         run: |
-          # Upgrade pip
           conda run -n dlc_pyinstaller python -m pip install --upgrade pip
-
-          # Install everything from your repo's requirements file
           conda run -n dlc_pyinstaller pip install -r DeepLabCut/requirements.txt
-
-          # Sanity check
+          # ensure pyinstaller is present (remove if it's already in your requirements)
+          conda install -n dlc_pyinstaller -y -c conda-forge pyinstaller
+          # force CUDA build of torch
+          conda run -n dlc_pyinstaller pip install --upgrade --index-url https://download.pytorch.org/whl/cu124 torch torchvision
+          # sanity check
           conda run -n dlc_pyinstaller python - << 'PY'
-          import torch
+          import torch, sys
           print("Torch:", torch.__version__)
-          print("CUDA build:", torch.version.cuda)
+          print("CUDA build:", getattr(torch.version, "cuda", None))
           print("CUDA available at runtime:", torch.cuda.is_available())
           PY
 
       - name: Build DeepLabCut exe (PyInstaller)
-        shell: bash
+        shell: powershell
         working-directory: Deploy
         run: |
           conda run -n dlc_pyinstaller pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
-          Compress-Archive -Path dist\* -DestinationPath "DeepLabCut-${env:VERSION}.zip"
+          Compress-Archive -Path dist\* -DestinationPath ("DeepLabCut-" + $env:VERSION + ".zip")
 
       - name: Create GitHub Release (attach zip)
         uses: softprops/action-gh-release@v2
