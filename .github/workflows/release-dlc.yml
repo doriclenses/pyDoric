@@ -22,10 +22,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Extract version from tag
-        shell: powershell
+        shell: cmd
         run: |
-          $version = "$env:GITHUB_REF_NAME".Replace("deeplabcut-v","")
-          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding ascii
+          set VERSION=%GITHUB_REF_NAME:deeplabcut-v=% 
+          echo VERSION=%VERSION%>> %GITHUB_ENV%
+
 
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
