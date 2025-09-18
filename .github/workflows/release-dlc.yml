@@ -48,45 +48,101 @@ jobs:
           if exist dist rmdir /s /q dist
           if exist build rmdir /s /q build
 
-      
-      - name: Build deeplabcut exe (cmd)
+      - name: Build deeplabcut (cmd)
         shell: cmd
         working-directory: Deploy
         run: |
           ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
-
           echo === DIST TREE ===
           dir /s /b dist
 
-          rem Case A: one-file build -> dist\*.exe
-          for %%F in (dist\*.exe) do (
-            echo Found onefile exe: %%F
-            tar -a -c -f deeplabcut-%VERSION%.zip -C dist "%%~nxF"
-            goto :zipped
-          )
-
-          rem Case B: one-folder build -> dist\<appname>\*
+      - name: Zip onedir output with build-info (cmd)
+        shell: cmd
+        working-directory: Deploy
+        env:
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          rem Locate the onedir app folder under dist
+          set "APPDIR="
           for /d %%D in (dist\*) do (
-            echo Found onefolder dir: %%D
-            tar -a -c -f deeplabcut-%VERSION%.zip -C "%%D" .
-            goto :zipped
+            set "APPDIR=%%D"
+            goto :found
+          )
+          :found
+          if not defined APPDIR (
+            echo ERROR: no onedir folder found in Deploy\dist
+            exit /b 1
           )
 
-          echo ERROR: Nothing found in Deploy\dist to zip
-          exit /b 1
+          rem Create build-info.txt inside the app folder so it goes into the zip
+          echo Version: %VERSION%> "%APPDIR%\build-info.txt"
+          echo Commit: %GIT_SHA%>> "%APPDIR%\build-info.txt"
+          echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
 
-          :zipped
-          echo Created zip: deeplabcut-%VERSION%.zip
+          rem Zip the app folder contents
+          set ZIPNAME=deeplabcut-%VERSION%.zip
+          echo Zipping contents of %APPDIR% into %ZIPNAME%
+          tar -a -c -f %ZIPNAME% -C "%APPDIR%" .
+          echo Created zip: %ZIPNAME%
 
-      - name: Upload dist artifact
+      - name: SHA256 of release zip
+        shell: powershell
+        working-directory: Deploy
+        run: |
+          (Get-FileHash -Algorithm SHA256 "deeplabcut-$env:VERSION.zip").Hash |
+            Out-File -Encoding ascii -FilePath "deeplabcut-$env:VERSION.zip.sha256"
+
+      - name: Create GitHub Release (attach zip + checksum)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: deeplabcut ${{ env.VERSION }}
+          body: |
+            Automated deeplabcut release for tag ${{ github.ref_name }}.
+            - Version: ${{ env.VERSION }}
+            - Commit: ${{ github.sha }}
+          files: |
+            Deploy/deeplabcut-${{ env.VERSION }}.zip
+            Deploy/deeplabcut-${{ env.VERSION }}.zip.sha256
+
+      # === Persist: backup + deploy (fresh) on the runner ===
+      - name: Persist zip (backup) and deploy fresh (cmd)
+        shell: cmd
+        working-directory: Deploy
+        env:
+          DLC_BACKUP_ROOT: P:\Labo\Internal Software\danse\Libraries\DeepLabCut
+          DLC_DEPLOY_ROOT: C:\Users\ING55\Qt Projects\DNA\DNAMainApp\Libraries
+        run: |
+          set ZIPNAME=deeplabcut-%VERSION%.zip
+
+          rem Ensure base directories
+          if not exist "%DLC_BACKUP_ROOT%" mkdir "%DLC_BACKUP_ROOT%"
+          if not exist "%DLC_DEPLOY_ROOT%" mkdir "%DLC_DEPLOY_ROOT%"
+
+          rem === Backup zip ===
+          copy /Y "%ZIPNAME%" "%DLC_BACKUP_ROOT%\%ZIPNAME%"
+
+          rem === Fresh deployment ===
+          set DEPLOYDIR=%DLC_DEPLOY_ROOT%\deeplabcut
+          if exist "%DEPLOYDIR%" rmdir /s /q "%DEPLOYDIR%"
+          mkdir "%DEPLOYDIR%"
+
+          rem Unzip into deployment folder
+          tar -xf "%ZIPNAME%" -C "%DEPLOYDIR%"
+
+          rem Also write build-info at root (already inside zip too)
+          echo Version: %VERSION%> "%DEPLOYDIR%\build-info.txt"
+          echo Commit: %GITHUB_SHA%>> "%DEPLOYDIR%\build-info.txt"
+          echo Date: %DATE% %TIME%>> "%DEPLOYDIR%\build-info.txt"
+
+          echo Backup zip: %DLC_BACKUP_ROOT%\%ZIPNAME%
+          echo Deployed fresh to: %DEPLOYDIR%
+
+      # Upload heavy dist only if something failed (short retention)
+      - name: Upload dist artifact (only on failure)
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
           name: deeplabcut-dist-${{ env.VERSION }}
           path: Deploy/dist/**
-
-      - name: Create GitHub Release (attach zip)
-        uses: softprops/action-gh-release@v2
-        with:
-          name: deeplabcut ${{ env.VERSION }}
-          body: "Automated deeplabcut release for tag ${{ github.ref_name }}."
-          files: Deploy/deeplabcut-${{ env.VERSION }}.zip
+          retention-days: 3
+          compression-level: 0
