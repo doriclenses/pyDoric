@@ -41,6 +41,14 @@ jobs:
           venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch torchvision
           venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
 
+      - name: Clean old dist/build (cmd)
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          if exist dist rmdir /s /q dist
+          if exist build rmdir /s /q build
+
+      
       - name: Build deeplabcut exe (cmd)
         shell: cmd
         working-directory: Deploy
