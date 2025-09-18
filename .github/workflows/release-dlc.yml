@@ -52,12 +52,32 @@ jobs:
         working-directory: Deploy
         run: |
           ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
-          tar -a -c -f DeepLabCut-%VERSION%.zip -C dist .
 
-      - name: Create GitHub Release (attach zip)
-        uses: softprops/action-gh-release@v2
+          echo === DIST TREE ===
+          dir /s /b dist
+
+          rem Case A: one-file build -> dist\*.exe
+          for %%F in (dist\*.exe) do (
+            echo Found onefile exe: %%F
+            tar -a -c -f deeplabcut-%VERSION%.zip -C dist "%%~nxF"
+            goto :zipped
+          )
+
+          rem Case B: one-folder build -> dist\<appname>\*
+          for /d %%D in (dist\*) do (
+            echo Found onefolder dir: %%D
+            tar -a -c -f deeplabcut-%VERSION%.zip -C "%%D" .
+            goto :zipped
+          )
+
+          echo ERROR: Nothing found in Deploy\dist to zip
+          exit /b 1
+
+          :zipped
+          echo Created zip: deeplabcut-%VERSION%.zip
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: DeepLabCut ${{ env.VERSION }}
-          body: "Automated DeepLabCut release for tag ${{ github.ref_name }}."
-          files: Deploy/DeepLabCut-${{ env.VERSION }}.zip
-
+          name: deeplabcut-dist-%{{ env.VERSION }}
+          path: Deploy/dist/**
