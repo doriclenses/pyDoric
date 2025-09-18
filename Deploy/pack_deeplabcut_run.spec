@@ -1,9 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+from PyInstaller.utils.hooks import collect_all, copy_metadata
 
-from PyInstaller.utils.hooks import collect_all
-from PyInstaller.utils.hooks import copy_metadata
-from PyInstaller.utils.hooks import collect_dynamic_libs
-
+# Force output folders next to this spec file (i.e., in Deploy/)
+_specdir  = os.path.abspath(os.path.dirname(SPEC))
+distpath  = os.path.join(_specdir, "dist")   # -> Deploy/dist
+workpath  = os.path.join(_specdir, "build")  # -> Deploy/build
 
 block_cipher = None
 
@@ -12,7 +14,7 @@ binaries        = []
 hiddenimports   = []
 excludes        = []
 
-# datas += copy_metadata('deeplabcut', recursive=True)
+datas += copy_metadata('deeplabcut', recursive=True)
 tmp_ret = collect_all('deeplabcut')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
