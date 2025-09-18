@@ -16,8 +16,10 @@ jobs:
   build:
     runs-on: [self-hosted, Windows, X64, GPU]
     timeout-minutes: 180
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Extract version from tag (cmd)
         shell: cmd
@@ -25,17 +27,11 @@ jobs:
           set VERSION=%GITHUB_REF_NAME:deeplabcut-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Define Python path (cmd)
-        shell: cmd
-        run: |
-          set PYTHON_EXE=C:\Python310\python.exe
-          echo PYTHON_EXE=%PYTHON_EXE%>> %GITHUB_ENV%
-
       - name: Create venv (cmd)
         shell: cmd
         run: |
-          "%PYTHON_EXE%" -V
-          "%PYTHON_EXE%" -m venv venv
+          C:\Python310\python.exe -V
+          C:\Python310\python.exe -m venv venv
 
       - name: Install deps (cmd)
         shell: cmd
@@ -43,11 +39,11 @@ jobs:
           venv\Scripts\python -m pip install --upgrade pip
           venv\Scripts\pip install -r DeepLabCut\requirements.txt
           venv\Scripts\pip install pyinstaller
-          rem Ensure CUDA wheel of torch (adjust cu version if needed)
+          rem Ensure CUDA 12.6 torch build (adjust cuXXX if needed)
           venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch torchvision
-          venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);import sys;print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available at runtime:',torch.cuda.is_available())"
+          venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
 
-      - name: Build DeepLabCut exe (cmd)
+      - name: Build deeplabcut exe (cmd)
         shell: cmd
         working-directory: Deploy
         run: |
@@ -79,5 +75,12 @@ jobs:
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deeplabcut-dist-%{{ env.VERSION }}
+          name: deeplabcut-dist-${{ env.VERSION }}
           path: Deploy/dist/**
+
+      - name: Create GitHub Release (attach zip)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: deeplabcut ${{ env.VERSION }}
+          body: "Automated deeplabcut release for tag ${{ github.ref_name }}."
+          files: Deploy/deeplabcut-${{ env.VERSION }}.zip
