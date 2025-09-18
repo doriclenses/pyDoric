@@ -91,7 +91,6 @@ jobs:
         run: |
           setlocal EnableDelayedExpansion
           set ZIP=deeplabcut-%VERSION%.zip
-          rem Grab the hex line from certutil output (skip the header/footer lines)
           for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
             set HASH=%%H
             goto :got
@@ -112,39 +111,30 @@ jobs:
             Deploy/deeplabcut-${{ env.VERSION }}.zip
             Deploy/deeplabcut-${{ env.VERSION }}.zip.sha256
 
-      # === Persist: backup + deploy (fresh) on the runner ===
-      - name: Persist zip (backup) and deploy fresh (cmd)
+      - name: Copy release zip to server (cmd)
         shell: cmd
         working-directory: Deploy
         env:
-          DLC_BACKUP_ROOT: P:\Labo\Internal Software\danse\Libraries\DeepLabCut
-          DLC_DEPLOY_ROOT: C:\Users\ING55\Qt Projects\DNA\DNAMainApp\Libraries
+          DLC_BACKUP_ROOT: \\SRV2019-AD\Labo\Internal Software\danse\Libraries\DeepLabCut
         run: |
-          set ZIPNAME=deeplabcut-%VERSION%.zip
+          set "ZIPNAME=deeplabcut-%VERSION%.zip"
+          set "ZIPPATH=%CD%\%ZIPNAME%"
 
-          rem Ensure base directories
-          if not exist "%DLC_BACKUP_ROOT%" mkdir "%DLC_BACKUP_ROOT%"
-          if not exist "%DLC_DEPLOY_ROOT%" mkdir "%DLC_DEPLOY_ROOT%"
+          if not exist "%ZIPPATH%" (
+            echo ERROR: Release zip not found: "%ZIPPATH%"
+            exit /b 1
+          )
 
-          rem === Backup zip ===
-          copy /Y "%ZIPNAME%" "%DLC_BACKUP_ROOT%\%ZIPNAME%"
+          if not exist "%DLC_BACKUP_ROOT%" (
+            echo ERROR: Backup root is not reachable: "%DLC_BACKUP_ROOT%"
+            exit /b 1
+          )
 
-          rem === Fresh deployment ===
-          set DEPLOYDIR=%DLC_DEPLOY_ROOT%\deeplabcut
-          if exist "%DEPLOYDIR%" rmdir /s /q "%DEPLOYDIR%"
-          mkdir "%DEPLOYDIR%"
+          echo Copying "%ZIPPATH%" to "%DLC_BACKUP_ROOT%\%ZIPNAME%"
+          copy /Y "%ZIPPATH%" "%DLC_BACKUP_ROOT%\%ZIPNAME%" >nul || (echo ERROR: copy failed & exit /b 1)
+          echo Backup zip is at: "%DLC_BACKUP_ROOT%\%ZIPNAME%"
 
-          rem Unzip into deployment folder
-          tar -xf "%ZIPNAME%" -C "%DEPLOYDIR%"
-
-          rem Also write build-info at root (already inside zip too)
-          echo Version: %VERSION%> "%DEPLOYDIR%\build-info.txt"
-          echo Commit: %GITHUB_SHA%>> "%DEPLOYDIR%\build-info.txt"
-          echo Date: %DATE% %TIME%>> "%DEPLOYDIR%\build-info.txt"
-
-          echo Backup zip: %DLC_BACKUP_ROOT%\%ZIPNAME%
-          echo Deployed fresh to: %DEPLOYDIR%
-
+      # Upload heavy dist only if something failed (short retention)
       - name: Upload dist artifact (only on failure)
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -152,4 +142,4 @@ jobs:
           name: deeplabcut-dist-${{ env.VERSION }}
           path: Deploy/dist/**
           retention-days: 3
-          compression-level: 0
+          compression-level: 1
