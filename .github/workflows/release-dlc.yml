@@ -85,12 +85,20 @@ jobs:
           tar -a -c -f %ZIPNAME% -C "%APPDIR%" .
           echo Created zip: %ZIPNAME%
 
-      - name: SHA256 of release zip
-        shell: powershell
+      - name: SHA256 of release zip (cmd)
+        shell: cmd
         working-directory: Deploy
         run: |
-          (Get-FileHash -Algorithm SHA256 "deeplabcut-$env:VERSION.zip").Hash |
-            Out-File -Encoding ascii -FilePath "deeplabcut-$env:VERSION.zip.sha256"
+          setlocal EnableDelayedExpansion
+          set ZIP=deeplabcut-%VERSION%.zip
+          rem Grab the hex line from certutil output (skip the header/footer lines)
+          for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
+            set HASH=%%H
+            goto :got
+          )
+          :got
+          echo !HASH!> deeplabcut-%VERSION%.zip.sha256
+          type deeplabcut-%VERSION%.zip.sha256
 
       - name: Create GitHub Release (attach zip + checksum)
         uses: softprops/action-gh-release@v2
@@ -137,7 +145,6 @@ jobs:
           echo Backup zip: %DLC_BACKUP_ROOT%\%ZIPNAME%
           echo Deployed fresh to: %DEPLOYDIR%
 
-      # Upload heavy dist only if something failed (short retention)
       - name: Upload dist artifact (only on failure)
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
