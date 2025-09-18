@@ -37,7 +37,7 @@ jobs:
         shell: cmd
         run: |
           venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install -r DeepLabCut\requirements.txt
+          venv\Scripts\pip install h5py pyinstaller deeplabcut==3.0.0rc8
           venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch torchvision
           venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
 
