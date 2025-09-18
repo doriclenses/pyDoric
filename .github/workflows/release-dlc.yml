@@ -38,7 +38,6 @@ jobs:
         run: |
           venv\Scripts\python -m pip install --upgrade pip
           venv\Scripts\pip install -r DeepLabCut\requirements.txt
-          rem Ensure CUDA 12.6 torch build (adjust cuXXX if needed)
           venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch torchvision
           venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
 
