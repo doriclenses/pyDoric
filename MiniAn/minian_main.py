@@ -264,8 +264,7 @@ def penalties_preview(minian_params):
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
 
     unit_ids = A.coords["unit_id"].values
-    n_units = len(unit_ids)
-    n_sample = min(10, n_units)
+    n_sample = min(10, len(unit_ids))
 
     units = np.random.choice(unit_ids, n_sample, replace=False)
     units.sort()
