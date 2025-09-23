@@ -27,66 +27,121 @@ jobs:
           set VERSION=%GITHUB_REF_NAME:deeplabcut-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Create venv (cmd)
+      - name: Create venv
         shell: cmd
         run: |
           C:\Python310\python.exe -V
           C:\Python310\python.exe -m venv venv
 
-      - name: Install deps (cmd)
+      - name: Install deps
         shell: cmd
         run: |
           venv\Scripts\python -m pip install --upgrade pip
           venv\Scripts\pip install h5py pyinstaller deeplabcut==3.0.0rc8
-          venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch torchvision
+          venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch
           venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
 
-      - name: Clean old dist/build (cmd)
+      - name: Clean old dist/build
         shell: cmd
         working-directory: Deploy
         run: |
           if exist dist rmdir /s /q dist
           if exist build rmdir /s /q build
 
-      
-      - name: Build deeplabcut exe (cmd)
+      - name: Build deeplabcut
         shell: cmd
         working-directory: Deploy
         run: |
           ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
-
           echo === DIST TREE ===
           dir /s /b dist
 
-          rem Case A: one-file build -> dist\*.exe
-          for %%F in (dist\*.exe) do (
-            echo Found onefile exe: %%F
-            tar -a -c -f deeplabcut-%VERSION%.zip -C dist "%%~nxF"
-            goto :zipped
-          )
-
-          rem Case B: one-folder build -> dist\<appname>\*
+      - name: Zip onedir output with build-info
+        shell: cmd
+        working-directory: Deploy
+        env:
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          rem Locate the onedir app folder under dist
+          set "APPDIR="
           for /d %%D in (dist\*) do (
-            echo Found onefolder dir: %%D
-            tar -a -c -f deeplabcut-%VERSION%.zip -C "%%D" .
-            goto :zipped
+            set "APPDIR=%%D"
+            goto :found
+          )
+          :found
+          if not defined APPDIR (
+            echo ERROR: no onedir folder found in Deploy\dist
+            exit /b 1
           )
 
-          echo ERROR: Nothing found in Deploy\dist to zip
-          exit /b 1
+          rem Write build-info into the app folder so it lands inside the zip
+          echo Version: %VERSION%> "%APPDIR%\build-info.txt"
+          echo Commit: %GIT_SHA%>> "%APPDIR%\build-info.txt"
+          echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
 
-          :zipped
-          echo Created zip: deeplabcut-%VERSION%.zip
+          set "ZIPNAME=deeplabcut-%VERSION%.zip"
+          ..\venv\Scripts\python - <<PY
+          import os, sys, zipfile
+          appdir = os.environ.get("APPDIR")
+          zipname = os.environ.get("ZIPNAME")
+          if not appdir or not os.path.isdir(appdir):
+              print("ERROR: APPDIR not found:", appdir); sys.exit(1)
+          with zipfile.ZipFile(zipname, "w", compression=zipfile.ZIP_DEFLATED) as z:
+              for root, _, files in os.walk(appdir):
+                  for f in files:
+                      p = os.path.join(root, f)
+                      rel = os.path.relpath(p, appdir)
+                      z.write(p, rel)
+          print("Created zip:", zipname)
+          PY
 
-      - name: Upload dist artifact
+      - name: Show zip contents
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          ..\venv\Scripts\python - <<PY
+          import os, zipfile
+          zn = f"deeplabcut-{os.environ['VERSION']}.zip"
+          with zipfile.ZipFile(zn, "r") as z:
+              names = z.namelist()
+          print(f"Entries in {zn}: {len(names)}")
+          for n in names[:50]:
+              print("  ", n)
+          if len(names) > 50:
+              print("  ...")
+          PY
+
+      - name: SHA256 of release zip
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          setlocal EnableDelayedExpansion
+          set ZIP=deeplabcut-%VERSION%.zip
+          for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
+            set HASH=%%H
+            goto :got
+          )
+          :got
+          echo !HASH!> deeplabcut-%VERSION%.zip.sha256
+          type deeplabcut-%VERSION%.zip.sha256
+
+      - name: Create GitHub Release (attach zip + checksum)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: deeplabcut ${{ env.VERSION }}
+          body: |
+            Automated deeplabcut release for tag ${{ github.ref_name }}.
+            - Version: ${{ env.VERSION }}
+            - Commit: ${{ github.sha }}
+          files: |
+            Deploy/deeplabcut-${{ env.VERSION }}.zip
+            Deploy/deeplabcut-${{ env.VERSION }}.zip.sha256
+
+      - name: Upload dist artifact (only on failure)
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
           name: deeplabcut-dist-${{ env.VERSION }}
           path: Deploy/dist/**
-
-      - name: Create GitHub Release (attach zip)
-        uses: softprops/action-gh-release@v2
-        with:
-          name: deeplabcut ${{ env.VERSION }}
-          body: "Automated deeplabcut release for tag ${{ github.ref_name }}."
-          files: Deploy/deeplabcut-${{ env.VERSION }}.zip
+          retention-days: 3
+          compression-level: 1
