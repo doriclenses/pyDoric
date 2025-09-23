@@ -1,12 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.utils.hooks import collect_all
-from PyInstaller.utils.hooks import copy_metadata
-from PyInstaller.utils.hooks import collect_dynamic_libs
+import os
+from PyInstaller.utils.hooks import collect_all, copy_metadata
+from PyInstaller.building.datastruct import Tree
 
-#
-# for maim CaimAn python script
-#
+_specdir  = os.path.abspath(os.path.dirname(SPEC))
+distpath  = os.path.join(_specdir, "dist")
+workpath  = os.path.join(_specdir, "build")
 
 block_cipher = None
 
@@ -14,6 +14,37 @@ datas         = []
 binaries      = []
 hiddenimports = []
 excludes      = []
+
+# Where caiman is installed:
+cmn = importlib.import_module("caiman")
+CAIMAN_PKG = Path(cmn.__file__).parent
+
+# Likely places for models/data created by 'caimanmanager install'
+HOME = Path.home()
+CANDIDATE_DIRS = [
+    CAIMAN_PKG / "caiman_data" / "model",
+    CAIMAN_PKG / "data" / "model",
+    HOME / ".caimanmanager" / "caiman_data" / "model",
+    HOME / ".caimanmanager" / "data" / "model",
+    HOME / ".caimanmanager" / "model",
+]
+
+def first_existing_dir(paths):
+    for p in paths:
+        if p.is_dir():
+            return p
+    return None
+
+MODELS_DIR = first_existing_dir(CANDIDATE_DIRS)
+
+# Build datas list safely (don’t hard fail if missing)
+datas = []
+if MODELS_DIR:
+    # Include the whole 'model' dir under 'caiman_data/model' in the bundle
+    datas += Tree(str(MODELS_DIR), prefix=os.path.join("caiman_data", "model")).toc
+    print(f"[spec] Including Caiman models from: {MODELS_DIR}")
+else:
+    print("[spec] WARNING: could not find Caiman 'model' directory; skipping bundle of models")
 
 tmp_ret = collect_all('caiman')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
@@ -34,9 +65,10 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('scipy')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-datas += [( '../CaImAn/caiman_data/model', 'caiman_data/model')]
+# datas += [( '../CaImAn/caiman_data/model', 'caiman_data/model')]
 
-excludes = ["PyQt5", "Markdown", "jupyter", "panel", "matplotlib", "bokeh", "IPython", "ipyparallel", "ipywidgets", "tensorflow", "pyqtgraph"]
+excludes = ["PyQt5", "Markdown", "jupyter", "panel", "matplotlib", "bokeh", "IPython", "ipyparallel", "ipywidgets", "tensorflow", "pyqtgraph",
+            "torch", "torchvision", "scipy._lib.array_api_compat.torch"]
 
 a_caimAn = Analysis(
     ['../CaImAn/caiman_run.py'],
