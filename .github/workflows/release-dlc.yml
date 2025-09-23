@@ -64,15 +64,9 @@ jobs:
         run: |
           rem Locate the onedir app folder under dist
           set "APPDIR="
-          for /d %%D in (dist\*) do (
-            set "APPDIR=%%D"
-            goto :found
-          )
+          for /d %%D in (dist\*) do ( set "APPDIR=%%D" & goto :found )
           :found
-          if not defined APPDIR (
-            echo ERROR: no onedir folder found in Deploy\dist
-            exit /b 1
-          )
+          if not defined APPDIR ( echo ERROR: no onedir folder found in Deploy\dist & exit /b 1 )
 
           rem Write build-info into the app folder (included in the zip)
           echo Version: %VERSION%> "%APPDIR%\build-info.txt"
@@ -81,12 +75,8 @@ jobs:
 
           set "ZIPNAME=deeplabcut-%VERSION%.zip"
 
-          ..\venv\Scripts\python -c "import os,sys,zipfile; appdir=r'%APPDIR%'; zipname=r'%ZIPNAME%'; \
-          if not os.path.isdir(appdir): sys.exit('no APPDIR: '+appdir); \
-          with zipfile.ZipFile(zipname,'w',zipfile.ZIP_DEFLATED) as z: \
-            [z.write(os.path.join(r,f),os.path.relpath(os.path.join(r,f),appdir)) \
-            for r,_,fs in os.walk(appdir) for f in fs]]"
-
+          rem One-line Python (no backslashes/newlines)
+          ..\venv\Scripts\python -c "import os,zipfile; a=r'%APPDIR%'; zf=r'%ZIPNAME%'; assert os.path.isdir(a), 'no APPDIR: '+a; z=zipfile.ZipFile(zf,'w',zipfile.ZIP_DEFLATED); [z.write(os.path.join(r,f), os.path.relpath(os.path.join(r,f),a)) for r,_,fs in os.walk(a) for f in fs]; z.close()"
           echo Created zip: %ZIPNAME%
 
       - name: Show zip contents
@@ -94,32 +84,23 @@ jobs:
         working-directory: Deploy
         run: |
           set "ZN=deeplabcut-%VERSION%.zip"
-          if not exist "%ZN%" (echo ERROR: zip not found & exit /b 1)
+          if not exist "%ZN%" ( echo ERROR: zip not found & exit /b 1 )
+          ..\venv\Scripts\python -c "import os,zipfile; zn=r'%ZN%'; z=zipfile.ZipFile(zn,'r'); n=z.namelist(); print('Entries in',zn,':',len(n)); [print(' ',x) for x in n[:50]]; z.close()"
 
-          set "PYL=%TEMP%\listzip_%RANDOM%.py"
-          > "%PYL%" echo import zipfile
-          >>"%PYL%" echo z=zipfile.ZipFile(r"%ZN%","r")
-          >>"%PYL%" echo names=z.namelist()
-          >>"%PYL%" echo print("Entries in %ZN%:", len(names))
-          >>"%PYL%" echo [print("  ",n) for n in names[:50]]
-          >>"%PYL%" echo z.close()
 
-          ..\venv\Scripts\python "%PYL%"
-          del "%PYL%"
-
-      - name: SHA256 of release zip
-        shell: cmd
-        working-directory: Deploy
-        run: |
-          setlocal EnableDelayedExpansion
-          set ZIP=deeplabcut-%VERSION%.zip
-          for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
-            set HASH=%%H
-            goto :got
-          )
-          :got
-          echo !HASH!> deeplabcut-%VERSION%.zip.sha256
-          type deeplabcut-%VERSION%.zip.sha256
+            - name: SHA256 of release zip
+              shell: cmd
+              working-directory: Deploy
+              run: |
+                setlocal EnableDelayedExpansion
+                set ZIP=deeplabcut-%VERSION%.zip
+                for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
+                  set HASH=%%H
+                  goto :got
+                )
+                :got
+                echo !HASH!> deeplabcut-%VERSION%.zip.sha256
+                type deeplabcut-%VERSION%.zip.sha256
 
       - name: Create GitHub Release (attach zip + checksum)
         uses: softprops/action-gh-release@v2
