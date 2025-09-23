@@ -80,25 +80,15 @@ jobs:
           echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
 
           set "ZIPNAME=deeplabcut-%VERSION%.zip"
-          set "PYZ=%TEMP%\zipit_%RANDOM%.py"
 
-          > "%PYZ%" echo import os, sys, zipfile
-          >>"%PYZ%" echo appdir = r"%APPDIR%"
-          >>"%PYZ%" echo zipname = r"%ZIPNAME%"
-          >>"%PYZ%" echo
-          >>"%PYZ%" echo if not os.path.isdir(appdir):
-          >>"%PYZ%" echo^    print("ERROR: APPDIR not found:", appdir); sys.exit(1)
-          >>"%PYZ%" echo with zipfile.ZipFile(zipname, "w", compression=zipfile.ZIP_DEFLATED) as z:
-          >>"%PYZ%" echo^    for root, _, files in os.walk(appdir):
-          >>"%PYZ%" echo^        for f in files:
-          >>"%PYZ%" echo^            p = os.path.join(root, f)
-          >>"%PYZ%" echo^            rel = os.path.relpath(p, appdir)
-          >>"%PYZ%" echo^            z.write(p, rel)
+          ..\venv\Scripts\python -c "import os,sys,zipfile; appdir=r'%APPDIR%'; zipname=r'%ZIPNAME%'; \
+          if not os.path.isdir(appdir): sys.exit('no APPDIR: '+appdir); \
+          with zipfile.ZipFile(zipname,'w',zipfile.ZIP_DEFLATED) as z: \
+            [z.write(os.path.join(r,f),os.path.relpath(os.path.join(r,f),appdir)) \
+            for r,_,fs in os.walk(appdir) for f in fs]]"
 
-          ..\venv\Scripts\python "%PYZ%"
-          del "%PYZ%"
           echo Created zip: %ZIPNAME%
-          
+
       - name: Show zip contents
         shell: cmd
         working-directory: Deploy
