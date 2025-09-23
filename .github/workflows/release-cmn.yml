@@ -27,13 +27,9 @@ jobs:
           set VERSION=%GITHUB_REF_NAME:caiman-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Install Miniconda
+      - name: Verify Miniconda
         shell: cmd
         run: |
-          if not exist C:\Miniconda3 (
-            curl -L -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-            start /wait "" miniconda.exe /InstallationType=AllUsers /AddToPath=1 /S /D=C:\Miniconda3
-          )
           C:\Miniconda3\Scripts\conda.exe --version
 
       - name: Create conda env for caiman
