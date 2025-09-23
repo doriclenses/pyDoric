@@ -27,23 +27,26 @@ jobs:
           set VERSION=%GITHUB_REF_NAME:caiman-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Create venv
+      - name: Install Miniconda
         shell: cmd
         run: |
-          C:\Python310\python.exe -V
-          C:\Python310\python.exe -m venv venv
+          if not exist C:\Miniconda3 (
+            curl -L -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
+            start /wait "" miniconda.exe /InstallationType=AllUsers /AddToPath=1 /S /D=C:\Miniconda3
+          )
+          C:\Miniconda3\Scripts\conda.exe --version
 
-      - name: Install Caiman deps (pip, no conda)
+      - name: Create conda env for caiman
         shell: cmd
         run: |
-          venv\Scripts\python -m pip install --upgrade pip wheel setuptools
-          venv\Scripts\pip install "numpy<2"
-          venv\Scripts\pip install caiman
-          venv\Scripts\pip install opencv-python-headless
-          venv\Scripts\pip install pyinstaller
-          venv\Scripts\caimanmanager install
+          C:\Miniconda3\Scripts\conda.exe env remove -n caiman_release -y || echo "no old env"
+          C:\Miniconda3\Scripts\conda.exe create -n caiman_release python=3.10 -y
 
-          venv\Scripts\python -c "import sys; import caiman, numpy as np; print('Python:', sys.version); print('Caiman:', getattr(caiman,'__version__','?')); print('NumPy:', np.__version__)"
+      - name: Install caiman deps with conda-forge
+        shell: cmd
+        run: |
+          C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge caiman pyinstaller -y
+          C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman; print('Caiman version:', getattr(caiman,'__version__','?'))"
 
       - name: Clean old dist/build
         shell: cmd
