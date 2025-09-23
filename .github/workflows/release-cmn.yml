@@ -1,0 +1,123 @@
+name: Release CaImAn
+
+on:
+  push:
+    tags: ['caiman-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dlc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, Windows, X64, GPU]
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag (cmd)
+        shell: cmd
+        run: |
+          set VERSION=%GITHUB_REF_NAME:caiman-v=%
+          echo VERSION=%VERSION%>> %GITHUB_ENV%
+
+      - name: Create venv
+        shell: cmd
+        run: |
+          C:\Python310\python.exe -V
+          C:\Python310\python.exe -m venv venv
+
+      - name: Install deps
+        shell: cmd
+        run: |
+          venv\Scripts\python -m pip install --upgrade pip
+          venv\Scripts\pip install pyinstaller caiman==1.11.4
+          venv\Scripts\python -c "import caiman; caimanmanager.install()"
+
+      - name: Clean old dist/build
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          if exist dist rmdir /s /q dist
+          if exist build rmdir /s /q build
+
+      - name: Build caiman
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_caiman_run.spec
+          echo === DIST TREE ===
+          dir /s /b dist
+
+      - name: Zip onedir output with build-info
+        shell: cmd
+        working-directory: Deploy
+        env:
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          rem Locate the onedir app folder under dist
+          set "APPDIR="
+          for /d %%D in (dist\*) do ( set "APPDIR=%%D" & goto :found )
+          :found
+          if not defined APPDIR ( echo ERROR: no onedir folder found in Deploy\dist & exit /b 1 )
+
+          rem Write build-info into the app folder (included in the zip)
+          echo Version: %VERSION%> "%APPDIR%\build-info.txt"
+          echo Commit: %GIT_SHA%>> "%APPDIR%\build-info.txt"
+          echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
+
+          set "ZIPNAME=caiman-%VERSION%.zip"
+
+          rem One-line Python (no backslashes/newlines)
+          ..\venv\Scripts\python -c "import os,zipfile; a=r'%APPDIR%'; zf=r'%ZIPNAME%'; assert os.path.isdir(a), 'no APPDIR: '+a; z=zipfile.ZipFile(zf,'w',zipfile.ZIP_DEFLATED); [z.write(os.path.join(r,f), os.path.relpath(os.path.join(r,f),a)) for r,_,fs in os.walk(a) for f in fs]; z.close()"
+          echo Created zip: %ZIPNAME%
+
+      - name: Show zip contents
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          set "ZN=caiman-%VERSION%.zip"
+          if not exist "%ZN%" ( echo ERROR: zip not found & exit /b 1 )
+          ..\venv\Scripts\python -c "import os,zipfile; zn=r'%ZN%'; z=zipfile.ZipFile(zn,'r'); n=z.namelist(); print('Entries in',zn,':',len(n)); [print(' ',x) for x in n[:50]]; z.close()"
+
+
+      - name: SHA256 of release zip
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          setlocal EnableDelayedExpansion
+          set ZIP=caiman-%VERSION%.zip
+          for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
+            set HASH=%%H
+            goto :got
+          )
+          :got
+          echo !HASH!> caiman-%VERSION%.zip.sha256
+          type caiman-%VERSION%.zip.sha256
+
+      - name: Create GitHub Release (attach zip + checksum)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: caiman ${{ env.VERSION }}
+          body: |
+            Automated caiman release for tag ${{ github.ref_name }}.
+            - Version: ${{ env.VERSION }}
+            - Commit: ${{ github.sha }}
+          files: |
+            Deploy/caiman-${{ env.VERSION }}.zip
+            Deploy/caiman-${{ env.VERSION }}.zip.sha256
+
+      - name: Upload dist artifact (only on failure)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: caiman-dist-${{ env.VERSION }}
+          path: Deploy/dist/**
+          retention-days: 3
+          compression-level: 1
