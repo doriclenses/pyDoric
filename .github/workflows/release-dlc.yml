@@ -115,7 +115,7 @@ jobs:
         shell: cmd
         working-directory: Deploy
         env:
-          DLC_BACKUP_ROOT: \\SRV2019-AD\Labo\Internal Software\danse\Libraries\DeepLabCut
+          DLC_BACKUP_ROOT: C:\Users\ING55\Qt Projects\DNA\DNAMainApp\Libraries
         run: |
           set "ZIPNAME=deeplabcut-%VERSION%.zip"
           set "ZIPPATH=%CD%\%ZIPNAME%"
