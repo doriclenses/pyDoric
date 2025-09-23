@@ -74,42 +74,48 @@ jobs:
             exit /b 1
           )
 
-          rem Write build-info into the app folder so it lands inside the zip
+          rem Write build-info into the app folder (included in the zip)
           echo Version: %VERSION%> "%APPDIR%\build-info.txt"
           echo Commit: %GIT_SHA%>> "%APPDIR%\build-info.txt"
           echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
 
           set "ZIPNAME=deeplabcut-%VERSION%.zip"
-          ..\venv\Scripts\python - <<PY
-          import os, sys, zipfile
-          appdir = os.environ.get("APPDIR")
-          zipname = os.environ.get("ZIPNAME")
-          if not appdir or not os.path.isdir(appdir):
-              print("ERROR: APPDIR not found:", appdir); sys.exit(1)
-          with zipfile.ZipFile(zipname, "w", compression=zipfile.ZIP_DEFLATED) as z:
-              for root, _, files in os.walk(appdir):
-                  for f in files:
-                      p = os.path.join(root, f)
-                      rel = os.path.relpath(p, appdir)
-                      z.write(p, rel)
-          print("Created zip:", zipname)
-          PY
+          set "PYZ=%TEMP%\zipit_%RANDOM%.py"
 
+          > "%PYZ%" echo import os, sys, zipfile
+          >>"%PYZ%" echo appdir = r"%APPDIR%"
+          >>"%PYZ%" echo zipname = r"%ZIPNAME%"
+          >>"%PYZ%" echo
+          >>"%PYZ%" echo if not os.path.isdir(appdir):
+          >>"%PYZ%" echo^    print("ERROR: APPDIR not found:", appdir); sys.exit(1)
+          >>"%PYZ%" echo with zipfile.ZipFile(zipname, "w", compression=zipfile.ZIP_DEFLATED) as z:
+          >>"%PYZ%" echo^    for root, _, files in os.walk(appdir):
+          >>"%PYZ%" echo^        for f in files:
+          >>"%PYZ%" echo^            p = os.path.join(root, f)
+          >>"%PYZ%" echo^            rel = os.path.relpath(p, appdir)
+          >>"%PYZ%" echo^            z.write(p, rel)
+
+          ..\venv\Scripts\python "%PYZ%"
+          del "%PYZ%"
+          echo Created zip: %ZIPNAME%
+          
       - name: Show zip contents
         shell: cmd
         working-directory: Deploy
         run: |
-          ..\venv\Scripts\python - <<PY
-          import os, zipfile
-          zn = f"deeplabcut-{os.environ['VERSION']}.zip"
-          with zipfile.ZipFile(zn, "r") as z:
-              names = z.namelist()
-          print(f"Entries in {zn}: {len(names)}")
-          for n in names[:50]:
-              print("  ", n)
-          if len(names) > 50:
-              print("  ...")
-          PY
+          set "ZN=deeplabcut-%VERSION%.zip"
+          if not exist "%ZN%" (echo ERROR: zip not found & exit /b 1)
+
+          set "PYL=%TEMP%\listzip_%RANDOM%.py"
+          > "%PYL%" echo import zipfile
+          >>"%PYL%" echo z=zipfile.ZipFile(r"%ZN%","r")
+          >>"%PYL%" echo names=z.namelist()
+          >>"%PYL%" echo print("Entries in %ZN%:", len(names))
+          >>"%PYL%" echo [print("  ",n) for n in names[:50]]
+          >>"%PYL%" echo z.close()
+
+          ..\venv\Scripts\python "%PYL%"
+          del "%PYL%"
 
       - name: SHA256 of release zip
         shell: cmd
