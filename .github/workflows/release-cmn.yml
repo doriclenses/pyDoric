@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: dlc-${{ github.ref }}
+  group: cmn-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract version from tag (cmd)
+      - name: Extract version from tag
         shell: cmd
         run: |
           set VERSION=%GITHUB_REF_NAME:caiman-v=%
@@ -33,12 +33,17 @@ jobs:
           C:\Python310\python.exe -V
           C:\Python310\python.exe -m venv venv
 
-      - name: Install deps
+      - name: Install Caiman deps (pip, no conda)
         shell: cmd
         run: |
-          venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install pyinstaller caiman==1.11.4
-          venv\Scripts\python -c "import caiman; caimanmanager.install()"
+          venv\Scripts\python -m pip install --upgrade pip wheel setuptools
+          venv\Scripts\pip install "numpy<2"
+          venv\Scripts\pip install caiman
+          venv\Scripts\pip install opencv-python-headless
+          venv\Scripts\pip install pyinstaller
+          venv\Scripts\caimanmanager install
+
+          venv\Scripts\python -c "import sys; import caiman, numpy as np; print('Python:', sys.version); print('Caiman:', getattr(caiman,'__version__','?')); print('NumPy:', np.__version__)"
 
       - name: Clean old dist/build
         shell: cmd
@@ -86,13 +91,13 @@ jobs:
           if not exist "%ZN%" ( echo ERROR: zip not found & exit /b 1 )
           ..\venv\Scripts\python -c "import os,zipfile; zn=r'%ZN%'; z=zipfile.ZipFile(zn,'r'); n=z.namelist(); print('Entries in',zn,':',len(n)); [print(' ',x) for x in n[:50]]; z.close()"
 
-
       - name: SHA256 of release zip
         shell: cmd
         working-directory: Deploy
         run: |
           setlocal EnableDelayedExpansion
           set ZIP=caiman-%VERSION%.zip
+          if not exist "%ZIP%" ( echo ERROR: zip not found & exit /b 1 )
           for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
             set HASH=%%H
             goto :got
