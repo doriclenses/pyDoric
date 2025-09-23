@@ -43,11 +43,11 @@ jobs:
           C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge pyinstaller caiman==1.11.4 -y
           C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman; print('Caiman version:', getattr(caiman,'__version__','?'))"
 
-      - name: Run caimanmanager install
+      - name: Run caimanmanager inplace install
         shell: cmd
         run: |
-            C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install
-            C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import os, pathlib, sys; home=str(pathlib.Path.home()); print('Caiman manager installed under:', home)"
+            C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install --inplace --force
+            C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman, pathlib; print('Caiman package dir:', pathlib.Path(caiman.__file__).parent)"
 
       - name: Preflight paths (cmd)
         shell: cmd
