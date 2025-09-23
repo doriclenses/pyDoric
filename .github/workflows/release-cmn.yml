@@ -29,8 +29,7 @@ jobs:
 
       - name: Verify Miniconda
         shell: cmd
-        run: |
-          C:\Miniconda3\Scripts\conda.exe --version
+        run: C:\Miniconda3\Scripts\conda.exe --version
 
       - name: Create conda env for caiman
         shell: cmd
@@ -41,23 +40,37 @@ jobs:
       - name: Install caiman deps with conda-forge
         shell: cmd
         run: |
-          C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge caiman pyinstaller -y
+          C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge pyinstaller caiman==1.11.4 -y
           C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman; print('Caiman version:', getattr(caiman,'__version__','?'))"
 
-      - name: Clean old dist/build
+      - name: Run caimanmanager install
         shell: cmd
-        working-directory: Deploy
         run: |
-          if exist dist rmdir /s /q dist
-          if exist build rmdir /s /q build
+            C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install
+            C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import os, pathlib, sys; home=str(pathlib.Path.home()); print('Caiman manager installed under:', home)"
 
-      - name: Build caiman
+      - name: Preflight paths (cmd)
+        shell: cmd
+        run: |
+            cd
+            dir
+            dir Deploy
+            dir Deploy\pack_caiman_run.spec
+
+      - name: Clean old dist/build (cmd)
         shell: cmd
         working-directory: Deploy
         run: |
-          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_caiman_run.spec
-          echo === DIST TREE ===
-          dir /s /b dist
+            if exist dist rmdir /s /q dist
+            if exist build rmdir /s /q build
+
+      - name: Build caiman exe (cmd)
+        shell: cmd
+        working-directory: Deploy
+        run: |
+            C:\Miniconda3\Scripts\conda.exe run -n caiman_release pyinstaller --clean --noconfirm pack_caiman_run.spec
+            echo === DIST TREE ===
+            dir /s /b dist
 
       - name: Zip onedir output with build-info
         shell: cmd
