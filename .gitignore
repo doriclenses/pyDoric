@@ -6,14 +6,12 @@ __pycache__/
 *_env.txt
 *.tif
 *.zip
-.vscode/settings.json
+.vscode
 .mypy_cache
 
-Deploy/dist
-Deploy/build
-Deploy/suite2p
+.venv-*/
+
+Deploy/
 
 caiman_data/
-CaImAn/caiman_correlation_pnr_functions/CaImAn-b5932abe85c478fae4004e8df14535f3f5f7274a.zip
-CaImAn/caiman_correlation_pnr_functions/pre_processing_comment.py
-CaImAn/caiman_correlation_pnr_functions/summary_images_comment.py
+CaImAn/caiman_correlation_pnr_functions/
