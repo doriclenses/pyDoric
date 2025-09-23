@@ -88,19 +88,19 @@ jobs:
           ..\venv\Scripts\python -c "import os,zipfile; zn=r'%ZN%'; z=zipfile.ZipFile(zn,'r'); n=z.namelist(); print('Entries in',zn,':',len(n)); [print(' ',x) for x in n[:50]]; z.close()"
 
 
-            - name: SHA256 of release zip
-              shell: cmd
-              working-directory: Deploy
-              run: |
-                setlocal EnableDelayedExpansion
-                set ZIP=deeplabcut-%VERSION%.zip
-                for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
-                  set HASH=%%H
-                  goto :got
-                )
-                :got
-                echo !HASH!> deeplabcut-%VERSION%.zip.sha256
-                type deeplabcut-%VERSION%.zip.sha256
+      - name: SHA256 of release zip
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          setlocal EnableDelayedExpansion
+          set ZIP=deeplabcut-%VERSION%.zip
+          for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
+            set HASH=%%H
+            goto :got
+          )
+          :got
+          echo !HASH!> deeplabcut-%VERSION%.zip.sha256
+          type deeplabcut-%VERSION%.zip.sha256
 
       - name: Create GitHub Release (attach zip + checksum)
         uses: softprops/action-gh-release@v2
