@@ -32,7 +32,6 @@ from minian.cross_registration import calculate_centroids, calculate_centroid_di
 from multiprocessing import freeze_support
 freeze_support()
 
-
 def main(minian_params):
 
     """
@@ -48,7 +47,6 @@ def main(minian_params):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    # subset = {"frame": slice(0, None)}
 
     file_, chk, varr_ref = load_chunk(intpath, minian_params)
 
@@ -140,7 +138,6 @@ def init_preview(minian_params):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    # subset = {"frame": slice(*minian_params.preview_params[defs.Parameters.Preview.RANGE])}
 
     file_, chk, varr_ref = load_chunk(intpath, minian_params)
 
@@ -314,8 +311,6 @@ def load_chunk(intpath, minian_params):
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
     
-    # varr_ref = varr.sel(subset)
-    # return file_, chk, varr_ref
     return file_, chk, varr
 
 
