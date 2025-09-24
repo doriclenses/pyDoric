@@ -1,14 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.utils.hooks import collect_all
-from PyInstaller.utils.hooks import copy_metadata
-from PyInstaller.utils.hooks import collect_dynamic_libs
+import os
+from pathlib import Path
 
-#
-# for main MiniAn python script
-#
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
+from PyInstaller.utils.hooks import collect_all, collect_dynamic_libs
 
-block_cipher = None
+_specdir  = os.path.abspath(os.path.dirname(SPEC))
+distpath  = os.path.join(_specdir, "dist")
+workpath  = os.path.join(_specdir, "build")
+
+BLOCK_CIPHER = None
 
 datas           = []
 binaries        = []
@@ -40,10 +42,10 @@ a_minian = Analysis(
     excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=BLOCK_CIPHER,
     noarchive=False,
 )
-pyz_minian = PYZ(a_minian.pure, a_minian.zipped_data, cipher=block_cipher)
+pyz_minian = PYZ(a_minian.pure, a_minian.zipped_data, cipher=BLOCK_CIPHER)
 
 exe_minian = EXE(
     pyz_minian,

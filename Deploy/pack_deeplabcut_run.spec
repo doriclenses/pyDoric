@@ -1,18 +1,23 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.utils.hooks import collect_all
-from PyInstaller.utils.hooks import copy_metadata
-from PyInstaller.utils.hooks import collect_dynamic_libs
+import os
+from pathlib import Path
 
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
+from PyInstaller.utils.hooks import collect_all, copy_metadata
 
-block_cipher = None
+_specdir  = os.path.abspath(os.path.dirname(SPEC))
+distpath  = os.path.join(_specdir, "dist")
+workpath  = os.path.join(_specdir, "build")
+
+BLOCK_CIPHER = None
 
 datas           = []
 binaries        = []
 hiddenimports   = []
 excludes        = []
 
-# datas += copy_metadata('deeplabcut', recursive=True)
+datas += copy_metadata('deeplabcut', recursive=True)
 tmp_ret = collect_all('deeplabcut')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
@@ -32,7 +37,7 @@ a_deeplabcut = Analysis(
     excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=BLOCK_CIPHER,
     noarchive=False,
 )
 
@@ -58,7 +63,7 @@ exclude_binaries = [
 
 a_deeplabcut.binaries= TOC([x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)])
 
-pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=block_cipher)
+pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=BLOCK_CIPHER)
 
 exe_deeplabcut = EXE(
     pyz_deeplabcut,

@@ -2,6 +2,8 @@
 
 import os, importlib
 from pathlib import Path
+
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all, copy_metadata
 from PyInstaller.building.datastruct import Tree
 
@@ -9,43 +11,18 @@ _specdir  = os.path.abspath(os.path.dirname(SPEC))
 distpath  = os.path.join(_specdir, "dist")
 workpath  = os.path.join(_specdir, "build")
 
-block_cipher = None
+BLOCK_CIPHER = None
 
 datas         = []
 binaries      = []
 hiddenimports = []
 excludes      = []
 
-# Where caiman is installed:
 cmn = importlib.import_module("caiman")
 CAIMAN_PKG = Path(cmn.__file__).parent
-
-# Likely places for models/data created by 'caimanmanager install'
-HOME = Path.home()
-CANDIDATE_DIRS = [
-    CAIMAN_PKG / "caiman_data" / "model",
-    CAIMAN_PKG / "data" / "model",
-    HOME / ".caimanmanager" / "caiman_data" / "model",
-    HOME / ".caimanmanager" / "data" / "model",
-    HOME / ".caimanmanager" / "model",
-]
-
-def first_existing_dir(paths):
-    for p in paths:
-        if p.is_dir():
-            return p
-    return None
-
-MODELS_DIR = first_existing_dir(CANDIDATE_DIRS)
-
-# Build datas list safely (don’t hard fail if missing)
-datas = []
-if MODELS_DIR:
-    # Include the whole 'model' dir under 'caiman_data/model' in the bundle
-    datas += Tree(str(MODELS_DIR), prefix=os.path.join("caiman_data", "model")).toc
-    print(f"[spec] Including Caiman models from: {MODELS_DIR}")
-else:
-    print("[spec] WARNING: could not find Caiman 'model' directory; skipping bundle of models")
+INPLACE_DATA = CAIMAN_PKG / "caiman_data"
+datas += Tree(str(INPLACE_DATA), prefix="caiman_data").toc
+datas += Tree(str(INPLACE_DATA), prefix=os.path.join("caiman_data", "model")).toc
 
 tmp_ret = collect_all('caiman')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
@@ -83,11 +60,11 @@ a_caimAn = Analysis(
     excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=BLOCK_CIPHER,
     noarchive=False,
 )
 
-pyz_caimAn = PYZ(a_caimAn.pure, a_caimAn.zipped_data, cipher=block_cipher)
+pyz_caimAn = PYZ(a_caimAn.pure, a_caimAn.zipped_data, cipher=BLOCK_CIPHER)
 
 exe_caimAn = EXE(
     pyz_caimAn,

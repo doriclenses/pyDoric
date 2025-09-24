@@ -1,14 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+from pathlib import Path
+
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all
-from PyInstaller.utils.hooks import copy_metadata
-from PyInstaller.utils.hooks import collect_dynamic_libs
 
-#
-# for main MiniAn python script
-#
+_specdir  = os.path.abspath(os.path.dirname(SPEC))
+distpath  = os.path.join(_specdir, "dist")
+workpath  = os.path.join(_specdir, "build")
 
-block_cipher = None
+BLOCK_CIPHER = None
 
 datas           = []
 binaries        = []
@@ -38,10 +40,10 @@ a_suite2p = Analysis(
     excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=BLOCK_CIPHER,
     noarchive=False,
 )
-pyz_suite2p = PYZ(a_suite2p.pure, a_suite2p.zipped_data, cipher=block_cipher)
+pyz_suite2p = PYZ(a_suite2p.pure, a_suite2p.zipped_data, cipher=BLOCK_CIPHER)
 
 exe_suite2p = EXE(
     pyz_suite2p,
