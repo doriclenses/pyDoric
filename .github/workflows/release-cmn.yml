@@ -43,15 +43,23 @@ jobs:
           C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge pyinstaller caiman -y
           C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman; print('Caiman version:', getattr(caiman,'__version__','?'))"
 
-      - name: Install Caiman data into workspace (no inplace)
+      - name: Run caimanmanager install (user home, force)
         shell: cmd
-        working-directory: Deploy
         run: |
-          set "CAIMAN_DATA_DIR=%CD%\caiman_data"
-          if exist "%CAIMAN_DATA_DIR%" rmdir /s /q "%CAIMAN_DATA_DIR%"
-          mkdir "%CAIMAN_DATA_DIR%"
-          C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install --dir "%CAIMAN_DATA_DIR%" --force
-          echo CAIMAN_DATA_DIR=%CAIMAN_DATA_DIR%>> %GITHUB_ENV%
+          rem Resolve the service account’s home (NetworkService on your runner)
+          for /f "delims=" %%H in ('C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import pathlib; print(pathlib.Path.home())"') do set "CM_HOME=%%H"
+          echo Home resolved to: %CM_HOME%
+
+          rem Remove any previous installs so we get a clean copy
+          if exist "%CM_HOME%\caiman_data" rmdir /s /q "%CM_HOME%\caiman_data"
+          if exist "%CM_HOME%\.caimanmanager\caiman_data" rmdir /s /q "%CM_HOME%\.caimanmanager\caiman_data"
+
+          rem Install into user home (default), overwrite if needed
+          C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install --force
+
+          rem Show what was installed
+          if exist "%CM_HOME%\caiman_data" (dir /s /b "%CM_HOME%\caiman_data" | find /c /v "" )
+          if exist "%CM_HOME%\.caimanmanager\caiman_data" (dir /s /b "%CM_HOME%\.caimanmanager\caiman_data" | find /c /v "" )
 
       - name: Show installed Caiman data
         shell: cmd
