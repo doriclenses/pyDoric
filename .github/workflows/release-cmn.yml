@@ -40,7 +40,7 @@ jobs:
       - name: Install caiman deps with conda-forge
         shell: cmd
         run: |
-          C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge pyinstaller caiman==1.11.4 -y
+          C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge pyinstaller caiman -y
           C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman; print('Caiman version:', getattr(caiman,'__version__','?'))"
 
       - name: Run caimanmanager inplace install
@@ -49,7 +49,7 @@ jobs:
             C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install --inplace --force
             C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman, pathlib; print('Caiman package dir:', pathlib.Path(caiman.__file__).parent)"
 
-      - name: Preflight paths (cmd)
+      - name: Preflight paths
         shell: cmd
         run: |
             cd
@@ -57,14 +57,14 @@ jobs:
             dir Deploy
             dir Deploy\pack_caiman_run.spec
 
-      - name: Clean old dist/build (cmd)
+      - name: Clean old dist/build
         shell: cmd
         working-directory: Deploy
         run: |
             if exist dist rmdir /s /q dist
             if exist build rmdir /s /q build
 
-      - name: Build caiman exe (cmd)
+      - name: Build caiman exe
         shell: cmd
         working-directory: Deploy
         run: |
