@@ -43,19 +43,21 @@ jobs:
           C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge pyinstaller caiman -y
           C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman; print('Caiman version:', getattr(caiman,'__version__','?'))"
 
-      - name: Run caimanmanager inplace install
+      - name: Install Caiman data into workspace (no inplace)
         shell: cmd
+        working-directory: Deploy
         run: |
-            C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install --inplace --force
-            C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman, pathlib; print('Caiman package dir:', pathlib.Path(caiman.__file__).parent)"
+          set "CAIMAN_DATA_DIR=%CD%\caiman_data"
+          if exist "%CAIMAN_DATA_DIR%" rmdir /s /q "%CAIMAN_DATA_DIR%"
+          mkdir "%CAIMAN_DATA_DIR%"
+          C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install --dir "%CAIMAN_DATA_DIR%" --force
+          echo CAIMAN_DATA_DIR=%CAIMAN_DATA_DIR%>> %GITHUB_ENV%
 
-      - name: Preflight paths
+      - name: Show installed Caiman data
         shell: cmd
+        working-directory: Deploy
         run: |
-            cd
-            dir
-            dir Deploy
-            dir Deploy\pack_caiman_run.spec
+          dir /s /b caiman_data | find /c /v ""
 
       - name: Clean old dist/build
         shell: cmd
