@@ -271,8 +271,7 @@ def penalties_preview(minian_params):
 
     unit_ids = A.coords["unit_id"].values
     n_sample = min(10, len(unit_ids))
-
-    units = np.random.choice(unit_ids, n_sample, replace=False)
+    units    = np.random.choice(unit_ids, n_sample, replace=False)
     units.sort()
     A_sub = A.sel(unit_id=units).persist()
     C_sub = C_chk.sel(unit_id=units).persist()
