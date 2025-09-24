@@ -1,7 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-import os, importlib
-from pathlib import Path
+import os
 
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all, copy_metadata
@@ -19,7 +18,11 @@ hiddenimports = []
 excludes      = []
 
 CAIMAN_DATA_DIR = os.environ.get("CAIMAN_DATA_DIR")
-datas += Tree(CAIMAN_DATA_DIR, prefix="caiman_data").toc
+if CAIMAN_DATA_DIR and os.path.isdir(CAIMAN_DATA_DIR):
+    datas.append(Tree(CAIMAN_DATA_DIR, prefix="caiman_data"))
+else:
+    print("[spec] WARNING: CAIMAN_DATA_DIR not set or not a directory; models/configs not bundled.")
+
 
 tmp_ret = collect_all('caiman')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
