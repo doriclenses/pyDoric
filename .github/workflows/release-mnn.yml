@@ -35,12 +35,12 @@ jobs:
         shell: cmd
         run: |
           C:\Miniconda3\Scripts\conda.exe env remove -n minian_release -y || echo "no old env"
-          C:\Miniconda3\Scripts\conda.exe create -n minian_release python=3.10 -y
+          C:\Miniconda3\Scripts\conda.exe create -n minian_release python=3.9 -y
 
       - name: Install minian deps with conda-forge
         shell: cmd
         run: |
-          C:\Miniconda3\Scripts\conda.exe install -n minian_release -c conda-forge  h5py pyinstaller minian -y
+          C:\Miniconda3\Scripts\conda.exe install -n minian_release -c conda-forge h5py pyinstaller minian -y
           C:\Miniconda3\Scripts\conda.exe run -n minian_release python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
 
       - name: Clean old dist/build 
