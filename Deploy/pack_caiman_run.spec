@@ -17,13 +17,6 @@ binaries      = []
 hiddenimports = []
 excludes      = []
 
-CAIMAN_DATA_DIR = os.environ.get("CAIMAN_DATA_DIR")
-if CAIMAN_DATA_DIR and os.path.isdir(CAIMAN_DATA_DIR):
-    datas.append(Tree(CAIMAN_DATA_DIR, prefix="caiman_data"))
-else:
-    print("[spec] WARNING: CAIMAN_DATA_DIR not set or not a directory; models/configs not bundled.")
-
-
 tmp_ret = collect_all('caiman')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
@@ -85,11 +78,19 @@ exe_caimAn = EXE(
     entitlements_file=None,
 )
 
+extra_nodes = []
+if CAIMAN_DATA_DIR and os.path.isdir(CAIMAN_DATA_DIR):
+    extra_nodes.append(Tree(CAIMAN_DATA_DIR, prefix="caiman_data"))
+else:
+    print("[spec] WARNING: CAIMAN_DATA_DIR not set or not a directory; models/configs not bundled.")
+
+
 coll = COLLECT(
     exe_caimAn,
     a_caimAn.binaries,
     a_caimAn.zipfiles,
     a_caimAn.datas,
+    *extra_nodes,
     strip=False,
     upx=True,
     upx_exclude=[],
