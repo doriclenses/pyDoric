@@ -27,33 +27,36 @@ jobs:
           set VERSION=%GITHUB_REF_NAME:minian-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Create venv
+      - name: Verify Miniconda
+        shell: cmd
+        run: C:\Miniconda3\Scripts\conda.exe --version
+
+      - name: Create conda env for minian
         shell: cmd
         run: |
-          C:\Python310\python.exe -V
-          C:\Python310\python.exe -m venv venv
+          C:\Miniconda3\Scripts\conda.exe env remove -n minian_release -y || echo "no old env"
+          C:\Miniconda3\Scripts\conda.exe create -n minian_release python=3.10 -y
 
-      - name: Install deps
+      - name: Install minian deps with conda-forge
         shell: cmd
         run: |
-          venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install h5py pyinstaller minian
-          venv\Scripts\python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
+          C:\Miniconda3\Scripts\conda.exe install -n minian_release -c conda-forge  h5py pyinstaller minian -y
+          C:\Miniconda3\Scripts\conda.exe run -n minian_release python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
 
-      - name: Clean old dist/build
+      - name: Clean old dist/build 
         shell: cmd
         working-directory: Deploy
         run: |
-          if exist dist rmdir /s /q dist
-          if exist build rmdir /s /q build
+            if exist dist rmdir /s /q dist
+            if exist build rmdir /s /q build
 
-      - name: Build minian
+      - name: Build minian exe
         shell: cmd
         working-directory: Deploy
         run: |
-          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_minian_run.spec
-          echo === DIST TREE ===
-          dir /s /b dist
+            C:\Miniconda3\Scripts\conda.exe run -n minian_release pyinstaller --clean --noconfirm pack_minian_run.spec
+            echo === DIST TREE ===
+            dir /s /b dist
 
       - name: Zip onedir output with build-info
         shell: cmd
