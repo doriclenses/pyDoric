@@ -148,6 +148,12 @@ def init_preview(minian_params):
     time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
     time_ = np.array(file_[time_path])
 
+    selected_range = minian_params.params_load_doric["range"]['frame']
+    selected_range = slice(selected_range.start, selected_range.stop + 1, selected_range.step)
+    time_ = time_[selected_range]
+    frame_downsample = minian_params.params_load_doric["downsample"]["frame"]
+    time_ = time_[::frame_downsample]
+   
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
     example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
