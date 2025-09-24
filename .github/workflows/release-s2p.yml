@@ -38,7 +38,6 @@ jobs:
         run: |
           venv\Scripts\python -m pip install --upgrade pip
           venv\Scripts\pip install h5py pyinstaller suite2p
-          venv\Scripts\pip install --upgrade --index-url https://download.pytorch.org/whl/cu126 torch
           venv\Scripts\python -c "import suite2p; print('Suite2p version:', getattr(suite2p,'__version__','?'))"
 
       - name: Clean old dist/build
