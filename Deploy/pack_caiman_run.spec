@@ -18,11 +18,8 @@ binaries      = []
 hiddenimports = []
 excludes      = []
 
-cmn = importlib.import_module("caiman")
-CAIMAN_PKG = Path(cmn.__file__).parent
-INPLACE_DATA = CAIMAN_PKG / "caiman_data"
-datas += Tree(str(INPLACE_DATA), prefix="caiman_data").toc
-datas += Tree(str(INPLACE_DATA), prefix=os.path.join("caiman_data", "model")).toc
+CAIMAN_DATA_DIR = os.environ.get("CAIMAN_DATA_DIR")
+datas += Tree(CAIMAN_DATA_DIR, prefix="caiman_data").toc
 
 tmp_ret = collect_all('caiman')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
