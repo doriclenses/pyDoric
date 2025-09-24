@@ -27,44 +27,33 @@ jobs:
           set VERSION=%GITHUB_REF_NAME:minian-v=%
           echo VERSION=%VERSION%>> %GITHUB_ENV%
 
-      - name: Verify Miniconda
-        shell: cmd
-        run: C:\Miniconda3\Scripts\conda.exe --version
-
-      - name: Create conda env for minian
+      - name: Create venv
         shell: cmd
         run: |
-          C:\Miniconda3\Scripts\conda.exe env remove -n minian_release -y || echo "no old env"
-          C:\Miniconda3\Scripts\conda.exe create -n minian_release python=3.10 -y
+          C:\Python310\python.exe -V
+          C:\Python310\python.exe -m venv venv
 
-      - name: Install minian deps with conda-forge
+      - name: Install deps
         shell: cmd
         run: |
-          C:\Miniconda3\Scripts\conda.exe install -n minian_release -c bioconda -c conda-forge python=3.8 minian=1.2.1 h5py pyinstaller pefile=2023.2.7 -y
-          C:\Miniconda3\Scripts\conda.exe run -n minian_release python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
+          venv\Scripts\python -m pip install --upgrade pip
+          venv\Scripts\pip install h5py pyinstaller minian
+          venv\Scripts\python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
 
-      - name: Preflight paths
-        shell: cmd
-        run: |
-            cd
-            dir
-            dir Deploy
-            dir Deploy\pack_minian_run.spec
-
-      - name: Clean old dist/build 
+      - name: Clean old dist/build
         shell: cmd
         working-directory: Deploy
         run: |
-            if exist dist rmdir /s /q dist
-            if exist build rmdir /s /q build
+          if exist dist rmdir /s /q dist
+          if exist build rmdir /s /q build
 
-      - name: Build minian exe
+      - name: Build minian
         shell: cmd
         working-directory: Deploy
         run: |
-            C:\Miniconda3\Scripts\conda.exe run -n minian_release pyinstaller --clean --noconfirm pack_minian_run.spec
-            echo === DIST TREE ===
-            dir /s /b dist
+          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_minian_run.spec
+          echo === DIST TREE ===
+          dir /s /b dist
 
       - name: Zip onedir output with build-info
         shell: cmd
