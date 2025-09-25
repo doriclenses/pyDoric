@@ -15,8 +15,10 @@ datas         += collect_data_files('llvmlite')
 
 binaries      = collect_dynamic_libs('deeplabcut')
 binaries      += collect_dynamic_libs('llvmlite')
+binaries      += collect_dynamic_libs('numba')
 
 hiddenimports = collect_submodules('deeplabcut')
+hiddenimports += collect_submodules('numba') 
 hiddenimports += collect_submodules('llvmlite')
 
 excludes = [
