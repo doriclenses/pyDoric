@@ -8,7 +8,7 @@ __pycache__/
 *.zip
 .vscode/settings.json
 .mypy_cache
-.venv-dlc/
+.venv-*/
 
 Deploy/dist
 Deploy/build
