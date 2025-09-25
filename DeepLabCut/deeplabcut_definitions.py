@@ -22,7 +22,10 @@ class Parameters:
         """
         Parameters of danse Pose Estimation operation
         """
+        EXPERIMENTER          = "Experimenter"
+        PROJECT_NAME          = "ProjectName"
         PROJECT_FOLDER         = "ProjectFolder"
+        
         BODY_PART_NAMES        = "BodyPartNames"
         BODY_PART_COLORS       = "BodyPartColors"
         COORDINATES            = "Coordinates"

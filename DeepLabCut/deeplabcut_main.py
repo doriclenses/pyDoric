@@ -27,14 +27,14 @@ def create_project(params: dlc_params.DeepLabCutParameters):
     Create a new DeepLabCut project.
     """
     # Read danse parameters
-    data_filepaths: list[str]  = params.paths[defs.Parameters.Path.FILEPATHS]
-    video_filepaths: list[str] = params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
+    experimenter:  str         = params.params.get(dlc_defs.Parameters.danse.EXPERIMENTER)
+    project_name:  str         = params.params.get(dlc_defs.Parameters.danse.PROJECT_NAME)
     exp_filepath:  str         = params.params.get(dlc_defs.Parameters.danse.EXP_FILE, "")
+    video_filepaths: list[str] = params.params.get(dlc_defs.Parameters.danse.VIDEO_FILEPATHS)
+    data_filepaths: list[str]  = params.paths.get(defs.Parameters.Path.FILEPATHS)
 
     main_filepath  = exp_filepath if len(data_filepaths) > 1 else data_filepaths[0]
     project_folder = os.path.dirname(main_filepath)
-    project_name   = os.path.splitext(os.path.basename(main_filepath))[0]
-    experimenter   = "danse"
 
     config_filepath = deeplabcut.create_new_project(project_name, experimenter, video_filepaths, project_folder, copy_videos = False)
 
