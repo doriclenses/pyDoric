@@ -1,8 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
-from PyInstaller.utils.hooks import TOC, collect_submodules, collect_dynamic_libs, collect_data_files
-
+from PyInstaller.utils.hooks import collect_submodules, collect_dynamic_libs, collect_data_files
 
 # Force output folders next to this spec file (i.e., in Deploy/)
 _specdir  = os.path.abspath(os.path.dirname(SPEC))
@@ -16,10 +15,8 @@ datas         += collect_data_files('llvmlite')
 
 binaries      = collect_dynamic_libs('deeplabcut')
 binaries      += collect_dynamic_libs('llvmlite')
-binaries      += collect_dynamic_libs('numba')
 
 hiddenimports = collect_submodules('deeplabcut')
-hiddenimports += collect_submodules('numba') 
 hiddenimports += collect_submodules('llvmlite')
 
 excludes = [
