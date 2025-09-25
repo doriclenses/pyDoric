@@ -10,6 +10,8 @@ _specdir  = os.path.abspath(os.path.dirname(SPEC))
 distpath  = os.path.join(_specdir, "dist")
 workpath  = os.path.join(_specdir, "build")
 
+CAIMAN_DATA_DIR = os.environ.get("CAIMAN_DATA_DIR")
+
 BLOCK_CIPHER = None
 
 datas         = []
