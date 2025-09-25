@@ -80,7 +80,7 @@ def train_evaluate(params: dlc_params.DeepLabCutParameters):
     update_pytorch_config_file(config_filepath, shuffle)
 
     with open(config_filepath, 'r') as cfg:
-        data = cfg.safe_load(cfg)
+        data = yaml.safe_load(cfg)
     iteration = data['iteration']
 
     deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
