@@ -1,26 +1,43 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
-from PyInstaller.utils.hooks import collect_all, copy_metadata
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
+from PyInstaller.utils.hooks import TOC, collect_submodules, collect_dynamic_libs, collect_data_files
+
 
 # Force output folders next to this spec file (i.e., in Deploy/)
 _specdir  = os.path.abspath(os.path.dirname(SPEC))
 distpath  = os.path.join(_specdir, "dist")   # -> Deploy/dist
 workpath  = os.path.join(_specdir, "build")  # -> Deploy/build
 
-block_cipher = None
+BLOCK_CIPHER = None
 
-datas           = []
-binaries        = []
-hiddenimports   = []
-excludes        = []
+datas         = collect_data_files('deeplabcut')
+datas         += collect_data_files('llvmlite')
 
-datas += copy_metadata('deeplabcut', recursive=True)
-tmp_ret = collect_all('deeplabcut')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+binaries      = collect_dynamic_libs('deeplabcut')
+binaries      += collect_dynamic_libs('llvmlite')
+binaries      += collect_dynamic_libs('numba')
 
-excludes = ["tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter", "napari",
-            "napari_deeplabcut", "napari_console", "npe2", "napari_plugin_engine", "napari_svg", "matplotlib"
-            ]
+hiddenimports = collect_submodules('deeplabcut')
+hiddenimports += collect_submodules('numba') 
+hiddenimports += collect_submodules('llvmlite')
+
+excludes = [
+    "tensorflow",
+    "PySide6", 
+    "PyQT6", 
+    "PyQT5", 
+    "IPython", 
+    "Markdown", 
+    "jupyter", 
+    "napari",
+    "napari_deeplabcut", 
+    "napari_console", 
+    "npe2", 
+    "napari_plugin_engine", 
+    "napari_svg", 
+    "matplotlib"
+]
 
 a_deeplabcut = Analysis(
     ['../DeepLabCut/deeplabcut_run.py'],
@@ -34,7 +51,7 @@ a_deeplabcut = Analysis(
     excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=BLOCK_CIPHER,
     noarchive=False,
 )
 
@@ -60,7 +77,7 @@ exclude_binaries = [
 
 a_deeplabcut.binaries= TOC([x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)])
 
-pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=block_cipher)
+pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=BLOCK_CIPHER)
 
 exe_deeplabcut = EXE(
     pyz_deeplabcut,
