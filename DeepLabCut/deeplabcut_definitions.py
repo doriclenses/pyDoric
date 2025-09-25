@@ -24,7 +24,8 @@ class Parameters:
         """
         EXPERIMENTER          = "Experimenter"
         PROJECT_NAME          = "ProjectName"
-        PROJECT_FOLDER         = "ProjectFolder"
+        PROJECT_FOLDER        = "ProjectFolder"
+        ROOT_DIR              = "RootDir"
         
         BODY_PART_NAMES        = "BodyPartNames"
         BODY_PART_COLORS       = "BodyPartColors"
