@@ -7,6 +7,7 @@ import sys
 import cv2
 import h5py
 import yaml
+import glob
 import numpy as np
 import pandas as pd
 
@@ -98,6 +99,10 @@ def analyze_videos(params: dlc_params.DeepLabCutParameters):
     config_filepath = os.path.join(project_folder, 'config.yaml')
 
     deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder=project_folder+'/analyzed-data', shuffle=shuffle)
+
+    for file_ in glob.glob(os.path.join(project_folder, 'analyzed-data', '*.h5')):
+        df = pd.read_hdf(file_)
+        df.to_csv(file_.replace('.h5', '.csv'))
 
     video_names = []
     for video_filepath in video_filepaths:
