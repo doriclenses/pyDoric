@@ -26,7 +26,7 @@ class Parameters:
         PROJECT_NAME          = "ProjectName"
         PROJECT_FOLDER        = "ProjectFolder"
         ROOT_DIR              = "RootDir"
-        
+
         BODY_PART_NAMES        = "BodyPartNames"
         BODY_PART_COLORS       = "BodyPartColors"
         COORDINATES            = "Coordinates"
@@ -53,4 +53,4 @@ class DoricFile:
         """Group names in Doric file"""
 
         POSE_ESTIMATION = "PoseEstimation"
-        
+     

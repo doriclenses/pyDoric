@@ -21,7 +21,7 @@ import definitions as defs
 
 freeze_support()
 
-
+# --- Main functions called by danse ---
 def create_project(params: dlc_params.DeepLabCutParameters):
 
     """
@@ -33,7 +33,13 @@ def create_project(params: dlc_params.DeepLabCutParameters):
     root_dir:  str             = params.params.get(dlc_defs.Parameters.danse.ROOT_DIR)
     video_filepaths: list[str] = params.params.get(dlc_defs.Parameters.danse.VIDEO_FILEPATHS)
 
-    config_filepath = deeplabcut.create_new_project(project_name, experimenter, video_filepaths, root_dir, copy_videos = False)
+    config_filepath = deeplabcut.create_new_project(
+        project_name,
+        experimenter,
+        video_filepaths,
+        root_dir,
+        copy_videos=False
+    )
 
     utils.print_to_intercept("[project path]" + os.path.dirname(config_filepath))
 
@@ -129,7 +135,7 @@ def save_coordinates(params: dlc_params.DeepLabCutParameters):
 
     utils.print_to_intercept("[coordinates datapaths]" + ', '.join(coords_datapaths))
 
-
+# --- Helper functions ---
 def update_config_file(
         config_filepath: str,
         bodypart_names: list[str]
@@ -164,6 +170,31 @@ def update_pytorch_config_file(
 
     with open(pytorch_config_filepath, 'w') as file:
         yaml.safe_dump(data, file, default_flow_style=False)
+
+
+def get_pytorch_config_file(
+        config_filepath, 
+        shuffle
+        ) -> str:
+
+    """
+    Get the PyTorch config file path based on the main config file and shuffle parameter.
+    """
+
+    with open(config_filepath, 'r') as file:
+        data = yaml.safe_load(file)
+
+    task      = data['Task']
+    date      = data['date']
+    trainset  = int(data['TrainingFraction'][0] * 100)
+    iteration = data['iteration']
+
+    filename     = 'pytorch_config.yaml'
+    project_path = os.path.dirname(config_filepath)
+    folder_name  = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
+    folder_path  = os.path.join(project_path, 'dlc-models-pytorch', f'iteration-{iteration}', folder_name, 'train')
+
+    return os.path.join(folder_path, filename)
 
 
 def create_labeled_data(
@@ -315,26 +346,3 @@ def save_coords_to_doric(
         file_.close()
 
         return all_saved_datapaths
-
-
-
-def get_pytorch_config_file(config_filepath, shuffle):
-
-    """
-    Get the PyTorch config file path based on the main config file and shuffle parameter.
-    """
-
-    with open(config_filepath, 'r') as file:
-        data = yaml.safe_load(file)
-
-    task      = data['Task']
-    date      = data['date']
-    trainset  = int(data['TrainingFraction'][0] * 100)
-    iteration = data['iteration']
-
-    filename     = 'pytorch_config.yaml'
-    project_path = os.path.dirname(config_filepath)
-    folder_name  = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
-    folder_path  = os.path.join(project_path, 'dlc-models-pytorch', f'iteration-{iteration}', folder_name, 'train')
-
-    return os.path.join(folder_path, filename)
