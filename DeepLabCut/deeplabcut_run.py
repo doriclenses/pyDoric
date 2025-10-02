@@ -65,6 +65,8 @@ if __name__ == "__main__":
 
     elif params.stage == "SaveCoordinates":
         dlc_main.save_coordinates(params)
+    else:
+        utils.print_to_intercept(f"Unknown stage: {params.stage}")
+        sys.exit()
 
     print(dlc_defs.Messages.PROCESS_DONE, flush=True)
-    
