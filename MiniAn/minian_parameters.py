@@ -60,6 +60,7 @@ class MinianParameters:
                             "height": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
                             "width": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]},
             "downsample_strategy": "subset",
+            "range": {"frame": slice(0, None) if not self.preview_params else slice(*self.preview_params[defs.Parameters.Preview.RANGE])}
         }
 
         self.params_save_minian = {

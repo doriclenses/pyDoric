@@ -32,7 +32,6 @@ from minian.cross_registration import calculate_centroids, calculate_centroid_di
 from multiprocessing import freeze_support
 freeze_support()
 
-
 def main(minian_params):
 
     """
@@ -48,9 +47,8 @@ def main(minian_params):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    subset = {"frame": slice(0, None)}
 
-    file_, chk, varr_ref = load_chunk(intpath, subset, minian_params)
+    file_, chk, varr_ref = load_chunk(intpath, minian_params)
 
     varr_ref = preprocess(varr_ref, intpath, minian_params)
 
@@ -140,9 +138,8 @@ def init_preview(minian_params):
 
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
-    subset = {"frame": slice(*minian_params.preview_params[defs.Parameters.Preview.RANGE])}
 
-    file_, chk, varr_ref = load_chunk(intpath, subset, minian_params)
+    file_, chk, varr_ref = load_chunk(intpath, minian_params)
 
     varr_ref = preprocess(varr_ref, intpath, minian_params)
 
@@ -151,6 +148,12 @@ def init_preview(minian_params):
     time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
     time_ = np.array(file_[time_path])
 
+    selected_range = minian_params.params_load_doric["range"]["frame"]
+    selected_range = slice(selected_range.start, selected_range.stop + 1, selected_range.step)
+    time_ = time_[selected_range]
+    frame_downsample = minian_params.params_load_doric["downsample"]["frame"]
+    time_ = time_[::frame_downsample]
+   
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
     example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
@@ -266,7 +269,9 @@ def penalties_preview(minian_params):
     C = save_minian(C_new.rename("C"), intpath, overwrite=True)
     C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
 
-    units = np.random.choice(A.coords["unit_id"], 10, replace=False)
+    unit_ids = A.coords["unit_id"].values
+    n_sample = min(10, len(unit_ids))
+    units    = np.random.choice(unit_ids, n_sample, replace=False)
     units.sort()
     A_sub = A.sel(unit_id=units).persist()
     C_sub = C_chk.sel(unit_id=units).persist()
@@ -302,16 +307,15 @@ def penalties_preview(minian_params):
     return 0
 
 
-def load_chunk(intpath, subset, minian_params):
+def load_chunk(intpath, minian_params):
 
     print(mn_defs.Messages.LOAD_DATA, flush=True)
     varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
-    varr_ref = varr.sel(subset)
-
-    return file_, chk, varr_ref
+    
+    return file_, chk, varr
 
 
 def preprocess(varr_ref, intpath, minian_params):
@@ -537,6 +541,7 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
 def load_doric_to_xarray(
     fname: str,
     h5path: str,
+    range: dict,
     dtype: type = np.float64,
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
@@ -574,6 +579,7 @@ def load_doric_to_xarray(
 
         varr = varr.astype(dtype)
 
+    varr = varr.sel(range)
     if downsample:
         if downsample_strategy == "mean":
             varr = varr.coarsen(**downsample, boundary="trim", coord_func="min").mean()
@@ -589,7 +595,7 @@ def load_doric_to_xarray(
     arr_opt = fct.partial(custom_arr_optimize, keep_patterns=["^load_avi_ffmpeg"])
 
     with da.config.set(array_optimize=arr_opt):
-        varr = da.optimize(varr)[0]
+        varr.data = da.optimize(varr.data)[0]
 
     varr = varr.assign_coords({"height" : np.arange(varr.sizes["height"]),
                                 "width" : np.arange(varr.sizes["width"]),
