@@ -11,7 +11,8 @@ __pycache__/
 
 .venv-*/
 
-Deploy/
+Deploy/build/
+Deploy/dist/
 
 caiman_data/
 CaImAn/caiman_correlation_pnr_functions/
