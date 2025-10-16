@@ -1,10 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-from pathlib import Path
-
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
-from PyInstaller.utils.hooks import collect_all, copy_metadata
+from PyInstaller.utils.hooks import collect_all
 
 _specdir  = os.path.abspath(os.path.dirname(SPEC))
 distpath  = os.path.join(_specdir, "dist")
@@ -17,13 +15,17 @@ binaries        = []
 hiddenimports   = []
 excludes        = []
 
-datas += copy_metadata('deeplabcut', recursive=True)
 tmp_ret = collect_all('deeplabcut')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-excludes = ["tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter", "napari",
-            "napari_deeplabcut", "napari_console", "npe2", "napari_plugin_engine", "napari_svg", "matplotlib"
-            ]
+tmp_ret = collect_all('pyarrow')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+hiddenimports += ['pyarrow._generated_version']
+
+excludes = [
+    "tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter", "napari",
+    "napari_deeplabcut", "napari_console", "npe2", "napari_plugin_engine", "napari_svg", "matplotlib"
+    ]
 
 a_deeplabcut = Analysis(
     ['../DeepLabCut/deeplabcut_run.py'],
