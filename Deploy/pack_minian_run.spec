@@ -33,7 +33,9 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 binaries += collect_dynamic_libs('h5py', destdir='h5py')
 _conda_prefix = Path(os.environ.get("CONDA_PREFIX", sys.prefix)).resolve()
 _conda_bin_dir = _conda_prefix / "Library" / "bin"
+print(f"[spec] HDF5 lookup using CONDA_PREFIX={_conda_prefix}")
 if _conda_bin_dir.is_dir():
+    print(f"[spec] Scanning {_conda_bin_dir} for HDF5 runtime DLLs")
     _dll_patterns = ["hdf5*.dll", "szip.dll", "zlib.dll", "libaec*.dll"]
     _existing = {Path(src).resolve(): dest for src, dest in binaries}
     _added = 0
@@ -45,6 +47,7 @@ if _conda_bin_dir.is_dir():
             binaries.append((str(_dll), os.path.join('h5py', _dll.name)))
             _existing[_dll] = os.path.join('h5py', _dll.name)
             _added += 1
+            print(f"[spec]   + bundled {_dll.name}")
     if _added == 0:
         print(f"[spec] WARNING: No extra HDF5 DLLs matched in {_conda_bin_dir}")
 else:
