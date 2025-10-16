@@ -51,6 +51,7 @@ class Messages:
     CROSS_REGISTRATING          = "Cross-registering cells between sessions."
     PROCESS_DONE                = "MiniAn process is done"
 
+    ERROR_SEED_COUNT            = "Error: Too many seeds detected, please modify parameters."
 
 
 class Folder:
