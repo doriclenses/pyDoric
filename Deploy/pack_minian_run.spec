@@ -35,8 +35,8 @@ _conda_prefix = Path(os.environ.get("CONDA_PREFIX", sys.prefix)).resolve()
 _conda_bin_dir = _conda_prefix / "Library" / "bin"
 print(f"[spec] HDF5 lookup using CONDA_PREFIX={_conda_prefix}")
 if _conda_bin_dir.is_dir():
-    print(f"[spec] Scanning {_conda_bin_dir} for HDF5 runtime DLLs")
-    _dll_patterns = ["hdf5*.dll", "szip.dll", "zlib.dll", "libaec*.dll"]
+    print(f"[spec] Scanning {_conda_bin_dir} for runtime DLLs")
+    _dll_patterns = ["*.dll"]
     _existing = {Path(src).resolve(): dest for src, dest in binaries}
     _added = 0
     for _pattern in _dll_patterns:
