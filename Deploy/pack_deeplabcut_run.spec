@@ -1,7 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
+import importlib.util
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, TOC
 from PyInstaller.utils.hooks import collect_all
 
 _specdir  = os.path.abspath(os.path.dirname(SPEC))
@@ -10,21 +11,37 @@ workpath  = os.path.join(_specdir, "build")
 
 BLOCK_CIPHER = None
 
+def _safe_collect_all(package_name):
+    """
+    Collect binaries/datas for optional dependencies without failing the build
+    when a dependency is absent from the environment.
+    """
+    if importlib.util.find_spec(package_name) is None:
+        return [], [], []
+    return collect_all(package_name)
+
+packages = [
+    'deeplabcut',
+    'charset_normalizer',
+    'dateutil',
+    'numpy',
+    'pandas',
+    'safetensors',
+    'scipy',
+    'shapely',
+    'tables',
+    'tkinter',
+]
+
 datas           = []
 binaries        = []
 hiddenimports   = []
-excludes        = []
-
-tmp_ret = collect_all('deeplabcut')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-tmp_ret = collect_all('pyarrow')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-hiddenimports += ['pyarrow._generated_version']
+for package in packages:
+    tmp_ret = _safe_collect_all(package)
+    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 excludes = [
-    "tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter", "napari",
-    "napari_deeplabcut", "napari_console", "npe2", "napari_plugin_engine", "napari_svg", "matplotlib"
+    "matplotlib"
     ]
 
 a_deeplabcut = Analysis(
@@ -61,7 +78,7 @@ exclude_binaries = [
     'cudnn_heuristic64_9.dll',
     'cudnn_ops64_9.dll',
     'cudnn64_9.dll'
-    ]
+]
 
 a_deeplabcut.binaries= TOC([x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)])
 
