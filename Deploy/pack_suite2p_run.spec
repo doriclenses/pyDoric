@@ -45,7 +45,11 @@ a_suite2p = Analysis(
     cipher=BLOCK_CIPHER,
     noarchive=False,
 )
-pyz_suite2p = PYZ(a_suite2p.pure, a_suite2p.zipped_data, cipher=BLOCK_CIPHER)
+pyz_suite2p = PYZ(
+    a_suite2p.pure, 
+    a_suite2p.zipped_data, 
+    cipher=BLOCK_CIPHER
+)
 
 exe_suite2p = EXE(
     pyz_suite2p,

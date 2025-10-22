@@ -85,9 +85,15 @@ exclude_binaries = [
     'cudnn64_9.dll'
 ]
 
-a_deeplabcut.binaries= TOC([x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)])
+a_deeplabcut.binaries= TOC([
+    x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)
+])
 
-pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=BLOCK_CIPHER)
+pyz_deeplabcut = PYZ(
+    a_deeplabcut.pure,
+    a_deeplabcut.zipped_data,
+    cipher=BLOCK_CIPHER
+)
 
 exe_deeplabcut = EXE(
     pyz_deeplabcut,

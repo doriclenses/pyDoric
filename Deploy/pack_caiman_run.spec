@@ -3,8 +3,8 @@
 import os
 
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
-from PyInstaller.utils.hooks import collect_all, copy_metadata
 from PyInstaller.building.datastruct import Tree
+from PyInstaller.utils.hooks import collect_all
 
 _specdir  = os.path.abspath(os.path.dirname(SPEC))
 distpath  = os.path.join(_specdir, "dist")
@@ -63,7 +63,11 @@ a_caimAn = Analysis(
     noarchive=False,
 )
 
-pyz_caimAn = PYZ(a_caimAn.pure, a_caimAn.zipped_data, cipher=BLOCK_CIPHER)
+pyz_caimAn = PYZ(
+    a_caimAn.pure, 
+    a_caimAn.zipped_data, 
+    cipher=BLOCK_CIPHER
+)
 
 exe_caimAn = EXE(
     pyz_caimAn,

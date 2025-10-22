@@ -78,7 +78,12 @@ a_minian = Analysis(
     cipher=BLOCK_CIPHER,
     noarchive=False,
 )
-pyz_minian = PYZ(a_minian.pure, a_minian.zipped_data, cipher=BLOCK_CIPHER)
+
+pyz_minian = PYZ(
+    a_minian.pure, 
+    a_minian.zipped_data, 
+    cipher=BLOCK_CIPHER
+)
 
 exe_minian = EXE(
     pyz_minian,
