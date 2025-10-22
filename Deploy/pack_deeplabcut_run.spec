@@ -11,16 +11,11 @@ workpath  = os.path.join(_specdir, "build")
 
 BLOCK_CIPHER = None
 
-def _safe_collect_all(package_name):
-    """
-    Collect binaries/datas for optional dependencies without failing the build
-    when a dependency is absent from the environment.
-    """
-    if importlib.util.find_spec(package_name) is None:
-        return [], [], []
-    return collect_all(package_name)
-
-required_packages = ['deeplabcut']
+required_packages = [
+    'deeplabcut', 
+    'torch', 
+    'torchvision'
+]
 optional_packages = [
     'charset_normalizer',
     'dateutil',
@@ -43,8 +38,9 @@ for package in required_packages:
     datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 for package in optional_packages:
-    tmp_ret = _safe_collect_all(package)
-    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+    if importlib.util.find_spec(package) is not None:
+        tmp_ret = collect_all(package)
+        datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 if importlib.util.find_spec('pyarrow') is not None:
     hiddenimports += ['pyarrow._generated_version']
