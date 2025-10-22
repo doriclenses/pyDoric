@@ -56,6 +56,11 @@ jobs:
           echo === DIST TREE ===
           dir /s /b dist
 
+      - name: Smoke test torch/deeplabcut import
+        shell: cmd
+        run: |
+          venv\Scripts\python -c "import torch; import deeplabcut; print('torch', torch.__version__)"
+
       - name: Zip onedir output with build-info
         shell: cmd
         working-directory: Deploy
