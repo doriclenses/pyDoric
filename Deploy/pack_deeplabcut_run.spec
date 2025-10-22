@@ -20,25 +20,35 @@ def _safe_collect_all(package_name):
         return [], [], []
     return collect_all(package_name)
 
-packages = [
-    'deeplabcut',
+required_packages = ['deeplabcut']
+optional_packages = [
     'charset_normalizer',
     'dateutil',
     'numpy',
     'pandas',
+    'pyarrow'
     'safetensors',
     'scipy',
     'shapely',
     'tables',
     'tkinter',
+    'torch',
+    'torchvision',
 ]
 
-datas           = []
-binaries        = []
-hiddenimports   = []
-for package in packages:
+datas = []
+binaries = []
+hiddenimports = []
+
+for package in required_packages:
+    tmp_ret = collect_all(package)
+    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
+for package in optional_packages:
     tmp_ret = _safe_collect_all(package)
     datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
+hiddenimports += ['pyarrow._generated_version']
 
 excludes = [
     "matplotlib"
