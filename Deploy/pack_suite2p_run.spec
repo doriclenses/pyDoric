@@ -1,8 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-from pathlib import Path
-
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all
 
