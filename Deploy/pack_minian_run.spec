@@ -13,22 +13,30 @@ workpath  = os.path.join(_specdir, "build")
 
 BLOCK_CIPHER = None
 
+packages = [
+    'minian',
+    'distributed',
+    'skimage',
+    'h5py'
+]
+
+excludes = [
+    "IPython", 
+    "PyQt5", 
+    "Markdown",
+    "jupyter", 
+    "panel", 
+    "matplotlib", 
+    "notebook", 
+    "bokeh"
+]
+
 datas           = []
 binaries        = []
 hiddenimports   = []
-excludes        = []
-
-tmp_ret = collect_all('minian')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-tmp_ret = collect_all('distributed')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-tmp_ret = collect_all('skimage')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-tmp_ret = collect_all('h5py')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+for package in packages:
+    tmp_ret = collect_all(package)
+    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 binaries += collect_dynamic_libs('h5py', destdir='h5py')
 _conda_prefix = Path(os.environ.get("CONDA_PREFIX", sys.prefix)).resolve()
@@ -52,10 +60,6 @@ if _conda_bin_dir.is_dir():
         print(f"[spec] WARNING: No extra HDF5 DLLs matched in {_conda_bin_dir}")
 else:
     print(f"[spec] WARNING: Could not locate conda Library/bin under {_conda_prefix}")
-
-binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
-
-excludes = ["IPython", "PyQt5", "Markdown", "jupyter", "panel", "matplotlib", "notebook", "bokeh"]
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
