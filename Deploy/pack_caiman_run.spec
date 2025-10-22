@@ -64,8 +64,8 @@ a_caimAn = Analysis(
 )
 
 pyz_caimAn = PYZ(
-    a_caimAn.pure, 
-    a_caimAn.zipped_data, 
+    a_caimAn.pure,
+    a_caimAn.zipped_data,
     cipher=BLOCK_CIPHER
 )
 

@@ -27,7 +27,6 @@ optional_packages = [
 datas = []
 binaries = []
 hiddenimports = []
-
 for package in required_packages:
     tmp_ret = collect_all(package)
     datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
@@ -42,7 +41,7 @@ if importlib.util.find_spec('pyarrow') is not None:
 
 excludes = [
     "matplotlib"
-    ]
+]
 
 a_deeplabcut = Analysis(
     ['../DeepLabCut/deeplabcut_run.py'],
@@ -119,6 +118,3 @@ coll = COLLECT(
     upx_exclude=[],
     name='deeplabcut',
 )
-
-
-

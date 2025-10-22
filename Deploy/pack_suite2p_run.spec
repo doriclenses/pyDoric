@@ -46,8 +46,8 @@ a_suite2p = Analysis(
     noarchive=False,
 )
 pyz_suite2p = PYZ(
-    a_suite2p.pure, 
-    a_suite2p.zipped_data, 
+    a_suite2p.pure,
+    a_suite2p.zipped_data,
     cipher=BLOCK_CIPHER
 )
 
