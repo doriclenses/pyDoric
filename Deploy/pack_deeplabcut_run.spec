@@ -26,14 +26,12 @@ optional_packages = [
     'dateutil',
     'numpy',
     'pandas',
-    'pyarrow'
     'safetensors',
     'scipy',
     'shapely',
     'tables',
     'tkinter',
-    'torch',
-    'torchvision',
+    'pyarrow',
 ]
 
 datas = []
@@ -48,7 +46,8 @@ for package in optional_packages:
     tmp_ret = _safe_collect_all(package)
     datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-hiddenimports += ['pyarrow._generated_version']
+if importlib.util.find_spec('pyarrow') is not None:
+    hiddenimports += ['pyarrow._generated_version']
 
 excludes = [
     "matplotlib"
@@ -62,7 +61,7 @@ a_deeplabcut = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['constraints/torch_openmp_env.py'],
     excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -102,7 +101,7 @@ exe_deeplabcut = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=True,
@@ -119,7 +118,7 @@ coll = COLLECT(
     a_deeplabcut.zipfiles,
     a_deeplabcut.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='deeplabcut',
 )
