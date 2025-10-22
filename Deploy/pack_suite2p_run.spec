@@ -10,21 +10,25 @@ workpath  = os.path.join(_specdir, "build")
 
 BLOCK_CIPHER = None
 
+packages = [
+    'suite2p',
+    'ScanImageTiffReader',
+]
+
+excludes = [
+    "IPython", 
+    "PyQt6", 
+    "PyQt5", 
+    "Markdown", 
+    "jupyter"
+]
+
 datas           = []
 binaries        = []
 hiddenimports   = []
-excludes        = []
-
-# datas += copy_metadata('suite2p', recursive=True)
-tmp_ret = collect_all('suite2p')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-tmp_ret = collect_all('ScanImageTiffReader')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-# binaries += collect_dynamic_libs('ScanImageTiffReaderAPI', destdir='.\\Library\\bin')
-
-excludes = ["IPython", "PyQt6", "PyQt5", "Markdown", "jupyter"]
+for package in packages:
+    tmp_ret = collect_all(package)
+    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 a_suite2p = Analysis(
     ['../Suite2p/suite2p_run.py'],
