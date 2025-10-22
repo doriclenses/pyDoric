@@ -62,7 +62,7 @@ jobs:
             cd
             dir
             dir Deploy
-            dir Deploy\pack_caiman_run.spec
+            dir Deploy\pack_caiman.spec
 
       - name: Clean old dist/build
         shell: cmd

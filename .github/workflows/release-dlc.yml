@@ -52,7 +52,7 @@ jobs:
         shell: cmd
         working-directory: Deploy
         run: |
-          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut_run.spec
+          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut.spec
           echo === DIST TREE ===
           dir /s /b dist
 

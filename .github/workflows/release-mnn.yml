@@ -54,7 +54,7 @@ jobs:
         shell: cmd
         working-directory: Deploy
         run: |
-            C:\Miniconda3\Scripts\conda.exe run -n minian_release pyinstaller --clean --noconfirm pack_minian_run.spec
+            C:\Miniconda3\Scripts\conda.exe run -n minian_release pyinstaller --clean --noconfirm pack_minian.spec
             echo === DIST TREE ===
             dir /s /b dist
 

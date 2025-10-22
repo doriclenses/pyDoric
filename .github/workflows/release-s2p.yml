@@ -51,7 +51,7 @@ jobs:
         shell: cmd
         working-directory: Deploy
         run: |
-          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_suite2p_run.spec
+          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_suite2p.spec
           echo === DIST TREE ===
           dir /s /b dist
 
