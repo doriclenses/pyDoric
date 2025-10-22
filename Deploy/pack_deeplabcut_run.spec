@@ -12,17 +12,12 @@ workpath  = os.path.join(_specdir, "build")
 BLOCK_CIPHER = None
 
 required_packages = [
-    'deeplabcut', 
-    'torch', 
-    'torchvision'
+    'deeplabcut'
 ]
 optional_packages = [
     'charset_normalizer',
     'dateutil',
-    'numpy',
-    'pandas',
     'safetensors',
-    'scipy',
     'shapely',
     'tables',
     'tkinter',
