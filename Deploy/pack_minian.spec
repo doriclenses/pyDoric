@@ -1,8 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-import sys
-from pathlib import Path
 
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all, collect_dynamic_libs
@@ -17,18 +15,17 @@ packages = [
     'minian',
     'distributed',
     'skimage',
-    'h5py'
 ]
 
 excludes = [
-    "IPython", 
-    "PyQt5", 
+    "bokeh",
+    "IPython",
+    "jupyter",
     "Markdown",
-    "jupyter", 
-    "panel", 
-    "matplotlib", 
-    "notebook", 
-    "bokeh"
+    "matplotlib",
+    "notebook",
+    "panel",
+    "PyQt5",
 ]
 
 datas           = []
@@ -38,30 +35,7 @@ for package in packages:
     tmp_ret = collect_all(package)
     datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-binaries += collect_dynamic_libs('llvmlite',destdir='.\\Library\\bin')
-
-binaries += collect_dynamic_libs('h5py', destdir='h5py')
-_conda_prefix = Path(os.environ.get("CONDA_PREFIX", sys.prefix)).resolve()
-_conda_bin_dir = _conda_prefix / "Library" / "bin"
-print(f"[spec] HDF5 lookup using CONDA_PREFIX={_conda_prefix}")
-if _conda_bin_dir.is_dir():
-    print(f"[spec] Scanning {_conda_bin_dir} for runtime DLLs")
-    _dll_patterns = ["*.dll"]
-    _existing = {Path(src).resolve(): dest for src, dest in binaries}
-    _added = 0
-    for _pattern in _dll_patterns:
-        for _dll in _conda_bin_dir.glob(_pattern):
-            _dll = _dll.resolve()
-            if _dll in _existing:
-                continue
-            binaries.append((str(_dll), os.path.join('h5py', _dll.name)))
-            _existing[_dll] = os.path.join('h5py', _dll.name)
-            _added += 1
-            print(f"[spec]   + bundled {_dll.name}")
-    if _added == 0:
-        print(f"[spec] WARNING: No extra HDF5 DLLs matched in {_conda_bin_dir}")
-else:
-    print(f"[spec] WARNING: Could not locate conda Library/bin under {_conda_prefix}")
+binaries += collect_dynamic_libs('llvmlite', destdir='.\\Library\\bin')
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
@@ -80,8 +54,8 @@ a_minian = Analysis(
 )
 
 pyz_minian = PYZ(
-    a_minian.pure, 
-    a_minian.zipped_data, 
+    a_minian.pure,
+    a_minian.zipped_data,
     cipher=BLOCK_CIPHER
 )
 
