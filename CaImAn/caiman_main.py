@@ -15,7 +15,7 @@ import caiman_definitions as cm_defs
 import caiman_parameters  as cm_params
 from caiman.base.rois import register_multisession
 
-# Import for CaimAn lib
+# Import for CaimAn libsss
 import caiman as cm
 
 # Import for PyInstaller
