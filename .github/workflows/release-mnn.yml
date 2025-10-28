@@ -35,12 +35,12 @@ jobs:
         shell: cmd
         run: |
           C:\Miniconda3\Scripts\conda.exe env remove -n minian_release -y || echo "no old env"
-          set LOCK_FILE=%GITHUB_WORKSPACE%\environment-minian.txt
-          if not exist "%LOCK_FILE%" (
-            echo ERROR: environment-minian.txt not found at %LOCK_FILE%
+          set "ENV_FILE=%GITHUB_WORKSPACE%\Deploy\constraints\environment-minian.yml"
+          if not exist "%ENV_FILE%" (
+            echo ERROR: environment file not found at %ENV_FILE%
             exit /b 1
           )
-          C:\Miniconda3\Scripts\conda.exe create -n minian_release --file "%LOCK_FILE%" -y
+          C:\Miniconda3\Scripts\conda.exe env create -n minian_release -f "%ENV_FILE%" --yes
 
       - name: Verify minian import
         shell: cmd
