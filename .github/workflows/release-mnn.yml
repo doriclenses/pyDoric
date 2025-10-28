@@ -35,12 +35,16 @@ jobs:
         shell: cmd
         run: |
           C:\Miniconda3\Scripts\conda.exe env remove -n minian_release -y || echo "no old env"
-          C:\Miniconda3\Scripts\conda.exe create -n minian_release python=3.8 -y
+          set LOCK_FILE=%GITHUB_WORKSPACE%\environment-minian.txt
+          if not exist "%LOCK_FILE%" (
+            echo ERROR: environment-minian.txt not found at %LOCK_FILE%
+            exit /b 1
+          )
+          C:\Miniconda3\Scripts\conda.exe create -n minian_release --file "%LOCK_FILE%" -y
 
-      - name: Install minian deps with conda-forge
+      - name: Verify minian import
         shell: cmd
         run: |
-          C:\Miniconda3\Scripts\conda.exe install -n minian_release -c conda-forge h5py pyinstaller minian -y
           C:\Miniconda3\Scripts\conda.exe run -n minian_release python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
 
       - name: Snapshot conda packages
