@@ -6,6 +6,7 @@ import h5py
 import yaml
 import cv2
 import glob
+import csv
 
 sys.path.append("..")
 import utilities as utils
@@ -215,8 +216,8 @@ def save_coords_to_doric(
         pytorch_data = yaml.safe_load(file)
 
     model  = pytorch_data['net_type'].replace("_", "").capitalize()
-    epochs = pytorch_data['train_settings']['epochs']
-
+    snapshot_number = get_snapshot_number(pytorch_config_filepath, config_filepath, shuffle)
+ 
     # Save results to doric data files
     for filepath in filepaths:
         file_ = h5py.File(filepath, 'a')
@@ -247,7 +248,7 @@ def save_coords_to_doric(
                 video_filename = os.path.splitext(os.path.basename(video_filepath))[0]
 
                 # Get coords from hdf file using info (above) from config and pytorch config files
-                hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
+                hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{snapshot_number}.h5'
                 hdf_data_file = os.path.join(os.path.dirname(config_filepath), hdf_data_file)
                 df_coords = pd.read_hdf(hdf_data_file)
                 df_coords = df_coords.iloc[video_range[0]: video_range[1] + 1] 
@@ -286,3 +287,18 @@ def get_pytorch_config_file(config_filepath, shuffle):
     folder_path  = os.path.join(project_path, 'dlc-models-pytorch', f'iteration-{iteration}', folder_name, 'train')
 
     return os.path.join(folder_path, filename)
+    
+def get_snapshot_number(pytorch_config_filepath, config_filepath, shuffle):
+
+    iteration = os.path.normpath(pytorch_config_filepath).split(os.sep)[-4]
+    iteration_number = iteration.split('-')[1]
+    project_path = os.path.dirname(config_filepath)
+    path = os.path.join(project_path, 'evaluation-results-pytorch', f'iteration-{iteration_number}', 'CombinedEvaluation-results.csv')
+    with open(path, newline = '') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader: 
+            if row.get('Shuffle number') == str(shuffle):
+                training_epochs = str(row.get('Training epochs') or '').zfill(3)
+                break
+
+    return training_epochs
