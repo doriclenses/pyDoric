@@ -15,6 +15,7 @@ packages = [
     'minian',
     'distributed',
     'skimage',
+    'scipy',
 ]
 
 excludes = [
@@ -35,7 +36,17 @@ for package in packages:
     tmp_ret = collect_all(package)
     datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-binaries += collect_dynamic_libs('llvmlite', destdir='.\\Library\\bin')
+for dyn_pkg, dest in [
+    ('llvmlite', os.path.join('Library', 'bin')),
+    ('scipy', os.path.join('scipy', '.libs')),
+    ('h5py', '.'),
+    ('SimpleITK', '.'),
+    ('cv2', '.'),
+]:
+    try:
+        binaries += collect_dynamic_libs(dyn_pkg, destdir=dest)
+    except ImportError:
+        pass
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
