@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
+from pathlib import Path
 
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all, collect_dynamic_libs
@@ -47,6 +48,23 @@ for dyn_pkg, dest in [
         binaries += collect_dynamic_libs(dyn_pkg, destdir=dest)
     except ImportError:
         pass
+
+conda_prefix = os.environ.get('MINIAN_CONDA_PREFIX') or os.environ.get('CONDA_PREFIX')
+if conda_prefix:
+    library_bin = Path(conda_prefix) / 'Library' / 'bin'
+    if library_bin.is_dir():
+        dll_patterns = [
+            'hdf*.dll',
+            'hdf5*.dll',
+        ]
+        seen = set()
+        for pattern in dll_patterns:
+            for dll in library_bin.glob(pattern):
+                rel_path = os.path.join('Library', 'bin', dll.name)
+                if rel_path in seen:
+                    continue
+                binaries.append((rel_path, str(dll), 'BINARY'))
+                seen.add(rel_path)
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
