@@ -43,6 +43,18 @@ jobs:
           C:\Miniconda3\Scripts\conda.exe install -n minian_release -c conda-forge h5py pyinstaller minian -y
           C:\Miniconda3\Scripts\conda.exe run -n minian_release python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
 
+      - name: Snapshot conda packages
+        shell: cmd
+        run: |
+          C:\Miniconda3\Scripts\conda.exe list --explicit -n minian_release > minian-conda-explicit.txt
+          type minian-conda-explicit.txt
+
+      - name: Upload conda manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: minian-conda-explicit-${{ env.VERSION }}
+          path: minian-conda-explicit.txt
+
       - name: Clean old dist/build 
         shell: cmd
         working-directory: Deploy
