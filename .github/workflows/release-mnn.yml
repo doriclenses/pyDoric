@@ -51,11 +51,10 @@ jobs:
           if not exist "%CONDA_PKGS_DIRS%" mkdir "%CONDA_PKGS_DIRS%"
           C:\Miniconda3\Scripts\conda.exe env create -n minian_release -f "%ENV_FILE%" --yes
 
-      - name: Install minian deps with conda-forge
+      - name: Verify minian deps
         shell: cmd
         run: |
           set "CONDA_PKGS_DIRS=%GITHUB_WORKSPACE%\conda_pkgs"
-          C:\Miniconda3\Scripts\conda.exe install -n minian_release -c conda-forge h5py pyinstaller minian -y
           C:\Miniconda3\Scripts\conda.exe run -n minian_release python -c "import minian; print('MiniAn version:', getattr(minian,'__version__','?'))"
 
       - name: Snapshot conda packages
