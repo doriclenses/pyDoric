@@ -6,7 +6,6 @@ import h5py
 import yaml
 import cv2
 import glob
-import csv
 
 sys.path.append("..")
 import utilities as utils
