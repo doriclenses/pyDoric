@@ -31,7 +31,6 @@ dependencies:
   - scikit-learn=0.22.1
   - scipy>=1.4.1
   - scs
-  - simpleitk=2.0.2
   - sk-video
   - statsmodels>=0.11.1
   - tifffile
@@ -41,4 +40,8 @@ dependencies:
   - pymetis=2020.1
   - rechunker=0.3.3
   - medpy=0.4.0
+  - pip
   - jinja2=2.11.3
+  - pip:
+      # Install SimpleITK via pip to avoid clobber conflicts between libitk and hdf5 on Windows builds
+      - SimpleITK==2.0.2
