@@ -63,7 +63,7 @@ if conda_prefix:
                 rel_path = os.path.join('Library', 'bin', dll.name)
                 if rel_path in seen:
                     continue
-                binaries.append((rel_path, str(dll), 'BINARY'))
+                binaries.append((str(dll), rel_path))
                 seen.add(rel_path)
 
 a_minian = Analysis(
