@@ -40,11 +40,10 @@ dependencies:
   - pymetis=2020.1
   - rechunker=0.3.3
   - medpy=0.4.0
-  - h5py=3.1.0
-  - minian=1.2.1
-  - pyinstaller=4.5.1
   - pip
   - jinja2=2.11.3
   - pip:
-      # Install SimpleITK via pip to avoid clobber conflicts between libitk and hdf5 on Windows builds
       - SimpleITK==2.0.2
+  - minian=1.2.1
+  - h5py=3.1.0
+  - pyinstaller=4.5.1
