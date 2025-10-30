@@ -2,7 +2,6 @@
 
 import os
 from pathlib import Path
-
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all, collect_dynamic_libs
 
@@ -40,9 +39,9 @@ for package in packages:
 for dyn_pkg, dest in [
     ('llvmlite', os.path.join('Library', 'bin')),
     ('scipy', os.path.join('scipy', '.libs')),
-    # ('h5py', '.'),
-    # ('SimpleITK', '.'),
-    # ('cv2', '.'),
+    ('h5py', '.'),
+    ('SimpleITK', '.'),
+    ('cv2', '.'),
 ]:
     try:
         binaries += collect_dynamic_libs(dyn_pkg, destdir=dest)
