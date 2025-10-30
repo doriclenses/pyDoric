@@ -95,7 +95,7 @@ exe_minian = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=True,
@@ -112,7 +112,7 @@ coll = COLLECT(
     a_minian.zipfiles,
     a_minian.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='minian',
 )
