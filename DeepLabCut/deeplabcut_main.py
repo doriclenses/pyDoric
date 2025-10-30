@@ -44,9 +44,10 @@ def main(deeplabcut_params: dlc_params.DeepLabCutParameters):
     deeplabcut.evaluate_network(config_filepath, Shuffles = [shuffle])
 
     # Analyze video and save the result
-    deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder = os.path.dirname(config_filepath), shuffle = shuffle)
+    dlcScorer = deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder = os.path.dirname(config_filepath), shuffle = shuffle)
+    snapshot = dlcScorer.split('_')[-1]
 
-    save_coords_to_doric(valid_filepaths, datapaths, deeplabcut_params, config_filepath, shuffle)
+    save_coords_to_doric(valid_filepaths, datapaths, deeplabcut_params, config_filepath, shuffle, snapshot)
 
 def preview(deeplabcut_params: dlc_params.DeepLabCutParameters):
     print("hello preview")
@@ -188,7 +189,8 @@ def save_coords_to_doric(
     datapaths: list,
     deeplabcut_params, 
     config_filepath: str, 
-    shuffle: int
+    shuffle: int,
+    snapshot:str
 ):
     """
     Save DeepLabCut analyzed video labels in doric file
@@ -215,8 +217,7 @@ def save_coords_to_doric(
         pytorch_data = yaml.safe_load(file)
 
     model  = pytorch_data['net_type'].replace("_", "").capitalize()
-    epochs = pytorch_data['train_settings']['epochs']
-
+ 
     # Save results to doric data files
     for filepath in filepaths:
         file_ = h5py.File(filepath, 'a')
@@ -247,7 +248,7 @@ def save_coords_to_doric(
                 video_filename = os.path.splitext(os.path.basename(video_filepath))[0]
 
                 # Get coords from hdf file using info (above) from config and pytorch config files
-                hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
+                hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{snapshot}.h5'
                 hdf_data_file = os.path.join(os.path.dirname(config_filepath), hdf_data_file)
                 df_coords = pd.read_hdf(hdf_data_file)
                 df_coords = df_coords.iloc[video_range[0]: video_range[1] + 1] 
