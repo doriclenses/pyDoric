@@ -1,4 +1,4 @@
-name: minian
+name: minian # MiniAn last release was v1.2.1 on Feb 10, 2022, they stopped updating conda package
 channels:
   - bioconda
   - conda-forge
@@ -44,6 +44,6 @@ dependencies:
   - jinja2=2.11.3
   - pip:
       - SimpleITK==2.0.2
-  - minian=1.2.1
-  - h5py=3.1.0
-  - pyinstaller=6.7.0
+  - minian=1.2.1        # Feb 10, 2022 release
+  - h5py=3.6.0          # Nov 16, 2021 release
+  - pyinstaller=4.9.0   # Feb 3,  2022 release
