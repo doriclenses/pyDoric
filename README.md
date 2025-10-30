@@ -83,7 +83,7 @@ To create Suite2p executable, follow the steps:
 
 1.  [Install CUDA v12.6](https://developer.nvidia.com/cuda-12-6-3-download-archive?target_os=Windows)
    
-2.  [Install cuDNN v9.6 or higher](https://developer.nvidia.com/cudnn-9-6-0-download-archive?target_os=Windows)
+2.  [Install cuDNN v9.6](https://developer.nvidia.com/cudnn-9-6-0-download-archive?target_os=Windows)
    
 3.  Create new environment, and install DeepLabCut and PyInstaller by running the following in Anaconda prompt:
     ```
