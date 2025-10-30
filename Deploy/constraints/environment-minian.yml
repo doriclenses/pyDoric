@@ -46,4 +46,4 @@ dependencies:
       - SimpleITK==2.0.2
   - minian=1.2.1
   - h5py=3.1.0
-  - pyinstaller=4.5.1
+  - pyinstaller=6.7.0
