@@ -27,6 +27,9 @@ class Parameters:
         PROJECT_FOLDER        = "ProjectFolder"
         ROOT_DIR              = "RootDir"
 
+        EXTRACTION_METHOD     = "ExtractionMethod"
+        NUM_FRAMES            = "NumFrames"
+
         BODY_PART_NAMES        = "BodyPartNames"
         BODY_PART_COLORS       = "BodyPartColors"
         COORDINATES            = "Coordinates"

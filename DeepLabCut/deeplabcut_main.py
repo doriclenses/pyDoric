@@ -47,12 +47,13 @@ def extract_frames(params: dlc_params.DeepLabCutParameters):
     Extract frames from videos for labeling.
     """
     # Read danse parameters
-    project_folder: str         = params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    extraction_method: str      = params.params[dlc_defs.Parameters.danse.EXTRACTION_METHOD]
-    num_frames: int             = params.params[dlc_defs.Parameters.danse.NUM_FRAMES]
-    video_filepaths: list[str]  = params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
+    project_folder: str         = params.params.get(dlc_defs.Parameters.danse.PROJECT_FOLDER)
+    extraction_method: str      = params.params.get(dlc_defs.Parameters.danse.EXTRACTION_METHOD, 'kmeans')
+    num_frames: int             = params.params.get(dlc_defs.Parameters.danse.NUM_FRAMES, 20)
+    video_filepaths: list[str]  = params.params.get(dlc_defs.Parameters.danse.VIDEO_FILEPATHS)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
+    update_config_file(config_filepath, 'numframes2pick', num_frames)
 
     deeplabcut.extract_frames(
         config_filepath,
@@ -77,9 +78,14 @@ def save_labels(params: dlc_params.DeepLabCutParameters):
     extracted_frames_count: int = params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
+    update_config_file(config_filepath, 'bodyparts', bodypart_names)
 
-    update_config_file(config_filepath, bodypart_names)
-    deeplabcut.add_new_videos(config_filepath, video_filepaths, extract_frames=False)
+    deeplabcut.add_new_videos(
+        config_filepath,
+        video_filepaths,
+        extract_frames=False
+    )
+
     create_labeled_data(config_filepath, extracted_frames_count, extracted_frames, bodypart_names, params.params, video_filepaths)
 
     video_names = []
@@ -140,7 +146,8 @@ def analyze_videos(params: dlc_params.DeepLabCutParameters):
 # --- Helper functions ---
 def update_config_file(
         config_filepath: str,
-        bodypart_names: list[str]
+        parameter: str,
+        value: any
 ):
     """
     Update label names in the config file
@@ -149,7 +156,7 @@ def update_config_file(
     with open(config_filepath, 'r') as cfg:
         data = yaml.safe_load(cfg)
 
-    data['bodyparts'] = bodypart_names
+    data[parameter] = value
 
     with open(config_filepath, 'w') as cfg:
         yaml.safe_dump(data, cfg, default_flow_style=False)
@@ -175,8 +182,8 @@ def update_pytorch_config_file(
 
 
 def get_pytorch_config_file(
-        config_filepath, 
-        shuffle
+        config_filepath: str,
+        shuffle: int
         ) -> str:
 
     """
