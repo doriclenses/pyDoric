@@ -1,5 +1,9 @@
 import sys
 sys.path.append("..")
+import utilities                         as utils
+import DeepLabCut.deeplabcut_main        as dlc_main
+import DeepLabCut.deeplabcut_parameters  as dlc_params
+import DeepLabCut.deeplabcut_definitions as dlc_defs
 
 from unittest.mock import Mock
 submodules_matplotlib = [
@@ -25,12 +29,6 @@ submodules_matplotlib = [
 for submodule in submodules_matplotlib:
     sys.modules[submodule] = Mock()
 
-import utilities                         as utils
-import DeepLabCut.deeplabcut_main        as dlc_main
-import DeepLabCut.deeplabcut_parameters  as dlc_params
-import DeepLabCut.deeplabcut_definitions as dlc_defs
-
-# Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
 
@@ -63,8 +61,6 @@ if __name__ == "__main__":
     elif params.stage == "AnalyzeVideos":
         dlc_main.analyze_videos(params)
 
-    elif params.stage == "SaveCoordinates":
-        dlc_main.save_coordinates(params)
     else:
         utils.print_to_intercept(f"Unknown stage: {params.stage}")
         sys.exit()

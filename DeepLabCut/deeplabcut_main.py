@@ -5,10 +5,8 @@ from multiprocessing import freeze_support
 import os
 import sys
 import cv2
-import h5py
 import yaml
 import glob
-import numpy as np
 import pandas as pd
 
 import deeplabcut_definitions as dlc_defs
@@ -116,24 +114,6 @@ def analyze_videos(params: dlc_params.DeepLabCutParameters):
 
     utils.print_to_intercept("[analyzed videos]" + ', '.join(video_names))
 
-
-def save_coordinates(params: dlc_params.DeepLabCutParameters):
-
-    """
-    Save DeepLabCut analyzed video labels in doric file.
-    """
-    # Read danse parameters
-    datapath: str             = params.paths[defs.Parameters.Path.H5PATH]
-    data_filepaths: list[str] = params.paths[defs.Parameters.Path.FILEPATHS]
-
-    project_folder: str = params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    shuffle: int        = params.params[dlc_defs.Parameters.danse.SHUFFLE]
-    best_snapshot: str  = params.params.get(dlc_defs.Parameters.danse.BEST_SNAPSHOT, None)
-
-    config_filepath = os.path.join(project_folder, 'config.yaml')
-    coords_datapaths = save_coords_to_doric(data_filepaths, datapath, params, config_filepath, shuffle, best_snapshot)
-
-    utils.print_to_intercept("[coordinates datapaths]" + ', '.join(coords_datapaths))
 
 # --- Helper functions ---
 def update_config_file(
@@ -251,98 +231,3 @@ def create_labeled_data(
 
         cap.release()
         cv2.destroyAllWindows()
-
-
-def save_coords_to_doric(
-    filepaths: list[str],
-    datapath: str,
-    params: dlc_params.DeepLabCutParameters,
-    config_filepath: str,
-    shuffle: int,
-    best_snapshot: str = None
-):
-    """
-    Save DeepLabCut analyzed video labels in doric file
-    """
-    all_saved_datapaths = []
-
-    print(dlc_defs.Messages.SAVING_TO_DORIC, flush=True)
-    
-    bodypart_names  = params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    bodypart_colors = params.params[dlc_defs.Parameters.danse.BODY_PART_COLORS].split(', ')
-
-    # Define correct paths for saving operaion results
-    _, _, _, series, video_group_name = params.get_h5path_names(datapath)
-    group_path = f"{defs.DoricFile.Group.DATA_BEHAVIOR}/{dlc_defs.Parameters.danse.COORDINATES}/{series}"
-    operation_name  = f"{video_group_name}{dlc_defs.DoricFile.Group.POSE_ESTIMATION}"
-
-    # Update parameters
-    params.params[dlc_defs.Parameters.danse.VIDEO_DATAPATH] = datapath
-    params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER] = os.path.dirname(config_filepath)
-
-    # Get info from config file
-    with open(config_filepath, 'r') as file:
-        config_data = yaml.safe_load(file)
-        
-    config_task = config_data['Task']
-    config_date = config_data['date']
-
-    # Get info from PyTorch config file
-    pytorch_config_filepath = get_pytorch_config_file(config_filepath, shuffle)
-    with open(pytorch_config_filepath, 'r') as file:
-        pytorch_data = yaml.safe_load(file)
-
-    model  = pytorch_data['net_type'].replace("_", "").capitalize()
-    epochs = best_snapshot if best_snapshot is None else pytorch_data['train_settings']['epochs']
-
-    # Save results to doric data files
-    for filepath in filepaths:
-        try:
-            file_ = h5py.File(filepath, 'a')
-        except OSError as e:
-            utils.print_error(e, dlc_defs.Messages.FILE_OPENING_ERROR.format(file = filepath))
-            continue
-
-        operation_count = utils.operation_count(group_path, file_, operation_name, params.params, {})
-        operation_path  = f'{group_path}/{operation_name + operation_count}'
-
-        # Save time
-        video_time = np.array(file_[f"{datapath[:datapath.rfind('/')]}/{defs.DoricFile.Dataset.TIME}"])
-        time_datapath = f'{operation_path}/{defs.DoricFile.Dataset.TIME}'
-        if time_datapath not in file_:
-            file_.create_dataset(time_datapath, data=video_time, dtype="float64", chunks=utils.def_chunk_size(video_time.shape), maxshape=None)
-
-        # Save operation attributes
-        utils.save_attributes(utils.merge_params(params_current = params.params), file_, operation_path)
-
-        relative_path = file_[datapath].attrs[dlc_defs.Parameters.danse.RELATIVE_FILEPATH]
-        video_range   = file_[datapath].attrs[dlc_defs.Parameters.danse.VIDEO_RANGE]
-
-        video_filepath = os.path.join(os.path.dirname(filepath), relative_path.lstrip('/'))
-        video_filename = os.path.splitext(os.path.basename(video_filepath))[0]
-
-        # Get coords from hdf file using info (above) from config and pytorch config files
-        hdf_data_file = f'{video_filename}DLC_{model}_{config_task}{config_date}shuffle{shuffle}_snapshot_{epochs}.h5'
-        hdf_data_file = os.path.join(os.path.dirname(config_filepath), 'analyzed-data', hdf_data_file)
-        df_coords = pd.read_hdf(hdf_data_file)
-        df_coords = df_coords[video_range[0]: video_range[1] + 1]
-
-        # Save coordinates for each body part
-        coords_datapaths = []
-        for index, bodypart_name in enumerate(bodypart_names):
-            coords = np.array(df_coords.loc[:, pd.IndexSlice[:, bodypart_name, ['x','y']]])
-            coord_datapath = f'{operation_path}/{defs.DoricFile.Dataset.COORDINATES.format(str(index+1).zfill(2))}'
-            if coord_datapath in file_:
-                del file_[coord_datapath] # Remove existing dataset if it exists
-            file_.create_dataset(coord_datapath, data=coords, dtype = 'int32', chunks=utils.def_chunk_size(coords.shape), maxshape=(h5py.UNLIMITED, 2))
-            attrs = {
-                defs.DoricFile.Attribute.Dataset.USERNAME: bodypart_name,
-                defs.DoricFile.Attribute.Dataset.COLOR   : bodypart_colors[index]
-            }
-            utils.save_attributes(attrs, file_, coord_datapath)
-
-            coords_datapaths.append(coord_datapath)
-
-        file_.close()
-
-        return all_saved_datapaths
