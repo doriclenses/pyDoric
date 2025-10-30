@@ -52,6 +52,9 @@ if __name__ == "__main__":
     if params.stage == "CreateProject":
         dlc_main.create_project(params)
 
+    elif params.stage == "ExtractFrames":
+        dlc_main.extract_frames(params)
+
     elif params.stage == "SaveLabels":
         dlc_main.save_labels(params)
 

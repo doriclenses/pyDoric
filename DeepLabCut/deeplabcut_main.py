@@ -42,6 +42,28 @@ def create_project(params: dlc_params.DeepLabCutParameters):
     utils.print_to_intercept("[project path]" + os.path.dirname(config_filepath))
 
 
+def extract_frames(params: dlc_params.DeepLabCutParameters):
+    """
+    Extract frames from videos for labeling.
+    """
+    # Read danse parameters
+    project_folder: str         = params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
+    extraction_method: str      = params.params[dlc_defs.Parameters.danse.EXTRACTION_METHOD]
+    num_frames: int             = params.params[dlc_defs.Parameters.danse.NUM_FRAMES]
+    video_filepaths: list[str]  = params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
+
+    config_filepath = os.path.join(project_folder, 'config.yaml')
+
+    deeplabcut.extract_frames(
+        config_filepath,
+        mode=extraction_method,
+        userfeedback=False,
+        crop=False
+    )
+
+    utils.print_to_intercept("[extracted frames]" + ', '.join([os.path.splitext(os.path.basename(v))[0] for v in video_filepaths]))
+
+
 def save_labels(params: dlc_params.DeepLabCutParameters):
 
     """
