@@ -1,5 +1,9 @@
 import sys
 sys.path.append("..")
+import utilities                         as utils
+import DeepLabCut.deeplabcut_main        as dlc_main
+import DeepLabCut.deeplabcut_parameters  as dlc_params
+import DeepLabCut.deeplabcut_definitions as dlc_defs
 
 from unittest.mock import Mock
 submodules_matplotlib = [
@@ -25,12 +29,6 @@ submodules_matplotlib = [
 for submodule in submodules_matplotlib:
     sys.modules[submodule] = Mock()
 
-import utilities                         as utils
-import DeepLabCut.deeplabcut_main        as dlc_main
-import DeepLabCut.deeplabcut_parameters  as dlc_params
-import DeepLabCut.deeplabcut_definitions as dlc_defs
-
-# Import for PyInstaller
 from multiprocessing import freeze_support
 freeze_support()
 
@@ -49,11 +47,25 @@ except Exception as error:
     sys.exit()
 
 if __name__ == "__main__":
-    deeplabcut_params = dlc_params.DeepLabCutParameters(danse_params)
+    params = dlc_params.DeepLabCutParameters(danse_params)
 
-    # if deeplabcut_params.preview_params:
-    # dlc_main.preview(deeplabcut_params)
-    # else:
-    dlc_main.main(deeplabcut_params)
+    if params.stage == "CreateProject":
+        dlc_main.create_project(params)
+
+    elif params.stage == "ExtractFrames":
+        dlc_main.extract_frames(params)
+
+    elif params.stage == "SaveLabels":
+        dlc_main.save_labels(params)
+
+    elif params.stage == "TrainEvaluate":
+        dlc_main.train_evaluate(params)
+
+    elif params.stage == "AnalyzeVideos":
+        dlc_main.analyze_videos(params)
+
+    else:
+        utils.print_to_intercept(f"Unknown stage: {params.stage}")
+        sys.exit()
 
     print(dlc_defs.Messages.PROCESS_DONE, flush=True)

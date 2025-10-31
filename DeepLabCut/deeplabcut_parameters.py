@@ -1,8 +1,9 @@
+"""Parameters used in DeepLabCut library"""
+
 import sys
+
 sys.path.append("..")
-import utilities as utils
 import definitions as defs
-import DeepLabCut.deeplabcut_definitions as poseEst_defs
 
 class DeepLabCutParameters:
 
@@ -11,21 +12,23 @@ class DeepLabCutParameters:
     """
 
     def __init__(self, danse_params: dict):
-        
+
         self.paths: dict  = danse_params.get(defs.Parameters.Main.PATHS, {})
         self.params: dict = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
-        
-    def get_h5path_names(self, datapath):
+        self.stage: str   = danse_params.get(defs.Parameters.Main.STAGE)
+
+    def get_h5path_names(self, datapath: str) -> tuple[str]:
 
         """
         Split the path to dataset into relevant names
         """
         h5path_names = datapath.split('/')
 
-        data     = h5path_names[0]
-        driver   = h5path_names[1]
-        dataType = h5path_names[-4]
-        series   = h5path_names[-3]
-        group    = h5path_names[-2]
+        data      = h5path_names[0]
+        driver    = h5path_names[1]
+        data_type = h5path_names[-4]
+        series    = h5path_names[-3]
+        group     = h5path_names[-2]
 
-        return [data, driver, dataType, series, group]
+        return data, driver, data_type, series, group
+    
