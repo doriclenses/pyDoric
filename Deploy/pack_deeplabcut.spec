@@ -1,24 +1,47 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+import importlib.util
+from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, TOC
 from PyInstaller.utils.hooks import collect_all
-from PyInstaller.utils.hooks import copy_metadata
-from PyInstaller.utils.hooks import collect_dynamic_libs
 
+_specdir  = os.path.abspath(os.path.dirname(SPEC))
+distpath  = os.path.join(_specdir, "dist")
+workpath  = os.path.join(_specdir, "build")
 
-block_cipher = None
+BLOCK_CIPHER = None
 
-datas           = []
-binaries        = []
-hiddenimports   = []
-excludes        = []
+required_packages = [
+    'deeplabcut'
+]
+optional_packages = [
+    'charset_normalizer',
+    'dateutil',
+    'safetensors',
+    'shapely',
+    'tables',
+    'tkinter',
+    'pyarrow',
+]
 
-# datas += copy_metadata('deeplabcut', recursive=True)
-tmp_ret = collect_all('deeplabcut')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+datas = []
+binaries = []
+hiddenimports = []
+for package in required_packages:
+    tmp_ret = collect_all(package)
+    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-excludes = ["tensorflow","PySide6", "PyQT6", "PyQT5", "IPython", "Markdown", "jupyter", "napari",
-            "napari_deeplabcut", "napari_console", "npe2", "napari_plugin_engine", "napari_svg", "matplotlib"
-            ]
+for package in optional_packages:
+    if importlib.util.find_spec(package) is not None:
+        tmp_ret = collect_all(package)
+        datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
+if importlib.util.find_spec('pyarrow') is not None:
+    hiddenimports += ['pyarrow._generated_version']
+
+excludes = [
+    "matplotlib"
+]
 
 a_deeplabcut = Analysis(
     ['../DeepLabCut/deeplabcut_run.py'],
@@ -28,11 +51,11 @@ a_deeplabcut = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['constraints/torch_openmp_env.py'],
     excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=BLOCK_CIPHER,
     noarchive=False,
 )
 
@@ -54,11 +77,17 @@ exclude_binaries = [
     'cudnn_heuristic64_9.dll',
     'cudnn_ops64_9.dll',
     'cudnn64_9.dll'
-    ]
+]
 
-a_deeplabcut.binaries= TOC([x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)])
+a_deeplabcut.binaries= TOC([
+    x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)
+])
 
-pyz_deeplabcut = PYZ(a_deeplabcut.pure, a_deeplabcut.zipped_data, cipher=block_cipher)
+pyz_deeplabcut = PYZ(
+    a_deeplabcut.pure,
+    a_deeplabcut.zipped_data,
+    cipher=BLOCK_CIPHER
+)
 
 exe_deeplabcut = EXE(
     pyz_deeplabcut,
@@ -68,7 +97,7 @@ exe_deeplabcut = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=True,
@@ -85,10 +114,7 @@ coll = COLLECT(
     a_deeplabcut.zipfiles,
     a_deeplabcut.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='deeplabcut',
 )
-
-
-
