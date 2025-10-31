@@ -1,0 +1,57 @@
+name: minian # MiniAn last release was v1.2.1 on Feb 10, 2022, they stopped updating conda package
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - bokeh=1.4.0           # =1.4.0
+  - cvxpy=1.2.1           # >=1.1.11
+  - dask=2021.2.0         # =2021.2.0
+  - datashader=0.12.1     # =0.12.1
+  - distributed=2021.2.0  # =2021.2.0
+  - ecos=2.0.10           # >=2.0.7
+  - ffmpeg=6.1.0          # 
+  - ffmpeg-python=0.2.0   # >=0.2.0
+  - fftw=3.3.10           #
+  - holoviews=1.12.7      # =1.12.7
+  - jupyter               #
+  - matplotlib-base=3.2.2 # =3.2
+  - natsort=8.4.0         #
+  - netcdf4=1.6.0         #
+  - networkx=2.4          # =2.4
+  - numba=0.52.0          # =0.52.0
+  - numpy=1.20.2          # =1.20.2
+  - opencv=4.2.0          # =4.2.0
+  - pandas=1.2.3          # =1.2.3
+  - panel=0.8.0           # =0.8.0
+  - param=1.9.3           # =1.9
+  - pyfftw=0.12.0         # =0.12.0
+  - python=3.8            # =3.8
+  - scikit-image=0.18.1   # =0.18.1
+  - scikit-learn=0.22.1   # =0.22.1
+  - scipy=1.9.1           # >=1.4.1
+  - scs=3.2.0             #
+  - sk-video=1.1.10       #
+  - statsmodels=0.13.2    # >=0.11.1
+  - tifffile=2021.11.2    #
+  - xarray=0.16.2         # =0.16.2
+  - zarr=2.17.1           #
+  - sparse=0.11.2         # =0.11.2
+  - pymetis=2020.1        # =2020.1
+  - rechunker=0.3.3       # =0.3.3
+  - medpy=0.4.0           # =0.4.0
+  - pip=24.2              #
+  - jinja2=2.11.3         # =2.11.3
+  - pefile=2024.8.26
+  - pip:
+      - SimpleITK==2.0.2  # ==2.0.2
+  - minian=1.2.1        # Feb 10, 2022 release
+  # Local versions  
+  - h5py=3.7.0          # May 24, 2022 release
+  - pyinstaller=6.7.0   # May 21, 2024 release
+# Releases suggested by Codex
+  # - h5py=3.1.0          # Nov 6, 2020 release
+  # - pyinstaller=4.5.1   # Aug 6, 2021 release
+# Releases just before the last update of minian conda package
+# - h5py=3.6.0          # Nov 16, 2021 release
+# - pyinstaller=4.9.0   # Feb 3,  2022 release
