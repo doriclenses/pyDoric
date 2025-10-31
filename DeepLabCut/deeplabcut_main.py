@@ -48,7 +48,7 @@ def extract_frames(params: dlc_params.DeepLabCutParameters):
     """
     # Read danse parameters
     project_folder: str         = params.params.get(dlc_defs.Parameters.danse.PROJECT_FOLDER)
-    extraction_method: str      = params.params.get(dlc_defs.Parameters.danse.EXTRACTION_METHOD, 'kmeans')
+    extraction_algo: str        = params.params.get(dlc_defs.Parameters.danse.EXTRACTION_ALGO, 'kmeans')
     num_frames: int             = params.params.get(dlc_defs.Parameters.danse.NUM_FRAMES, 20)
     video_filepaths: list[str]  = params.params.get(dlc_defs.Parameters.danse.VIDEO_FILEPATHS)
 
@@ -57,12 +57,22 @@ def extract_frames(params: dlc_params.DeepLabCutParameters):
 
     deeplabcut.extract_frames(
         config_filepath,
-        mode=extraction_method,
+        mode='automatic',
+        algo=extraction_algo,
         userfeedback=False,
-        crop=False
+        crop=False,
+        video_list=video_filepaths
     )
 
-    utils.print_to_intercept("[extracted frames]" + ', '.join([os.path.splitext(os.path.basename(v))[0] for v in video_filepaths]))
+    frames = []
+    videos = []
+    for folder in glob.glob(os.path.join(project_folder, 'labeled-data', '*')):
+        videos.append(os.path.basename(folder))
+        for image_file in glob.glob(os.path.join(folder, 'frames', '*.png')):
+            frame_number = int(os.path.splitext(os.path.basename(image_file))[0].replace('img',''))
+            frames.append(frame_number)
+
+    utils.print_to_intercept("[extracted frames]" + 'videos: ' + ', '.join(videos) + 'frames: ' + ', '.join(map(str, frames)))
 
 
 def save_labels(params: dlc_params.DeepLabCutParameters):

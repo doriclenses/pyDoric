@@ -27,7 +27,7 @@ class Parameters:
         PROJECT_FOLDER        = "ProjectFolder"
         ROOT_DIR              = "RootDir"
 
-        EXTRACTION_METHOD     = "ExtractionMethod"
+        EXTRACTION_ALGO       = "ExtractionAlgorithm"
         NUM_FRAMES            = "NumFrames"
 
         BODY_PART_NAMES        = "BodyPartNames"
