@@ -53,17 +53,17 @@ if conda_prefix:
     library_bin = Path(conda_prefix) / 'Library' / 'bin'
     if library_bin.is_dir():
         dll_patterns = [
-            'hdf*.dll',
-            'hdf5*.dll',
+            '*.dll',
         ]
-        seen = set()
+        existing = {os.path.basename(src).lower() for src, _ in binaries}
+        target_dir = os.path.join('Library', 'bin')
         for pattern in dll_patterns:
             for dll in library_bin.glob(pattern):
-                rel_path = os.path.join('Library', 'bin', dll.name)
-                if rel_path in seen:
+                name = dll.name.lower()
+                if name in existing:
                     continue
-                binaries.append((str(dll), rel_path))
-                seen.add(rel_path)
+                binaries.append((str(dll), target_dir))
+                existing.add(name)
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
