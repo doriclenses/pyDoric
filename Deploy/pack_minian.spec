@@ -62,6 +62,8 @@ if conda_prefix:
                 'hdf5_hl_cpp.dll',
                 'hdf5_tools.dll',
                 'libaec.dll',
+                'libcurl.dll',
+                'libssh2.dll',
                 'szip.dll',
             }
             return target in keep
