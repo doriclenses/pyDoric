@@ -52,18 +52,27 @@ conda_prefix = os.environ.get('MINIAN_CONDA_PREFIX') or os.environ.get('CONDA_PR
 if conda_prefix:
     library_bin = Path(conda_prefix) / 'Library' / 'bin'
     if library_bin.is_dir():
-        dll_patterns = [
-            '*.dll',
-        ]
+        def need(name):
+            target = name.lower()
+            keep = {
+                'hdf.dll',
+                'hdf5.dll',
+                'hdf5_hl.dll',
+                'hdf5_cpp.dll',
+                'hdf5_hl_cpp.dll',
+                'hdf5_tools.dll',
+                'libaec.dll',
+                'szip.dll',
+            }
+            return target in keep
+
         existing = {os.path.basename(src).lower() for src, _ in binaries}
-        target_dir = os.path.join('Library', 'bin')
-        for pattern in dll_patterns:
-            for dll in library_bin.glob(pattern):
-                name = dll.name.lower()
-                if name in existing:
-                    continue
-                binaries.append((str(dll), target_dir))
-                existing.add(name)
+        for dll in library_bin.glob('*.dll'):
+            name = dll.name.lower()
+            if name in existing or not need(name):
+                continue
+            binaries.append((str(dll), '.'))
+            existing.add(name)
 
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
