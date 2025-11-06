@@ -22,30 +22,22 @@ class Parameters:
         """
         Parameters of danse Pose Estimation operation
         """
-        EXPERIMENTER          = "Experimenter"
-        PROJECT_NAME          = "ProjectName"
-        PROJECT_FOLDER        = "ProjectFolder"
-        ROOT_DIR              = "RootDir"
+        PROJECT_FOLDER = "ProjectFolder"
 
-        EXTRACTION_ALGO       = "ExtractionAlgorithm"
-        NUM_FRAMES            = "NumFrames"
+        EXPERIMENTER  = "Experimenter"
+        PROJECT_NAME  = "ProjectName"
+        ROOT_DIR      = "RootDir"
 
-        BODY_PART_NAMES        = "BodyPartNames"
-        BODY_PART_COLORS       = "BodyPartColors"
-        COORDINATES            = "Coordinates"
-        EXTRACTED_FRAMES       = "ExtractedFrames"
-        EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
-        VIDEO_FILEPATHS        = "VideoFilepaths"
-        EXP_FILE               = "ExperimentFile"
+        EXTRACTION_ALGO = "ExtractionAlgorithm"
+        NUM_FRAMES      = "NumFrames"
 
-        SHUFFLE       = "Shuffle"
-        BEST_SNAPSHOT = "BestSnapshot"
+        VIDEO_FILEPATHS = "VideoFilepaths"
+        VIDEO_NAMES     = "VideoNames"
+        BODY_PART_NAMES  = "BodyPartNames"
+        COORDINATES      = "Coordinates"
 
-        RELATIVE_FILEPATH = "RelativeFilePath"
-        VIDEO_DATAPATH    = "VideoDatapath"
-        VIDEO_RANGE       = "VideoRange"
-        LABELED_VIDEOS    = "LabeledVideos"
-
+        SHUFFLE   = "Shuffle"
+        ITERATION = "Iteration"
 
 class DoricFile:
 
