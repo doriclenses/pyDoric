@@ -36,6 +36,8 @@ def create_project(params: dict):
         copy_videos=False
     )
 
+    update_config_file(config_filepath, 'bodyparts', bodypart_names)
+
     utils.print_to_intercept("[project path]" + os.path.dirname(config_filepath))
 
 
