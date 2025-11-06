@@ -1,94 +1,97 @@
 """DeepLabCut main functions."""
 
-from multiprocessing import freeze_support
-
 import os
+import re
 import sys
-import cv2
 import yaml
 import glob
 import pandas as pd
-
-import deeplabcut_definitions as dlc_defs
-import deeplabcut_parameters as dlc_params
 import deeplabcut
+from multiprocessing import freeze_support
 
 sys.path.append("..")
 import utilities as utils
-import definitions as defs
+import deeplabcut_definitions as defs
 
 freeze_support()
 
 # --- Main functions called by danse ---
-def create_project(params: dlc_params.DeepLabCutParameters):
+def create_project(params: dict):
 
     """
     Create a new DeepLabCut project.
     """
     # Read danse parameters
-    experimenter:  str         = params.params.get(dlc_defs.Parameters.danse.EXPERIMENTER)
-    project_name:  str         = params.params.get(dlc_defs.Parameters.danse.PROJECT_NAME)
-    root_dir:  str             = params.params.get(dlc_defs.Parameters.danse.ROOT_DIR)
-    video_filepaths: list[str] = params.params.get(dlc_defs.Parameters.danse.VIDEO_FILEPATHS)
+    experimenter:  str         = params.params.get(defs.Parameters.danse.EXPERIMENTER)
+    project_name:  str         = params.params.get(defs.Parameters.danse.PROJECT_NAME)
+    root_dir:  str             = params.get(defs.Parameters.danse.ROOT_DIR)
+    video_filepaths: list[str] = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
+    bodypart_names: list[str]   = params.get(defs.Parameters.danse.BODY_PART_NAMES)
 
     config_filepath = deeplabcut.create_new_project(
-        project_name,
-        experimenter,
-        video_filepaths,
-        root_dir,
+        project=project_name,
+        experimenter=experimenter,
+        videos=video_filepaths,
+        working_directory=root_dir,
         copy_videos=False
     )
 
     utils.print_to_intercept("[project path]" + os.path.dirname(config_filepath))
 
 
-def extract_frames(params: dlc_params.DeepLabCutParameters):
+def extract_frames(params: dict):
     """
     Extract frames from videos for labeling.
     """
     # Read danse parameters
-    project_folder: str         = params.params.get(dlc_defs.Parameters.danse.PROJECT_FOLDER)
-    extraction_algo: str        = params.params.get(dlc_defs.Parameters.danse.EXTRACTION_ALGO, 'kmeans')
-    num_frames: int             = params.params.get(dlc_defs.Parameters.danse.NUM_FRAMES, 20)
-    video_filepaths: list[str]  = params.params.get(dlc_defs.Parameters.danse.VIDEO_FILEPATHS)
+    project_folder: str         = params.get(defs.Parameters.danse.PROJECT_FOLDER)
+    extraction_algo: str        = params.get(defs.Parameters.danse.EXTRACTION_ALGO, 'kmeans')
+    num_frames: int             = params.get(defs.Parameters.danse.NUM_FRAMES, 20)
+    video_filepaths: list[str]  = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
     update_config_file(config_filepath, 'numframes2pick', num_frames)
 
+    for i, filepath in enumerate(video_filepaths):
+        video_filepaths[i] = re.sub(r"/+", r"\\", filepath)
+
     deeplabcut.extract_frames(
-        config_filepath,
+        config=config_filepath,
         mode='automatic',
         algo=extraction_algo,
         userfeedback=False,
         crop=False,
-        video_list=video_filepaths
+        videos_list=video_filepaths
     )
 
     frames = []
     videos = []
     for folder in glob.glob(os.path.join(project_folder, 'labeled-data', '*')):
+        if not os.listdir(folder):
+            continue
         videos.append(os.path.basename(folder))
-        for image_file in glob.glob(os.path.join(folder, 'frames', '*.png')):
-            frame_number = int(os.path.splitext(os.path.basename(image_file))[0].replace('img',''))
-            frames.append(frame_number)
+        for image_file in glob.glob(os.path.join(folder, '*.png')):
+            image_index = int(os.path.splitext(os.path.basename(image_file))[0].replace('img',''))
+            frames.append(image_index)
 
-    utils.print_to_intercept("[extracted frames]" + 'videos: ' + ', '.join(videos) + 'frames: ' + ', '.join(map(str, frames)))
+    utils.print_to_intercept("[extracted frames]" + 'videos: [' + ', '.join(videos) + '],frames: [' + ', '.join(map(str, frames)) + ']')
 
 
-def save_labels(params: dlc_params.DeepLabCutParameters):
+def save_labels(params: dict):
 
     """
     Save labels in DeepLabCut format.
     """
     # Read danse parameters
-    video_filepaths: list[str]  = params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
-    project_folder: str         = params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    bodypart_names: list        = params.params[dlc_defs.Parameters.danse.BODY_PART_NAMES].split(', ')
-    extracted_frames: list      = params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES]
-    extracted_frames_count: int = params.params[dlc_defs.Parameters.danse.EXTRACTED_FRAMES_COUNT]
+    project_folder: str         = params.get(defs.Parameters.danse.PROJECT_FOLDER)
+    bodypart_names: list[str]   = params.get(defs.Parameters.danse.BODY_PART_NAMES)
+    video_filepaths: list[str]  = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
+    video_names: list[str]      = params.get(defs.Parameters.danse.VIDEO_NAMES)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
     update_config_file(config_filepath, 'bodyparts', bodypart_names)
+
+    scorer = project_folder.split('-')[1]
 
     deeplabcut.add_new_videos(
         config_filepath,
@@ -96,59 +99,83 @@ def save_labels(params: dlc_params.DeepLabCutParameters):
         extract_frames=False
     )
 
-    create_labeled_data(config_filepath, extracted_frames_count, extracted_frames, bodypart_names, params.params, video_filepaths)
+    for video_name in video_names:
+        labeled_data_path = os.path.join(project_folder, "labeled-data", video_name)
+        if not os.path.exists(labeled_data_path):
+            os.makedirs(labeled_data_path)
 
-    video_names = []
-    for video_filepath in video_filepaths:
-        video_names.append(os.path.splitext(os.path.basename(video_filepath))[0])
+        coords = params.params.get(video_name + defs.Parameters.danse.COORDINATES)
+
+        frames = os.listdir(labeled_data_path)
+        indices = [('labeled-data', video_name, frame) for frame in frames]
+
+        header1 = []
+        for bodypart_name in bodypart_names:
+            header1 += [(scorer, bodypart_name, 'x'), (scorer, bodypart_name, 'y')]
+        header2  = pd.MultiIndex.from_tuples(header1, names = ['scorer', 'bodyparts', 'coords'])
+
+        df = pd.DataFrame(coords, columns = header2, index = pd.MultiIndex.from_tuples(indices))
+
+        filepath = f'{labeled_data_path}/CollectedData_{scorer}.h5'
+        df.to_hdf(filepath, key='keypoints', mode='w')
 
     utils.print_to_intercept("[labeled videos]" + ', '.join(video_names))
 
 
-def train_evaluate(params: dlc_params.DeepLabCutParameters):
+def train_evaluate(params: dict):
 
     """
     Train and evaluate the DeepLabCut network.
     """
 
-    project_folder: str = params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
+    project_folder: str = params.get(defs.Parameters.danse.PROJECT_FOLDER)
+    
     config_filepath = os.path.join(project_folder, 'config.yaml')
+    deeplabcut.create_training_dataset(config_filepath)
+    deeplabcut.train_network(config_filepath)
+    deeplabcut.evaluate_network(config_filepath)
 
-    training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
-    shuffle: int = training_dataset_info[0][1]
-    update_pytorch_config_file(config_filepath, shuffle)
+    utils.print_to_intercept("[train info]")
 
-    with open(config_filepath, 'r') as cfg:
-        data = yaml.safe_load(cfg)
-    iteration = data['iteration']
+    # training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
+    # shuffle: int = training_dataset_info[0][1]
+    # update_pytorch_config_file(config_filepath, shuffle)
 
-    deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
-    deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
+    # with open(config_filepath, 'r') as cfg:
+    #     data = yaml.safe_load(cfg)
+    # iteration = data['iteration']
 
-    utils.print_to_intercept(f"[train info]{iteration}, shuffle-{shuffle}")
+    # deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
+    # deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
+
+    # utils.print_to_intercept(f"[train info]{iteration}, shuffle-{shuffle}")
 
 
-def analyze_videos(params: dlc_params.DeepLabCutParameters):
+def analyze_videos(params: dict):
 
     """
     Analyze videos using the trained DeepLabCut network.
     """
     # Read danse parameters
-    video_filepaths: list[str] = params.params[dlc_defs.Parameters.danse.VIDEO_FILEPATHS]
-    project_folder: str        = params.params[dlc_defs.Parameters.danse.PROJECT_FOLDER]
-    shuffle: int               = params.params[dlc_defs.Parameters.danse.SHUFFLE]
+    project_folder: str        = params.get(defs.Parameters.danse.PROJECT_FOLDER)
+    video_filepaths: list[str] = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
+    shuffle: int               = params.get(defs.Parameters.danse.SHUFFLE)
+    iteration: int             = params.get(defs.Parameters.danse.ITERATION)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
+    destfolder = os.path.join(project_folder, 'analyzed-data')
 
-    deeplabcut.analyze_videos(config_filepath, video_filepaths, destfolder=project_folder+'/analyzed-data', shuffle=shuffle)
+    update_config_file(config_filepath, 'iteration', iteration)
 
-    for file_ in glob.glob(os.path.join(project_folder, 'analyzed-data', '*.h5')):
-        df = pd.read_hdf(file_)
-        df.to_csv(file_.replace('.h5', '.csv'))
+    deeplabcut.analyze_videos(
+        config=config_filepath,
+        videos=video_filepaths,
+        destfolder=destfolder,
+        shuffle=shuffle,
+        save_as_csv=True
+    )
 
-    video_names = []
-    for video_filepath in video_filepaths:
-        video_names.append(os.path.splitext(os.path.basename(video_filepath))[0])
+    video_names = [os.path.splitext(os.path.basename(filepath))[0] for filepath in video_filepaths]
 
     utils.print_to_intercept("[analyzed videos]" + ', '.join(video_names))
 

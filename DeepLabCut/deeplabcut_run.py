@@ -50,19 +50,19 @@ if __name__ == "__main__":
     params = dlc_params.DeepLabCutParameters(danse_params)
 
     if params.stage == "CreateProject":
-        dlc_main.create_project(params)
+        dlc_main.create_project(params.params)
 
     elif params.stage == "ExtractFrames":
-        dlc_main.extract_frames(params)
+        dlc_main.extract_frames(params.params)
 
     elif params.stage == "SaveLabels":
-        dlc_main.save_labels(params)
+        dlc_main.save_labels(params.params)
 
     elif params.stage == "TrainEvaluate":
-        dlc_main.train_evaluate(params)
+        dlc_main.train_evaluate(params.params)
 
     elif params.stage == "AnalyzeVideos":
-        dlc_main.analyze_videos(params)
+        dlc_main.analyze_videos(params.params)
 
     else:
         utils.print_to_intercept(f"Unknown stage: {params.stage}")
