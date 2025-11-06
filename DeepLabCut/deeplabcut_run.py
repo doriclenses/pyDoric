@@ -15,6 +15,7 @@ submodules_matplotlib = [
     'matplotlib.image',
     'matplotlib.lines',
     'matplotlib.patches',
+    'matplotlib.patches.Ellipse',
     'matplotlib.container',
     'matplotlib.transforms',
     'matplotlib.tri._triangulation',
