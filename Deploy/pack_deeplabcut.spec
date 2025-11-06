@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-import importlib.util
+# import importlib.util
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, TOC
 from PyInstaller.utils.hooks import collect_all
 
@@ -11,10 +11,11 @@ workpath  = os.path.join(_specdir, "build")
 
 BLOCK_CIPHER = None
 
-required_packages = [
+PACKAGES = [
     'deeplabcut'
-]
-optional_packages = [
+# ]
+
+# optional_packages = [
     'charset_normalizer',
     'dateutil',
     'safetensors',
@@ -27,19 +28,21 @@ optional_packages = [
 datas = []
 binaries = []
 hiddenimports = []
-for package in required_packages:
+for package in PACKAGES:
     tmp_ret = collect_all(package)
-    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+    datas += tmp_ret[0]
+    binaries += tmp_ret[1]
+    hiddenimports += tmp_ret[2]
 
-for package in optional_packages:
-    if importlib.util.find_spec(package) is not None:
-        tmp_ret = collect_all(package)
-        datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+# for package in optional_packages:
+#     if importlib.util.find_spec(package) is not None:
+#         tmp_ret = collect_all(package)
+#         datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-if importlib.util.find_spec('pyarrow') is not None:
-    hiddenimports += ['pyarrow._generated_version']
+# if importlib.util.find_spec('pyarrow') is not None:
+hiddenimports += ['pyarrow._generated_version']
 
-excludes = [
+EXCLUDE_PACKAGES = [
     "matplotlib"
 ]
 
@@ -52,14 +55,14 @@ a_deeplabcut = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=['constraints/torch_openmp_env.py'],
-    excludes=excludes,
+    excludes=EXCLUDE_PACKAGES,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=BLOCK_CIPHER,
     noarchive=False,
 )
 
-exclude_binaries = [
+EXCLUDE_BINARIES = [
     'cublasLt64_12.dll',
     'cublas64_12.dll',
     'cudart64_12.dll',
@@ -80,7 +83,7 @@ exclude_binaries = [
 ]
 
 a_deeplabcut.binaries= TOC([
-    x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in exclude_binaries)
+    x for x in a_deeplabcut.binaries if not any(exclude in x[0] for exclude in EXCLUDE_BINARIES)
 ])
 
 pyz_deeplabcut = PYZ(
