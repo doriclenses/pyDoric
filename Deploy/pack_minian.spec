@@ -11,14 +11,15 @@ workpath  = os.path.join(_specdir, "build")
 
 BLOCK_CIPHER = None
 
-packages = [
+PACKAGES = [
     'minian',
     'distributed',
     'skimage',
     'scipy',
+    'pyviz_comms',
 ]
 
-excludes = [
+EXCLUDES = [
     "bokeh",
     "IPython",
     "jupyter",
@@ -32,39 +33,54 @@ excludes = [
 datas           = []
 binaries        = []
 hiddenimports   = []
-for package in packages:
+for package in PACKAGES:
     tmp_ret = collect_all(package)
-    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+    datas += tmp_ret[0]
+    binaries += tmp_ret[1]
+    hiddenimports += tmp_ret[2]
 
-for dyn_pkg, dest in [
-    ('llvmlite', os.path.join('Library', 'bin')),
-    ('scipy', os.path.join('scipy', '.libs')),
-    ('h5py', '.'),
-    ('SimpleITK', '.'),
-    ('cv2', '.'),
-]:
-    try:
-        binaries += collect_dynamic_libs(dyn_pkg, destdir=dest)
-    except ImportError:
-        pass
+binaries += collect_dynamic_libs('llvmlite', destdir=os.path.join('Library', 'bin'))
+
+DLL_PREFIXES = {
+    "ff",
+    "hdf",
+    "icu",
+    "itk",
+    "lib",
+    "open",
+    "qt5",
+}
+
+DLL_EXACT = {
+    "freetype.dll",
+    "lerc.dll",
+    "mfhdf.dll",
+    "mkl_pgi_thread.2.dll",
+    "netcdf.dll",
+    "pthreadvse2.dll",
+    "szip.dll",
+    "tiff.dll",
+    "xdr.dll",
+    "yaml.dll",
+    "zip.dll",
+    "zstd.dll",
+}
 
 conda_prefix = os.environ.get('MINIAN_CONDA_PREFIX') or os.environ.get('CONDA_PREFIX')
-if conda_prefix:
-    library_bin = Path(conda_prefix) / 'Library' / 'bin'
-    if library_bin.is_dir():
-        dll_patterns = [
-            'hdf*.dll',
-            'hdf5*.dll',
-        ]
-        seen = set()
-        for pattern in dll_patterns:
-            for dll in library_bin.glob(pattern):
-                rel_path = os.path.join('Library', 'bin', dll.name)
-                if rel_path in seen:
-                    continue
-                binaries.append((str(dll), rel_path))
-                seen.add(rel_path)
-
+library_bin = Path(conda_prefix) / 'Library' / 'bin'
+if library_bin.is_dir():
+    existing = {os.path.basename(src).lower() for src, _ in binaries}
+    selected = []
+    for dll in sorted(library_bin.glob('*.dll'), key=lambda p: p.name.lower()):
+        name = dll.name.lower()
+        if name not in DLL_EXACT and not any(name.startswith(prefix) for prefix in DLL_PREFIXES):
+            continue
+        if name in existing:
+            continue
+        selected.append((str(dll), '.'))
+        existing.add(name)
+    binaries.extend(selected)
+    
 a_minian = Analysis(
     ['../MiniAn/minian_run.py'],
     pathex=['../'],
@@ -74,7 +90,7 @@ a_minian = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=excludes,
+    excludes=EXCLUDES,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=BLOCK_CIPHER,
