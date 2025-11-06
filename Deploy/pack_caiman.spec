@@ -14,7 +14,7 @@ CAIMAN_DATA_DIR = os.environ.get("CAIMAN_DATA_DIR")
 
 BLOCK_CIPHER = None
 
-packages = [
+PACKAGES = [
     'caiman',
     'hdmf',
     'pynwb',
@@ -23,7 +23,7 @@ packages = [
     'scipy'
 ]
 
-excludes = [
+EXCLUDES = [
     "PyQt5", 
     "Markdown",
     "jupyter",
@@ -43,9 +43,11 @@ excludes = [
 datas         = []
 binaries      = []
 hiddenimports = []
-for package in packages:
+for package in PACKAGES:
     tmp_ret = collect_all(package)
-    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+    datas += tmp_ret[0]
+    binaries += tmp_ret[1]
+    hiddenimports += tmp_ret[2]
 
 a_caimAn = Analysis(
     ['../CaImAn/caiman_run.py'],
@@ -56,7 +58,7 @@ a_caimAn = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=excludes,
+    excludes=EXCLUDES,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=BLOCK_CIPHER,

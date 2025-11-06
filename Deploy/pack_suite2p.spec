@@ -10,12 +10,12 @@ workpath  = os.path.join(_specdir, "build")
 
 BLOCK_CIPHER = None
 
-packages = [
+PACKAGES = [
     'suite2p',
     'ScanImageTiffReader',
 ]
 
-excludes = [
+EXCLUDES = [
     "IPython", 
     "PyQt6", 
     "PyQt5", 
@@ -26,9 +26,11 @@ excludes = [
 datas           = []
 binaries        = []
 hiddenimports   = []
-for package in packages:
+for package in PACKAGES:
     tmp_ret = collect_all(package)
-    datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+    datas += tmp_ret[0]
+    binaries += tmp_ret[1]
+    hiddenimports += tmp_ret[2]
 
 a_suite2p = Analysis(
     ['../Suite2p/suite2p_run.py'],
@@ -39,7 +41,7 @@ a_suite2p = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=excludes,
+    excludes=EXCLUDES,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=BLOCK_CIPHER,
