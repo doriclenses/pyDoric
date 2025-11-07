@@ -12,7 +12,7 @@ workpath  = os.path.join(_specdir, "build")
 BLOCK_CIPHER = None
 
 PACKAGES = [
-    'deeplabcut'
+    'deeplabcut',
 # ]
 
 # optional_packages = [
