@@ -1,7 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-import importlib.util
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, TOC
 from PyInstaller.utils.hooks import collect_all
 
@@ -12,10 +11,7 @@ workpath  = os.path.join(_specdir, "build")
 BLOCK_CIPHER = None
 
 PACKAGES = [
-    'deeplabcut'
-]
-
-optional_packages = [
+    'deeplabcut',
     'charset_normalizer',
     'dateutil',
     'safetensors',
@@ -34,13 +30,7 @@ for package in PACKAGES:
     binaries += tmp_ret[1]
     hiddenimports += tmp_ret[2]
 
-for package in optional_packages:
-    if importlib.util.find_spec(package) is not None:
-        tmp_ret = collect_all(package)
-        datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-if importlib.util.find_spec('pyarrow') is not None:
-    hiddenimports += ['pyarrow._generated_version']
+hiddenimports += ['pyarrow._generated_version']
 
 a_deeplabcut = Analysis(
     ['../DeepLabCut/deeplabcut_run.py'],
