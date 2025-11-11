@@ -22,8 +22,8 @@ def create_project(params: dict):
     Create a new DeepLabCut project.
     """
     # Read danse parameters
-    experimenter:  str         = params.params.get(defs.Parameters.danse.EXPERIMENTER)
-    project_name:  str         = params.params.get(defs.Parameters.danse.PROJECT_NAME)
+    experimenter:  str         = params.get(defs.Parameters.danse.EXPERIMENTER)
+    project_name:  str         = params.get(defs.Parameters.danse.PROJECT_NAME)
     root_dir:  str             = params.get(defs.Parameters.danse.ROOT_DIR)
     video_filepaths: list[str] = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
     bodypart_names: list[str]   = params.get(defs.Parameters.danse.BODY_PART_NAMES)
@@ -106,7 +106,7 @@ def save_labels(params: dict):
         if not os.path.exists(labeled_data_path):
             os.makedirs(labeled_data_path)
 
-        coords = params.params.get(video_name + defs.Parameters.danse.COORDINATES)
+        coords = params.get(video_name + defs.Parameters.danse.COORDINATES)
 
         frames = os.listdir(labeled_data_path)
         indices = [('labeled-data', video_name, frame) for frame in frames]
