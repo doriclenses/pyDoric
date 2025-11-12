@@ -2,13 +2,14 @@ class Messages:
     """
     Messages
     """
-    ADVANCED_BAD_TYPE  = "One of the advanced parameters is not of a python type"
-    LOADING_ARGUMENTS  = "Loading parameters"
-    PROCESS_DONE       = "Suite2p process is done"
-    SAVING_ROIS        = "Saving ROIs"
-    SAVING_SPIKES      = "Saving Spikes"
-    SAVING_IMAGES      = "Saving Images"
-    ROI_NAMES          = "Generating ROI names"
+    ADVANCED_BAD_TYPE   = "One of the advanced parameters is not of a python type"
+    LOADING_ARGUMENTS   = "Loading parameters"
+    PROCESS_DONE        = "Suite2p process is done"
+    SAVING_ROIS         = "Saving ROIs"
+    SAVING_SPIKES       = "Saving Spikes"
+    SAVING_IMAGES       = "Saving Images"
+    ROI_NAMES           = "Generating ROI names"
+    ERROR_NO_CELL_FOUND = "Error: {error} \n No cells where found try other parameters"
 
 
 class Preview:
