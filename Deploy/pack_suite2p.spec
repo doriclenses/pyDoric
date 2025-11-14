@@ -16,10 +16,10 @@ PACKAGES = [
 ]
 
 EXCLUDES = [
-    "IPython", 
-    "PyQt6", 
-    "PyQt5", 
-    "Markdown", 
+    "IPython",
+    "PyQt6",
+    "PyQt5",
+    "Markdown",
     "jupyter"
 ]
 
