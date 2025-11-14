@@ -100,6 +100,25 @@ jobs:
           echo !HASH!> suite2p-%VERSION%.zip.sha256
           type suite2p-%VERSION%.zip.sha256
 
+      - name: Copy release zip to network share
+        shell: cmd
+        working-directory: Deploy
+        env:
+          SHARE_DIR: "C:\\DoricSoftware\\danse\\Libraries\\Suite2p"
+        run: |
+          set "ZIP=suite2p-%VERSION%.zip"
+          if not exist "%ZIP%" (
+            echo ERROR: zip not found
+            exit /b 1
+          )
+          set "DEST=%SHARE_DIR%"
+          if not exist "%DEST%" (
+            echo Creating %DEST%
+            mkdir "%DEST%"
+          )
+          copy /Y "%ZIP%" "%DEST%\"
+          echo Copied %ZIP% to %DEST%
+
       - name: Create GitHub Release (attach zip + checksum)
         uses: softprops/action-gh-release@v2
         with:
