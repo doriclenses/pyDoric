@@ -131,7 +131,7 @@ def train_evaluate(params: dict):
     """
 
     project_folder: str = params.get(defs.Parameters.danse.PROJECT_FOLDER)
-    
+
     config_filepath = os.path.join(project_folder, 'config.yaml')
     deeplabcut.create_training_dataset(config_filepath)
     deeplabcut.train_network(config_filepath)
