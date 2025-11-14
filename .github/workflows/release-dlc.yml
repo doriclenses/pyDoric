@@ -37,8 +37,8 @@ jobs:
         shell: cmd
         run: |
           venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install --constraint Deploy\constraints\pins.txt h5py pyinstaller deeplabcut==3.0.0rc8
-          venv\Scripts\pip install --constraint Deploy\constraints\pins.txt --upgrade --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0+cu128 torchvision==0.23.0+cu128
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-dlc.txt h5py pyinstaller deeplabcut==3.0.0rc8
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-dlc.txt --upgrade --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0+cu128 torchvision==0.23.0+cu128
           venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
 
       - name: Clean old dist/build

@@ -37,7 +37,7 @@ jobs:
         shell: cmd
         run: |
           venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install --constraint Deploy\constraints\pins.txt h5py pyinstaller suite2p==0.14.4
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-s2p.txt h5py pyinstaller suite2p==0.14.4 tbb
           venv\Scripts\python -c "import suite2p; print('Suite2p version:', getattr(suite2p,'__version__','?'))"
 
       - name: Clean old dist/build
