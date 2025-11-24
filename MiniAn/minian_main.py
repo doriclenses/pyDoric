@@ -58,7 +58,6 @@ def main(minian_params):
 
     if (len(seeds) > 500):
         utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
-        # utils.print_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
         sys.exit()
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
@@ -163,7 +162,6 @@ def init_preview(minian_params):
 
     if (len(seeds) > 500):
         utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
-        # print(mn_defs.Messages.TOO_MANY_SEEDS, flush = True)
 
     example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
                                  width=seeds["width"].to_xarray(),
@@ -241,7 +239,6 @@ def penalties_preview(minian_params):
         })
 
         if (seed_count > 500):
-            # utils.print_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
             utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
             sys.exit()
 
