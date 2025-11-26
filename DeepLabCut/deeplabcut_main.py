@@ -131,26 +131,15 @@ def train_evaluate(params: dict):
     """
 
     project_folder: str = params.get(defs.Parameters.danse.PROJECT_FOLDER)
-
     config_filepath = os.path.join(project_folder, 'config.yaml')
-    deeplabcut.create_training_dataset(config_filepath)
-    deeplabcut.train_network(config_filepath)
-    deeplabcut.evaluate_network(config_filepath)
+
+    training_dataset_info = deeplabcut.create_training_dataset(config_filepath) # returns list of tupples [(trainFraction, shuffle, ...), ...]
+    shuffle: int = training_dataset_info[0][1]
+
+    deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
+    deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
 
     utils.print_to_intercept("[train info]")
-
-    # training_dataset_info = deeplabcut.create_training_dataset(config_filepath)
-    # shuffle: int = training_dataset_info[0][1]
-    # update_pytorch_config_file(config_filepath, shuffle)
-
-    # with open(config_filepath, 'r') as cfg:
-    #     data = yaml.safe_load(cfg)
-    # iteration = data['iteration']
-
-    # deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
-    # deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
-
-    # utils.print_to_intercept(f"[train info]{iteration}, shuffle-{shuffle}")
 
 
 def analyze_videos(params: dict):
