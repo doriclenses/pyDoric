@@ -53,9 +53,35 @@ def extract_frames(params: dict):
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
 
-    for i, filepath in enumerate(video_filepaths):
-        video_filepaths[i] = re.sub(r"/+", r"\\", filepath)
     deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'numframes2pick': num_frames})
+
+    add_videos = False
+    cfg = deeplabcut.auxiliaryfunctions.read_config(config_filepath)
+    config_videos = [os.path.basename(filepath) for filepath in cfg['video_sets']]
+    for video_filepath in video_filepaths:
+        if os.path.basename(video_filepath) not in config_videos:
+            add_videos = True
+            break
+
+    if add_videos:
+        deeplabcut.add_new_videos(
+            config=config_filepath,
+            videos=video_filepaths,
+            copy_videos=True,
+            coords=None,           # List containing the list of cropping coordinates of the video
+            extract_frames=False,
+        )
+
+        iteration = cfg['iteration']
+        deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'iteration': iteration + 1})
+
+    video_names = []
+    new_video_filepaths = [] # The filepaths that deeplabcut saves in the config file
+    for filepath in video_filepaths:
+        video_filename = os.path.basename(filepath)
+        video_names.append(os.path.splitext(video_filename)[0])
+        video_path = os.path.join(project_folder, 'videos', video_filename)
+        new_video_filepaths.append(re.sub(r"/+", r"\\", video_path))
 
     deeplabcut.extract_frames(
         config=config_filepath,
@@ -63,20 +89,18 @@ def extract_frames(params: dict):
         algo=extraction_algo,
         userfeedback=False,
         crop=False,
-        videos_list=video_filepaths
+        videos_list=new_video_filepaths
     )
 
     frames = []
-    videos = []
     for folder in glob.glob(os.path.join(project_folder, 'labeled-data', '*')):
-        if not os.listdir(folder):
+        if not os.listdir(folder) or os.path.basename(folder) not in video_names:
             continue
-        videos.append(os.path.basename(folder))
         for image_file in glob.glob(os.path.join(folder, '*.png')):
             image_index = int(os.path.splitext(os.path.basename(image_file))[0].replace('img',''))
             frames.append(image_index)
 
-    utils.print_to_intercept("[extracted frames]" + 'videos: [' + ', '.join(videos) + '],frames: [' + ', '.join(map(str, frames)) + ']')
+    utils.print_to_intercept("[extracted frames]" + 'videos: [' + ', '.join(video_names) + '],frames: [' + ', '.join(map(str, frames)) + ']')
 
 
 def save_labels(params: dict):
