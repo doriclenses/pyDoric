@@ -36,7 +36,7 @@ def create_project(params: dict):
         copy_videos=True
     )
 
-    update_config_file(config_filepath, 'bodyparts', bodypart_names)
+    deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'bodyparts': bodypart_names})
 
     utils.print_to_intercept("[project path]" + os.path.dirname(config_filepath))
 
@@ -52,10 +52,10 @@ def extract_frames(params: dict):
     video_filepaths: list[str]  = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
-    update_config_file(config_filepath, 'numframes2pick', num_frames)
 
     for i, filepath in enumerate(video_filepaths):
         video_filepaths[i] = re.sub(r"/+", r"\\", filepath)
+    deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'numframes2pick': num_frames})
 
     deeplabcut.extract_frames(
         config=config_filepath,
@@ -91,9 +91,9 @@ def save_labels(params: dict):
     video_names: list[str]      = params.get(defs.Parameters.danse.VIDEO_NAMES)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
-    update_config_file(config_filepath, 'bodyparts', bodypart_names)
 
     scorer = project_folder.split('-')[1]
+    deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'bodyparts': bodypart_names})
 
     deeplabcut.add_new_videos(
         config_filepath,
@@ -166,8 +166,6 @@ def analyze_videos(params: dict):
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
     destfolder = os.path.join(project_folder, 'analyzed-data')
-
-    update_config_file(config_filepath, 'iteration', iteration)
 
     deeplabcut.analyze_videos(
         config=config_filepath,
