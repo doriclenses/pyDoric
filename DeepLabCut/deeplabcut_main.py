@@ -109,21 +109,15 @@ def save_labels(params: dict):
     Save labels in DeepLabCut format.
     """
     # Read danse parameters
-    project_folder: str         = params.get(defs.Parameters.danse.PROJECT_FOLDER)
-    bodypart_names: list[str]   = params.get(defs.Parameters.danse.BODY_PART_NAMES)
-    video_filepaths: list[str]  = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
-    video_names: list[str]      = params.get(defs.Parameters.danse.VIDEO_NAMES)
+    project_folder: str       = params.get(defs.Parameters.danse.PROJECT_FOLDER)
+    bodypart_names: list[str] = params.get(defs.Parameters.danse.BODY_PART_NAMES)
+    video_names: list[str]    = params.get(defs.Parameters.danse.VIDEO_NAMES)
 
     config_filepath = os.path.join(project_folder, 'config.yaml')
 
-    scorer = project_folder.split('-')[1]
     deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'bodyparts': bodypart_names})
 
-    deeplabcut.add_new_videos(
-        config_filepath,
-        video_filepaths,
-        extract_frames=False
-    )
+    scorer = project_folder.split('-')[1]
 
     for video_name in video_names:
         labeled_data_path = os.path.join(project_folder, "labeled-data", video_name)
