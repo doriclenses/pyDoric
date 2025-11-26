@@ -33,7 +33,7 @@ def create_project(params: dict):
         experimenter=experimenter,
         videos=video_filepaths,
         working_directory=root_dir,
-        copy_videos=False
+        copy_videos=True
     )
 
     update_config_file(config_filepath, 'bodyparts', bodypart_names)
