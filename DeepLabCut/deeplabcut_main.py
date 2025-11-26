@@ -3,7 +3,6 @@
 import os
 import re
 import sys
-import yaml
 import glob
 import pandas as pd
 import deeplabcut
@@ -185,66 +184,3 @@ def analyze_videos(params: dict):
     video_names = [os.path.splitext(os.path.basename(filepath))[0] for filepath in video_filepaths]
 
     utils.print_to_intercept("[analyzed videos]" + ', '.join(video_names))
-
-
-# --- Helper functions ---
-def update_config_file(
-        config_filepath: str,
-        parameter: str,
-        value: any
-):
-    """
-    Update label names in the config file
-    """
-
-    with open(config_filepath, 'r') as cfg:
-        data = yaml.safe_load(cfg)
-
-    data[parameter] = value
-
-    with open(config_filepath, 'w') as cfg:
-        yaml.safe_dump(data, cfg, default_flow_style=False)
-
-
-def update_pytorch_config_file(
-    config_filepath: str,
-    shuffle: int
-):
-    """
-    Update label names in the pytorch config file
-    """
-
-    pytorch_config_filepath = get_pytorch_config_file(config_filepath, shuffle)
-    with open(pytorch_config_filepath, 'r') as file:
-        data = yaml.safe_load(file)
-
-    data['model']['backbone']['freeze_bn_stats']    = False
-    data['train_settings']['dataloader_pin_memory'] = True
-
-    with open(pytorch_config_filepath, 'w') as file:
-        yaml.safe_dump(data, file, default_flow_style=False)
-
-
-def get_pytorch_config_file(
-        config_filepath: str,
-        shuffle: int
-        ) -> str:
-
-    """
-    Get the PyTorch config file path based on the main config file and shuffle parameter.
-    """
-
-    with open(config_filepath, 'r') as file:
-        data = yaml.safe_load(file)
-
-    task      = data['Task']
-    date      = data['date']
-    trainset  = int(data['TrainingFraction'][0] * 100)
-    iteration = data['iteration']
-
-    filename     = 'pytorch_config.yaml'
-    project_path = os.path.dirname(config_filepath)
-    folder_name  = f'{task}{date}-trainset{trainset}shuffle{shuffle}'
-    folder_path  = os.path.join(project_path, 'dlc-models-pytorch', f'iteration-{iteration}', folder_name, 'train')
-
-    return os.path.join(folder_path, filename)
