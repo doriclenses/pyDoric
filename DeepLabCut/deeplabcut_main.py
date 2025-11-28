@@ -7,6 +7,7 @@ import glob
 import pandas as pd
 import deeplabcut
 from multiprocessing import freeze_support
+from collections import defaultdict
 
 sys.path.append("..")
 import utilities as utils
@@ -54,6 +55,7 @@ def extract_frames(params: dict):
 
     deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'numframes2pick': num_frames})
 
+    # Check if videos are already in the config file
     add_videos = False
     cfg = deeplabcut.auxiliaryfunctions.read_config(config_filepath)
     config_videos = [os.path.basename(filepath) for filepath in cfg['video_sets']]
@@ -61,7 +63,8 @@ def extract_frames(params: dict):
         if os.path.basename(video_filepath) not in config_videos:
             add_videos = True
             break
-
+    
+    # Add videos to the project if not already present
     if add_videos:
         deeplabcut.add_new_videos(
             config=config_filepath,
@@ -74,6 +77,7 @@ def extract_frames(params: dict):
         iteration = cfg['iteration']
         deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {'iteration': iteration + 1})
 
+    # Update video paths to the copied videos in the project folder
     video_names = []
     new_video_filepaths = [] # The filepaths that deeplabcut saves in the config file
     for filepath in video_filepaths:
@@ -81,6 +85,15 @@ def extract_frames(params: dict):
         video_names.append(os.path.splitext(video_filename)[0])
         video_path = os.path.join(project_folder, 'videos', video_filename)
         new_video_filepaths.append(re.sub(r"/+", r"\\", video_path))
+
+    # Check if any of the videos were already labeled
+    images_with_labels = defaultdict(list)
+    for filepath, video_name in zip(new_video_filepaths, video_names):
+        h5_file = glob.glob(os.path.join(project_folder, 'labeled-data', video_name, 'CollectedData_*.h5'))
+        if h5_file:
+            df = pd.read_hdf(h5_file[0])
+            images_with_labels[video_name] = df.index.get_level_values(2).tolist()
+    print(len(images_with_labels), images_with_labels, flush=True)
 
     deeplabcut.extract_frames(
         config=config_filepath,
@@ -91,15 +104,26 @@ def extract_frames(params: dict):
         videos_list=new_video_filepaths
     )
 
-    frames = []
+    frames_by_video = defaultdict(list)
     for folder in glob.glob(os.path.join(project_folder, 'labeled-data', '*')):
-        if not os.listdir(folder) or os.path.basename(folder) not in video_names:
+        video_name = os.path.basename(folder)
+        if not os.listdir(folder) or video_name not in video_names:
             continue
         for image_file in glob.glob(os.path.join(folder, '*.png')):
-            image_index = int(os.path.splitext(os.path.basename(image_file))[0].replace('img',''))
-            frames.append(image_index)
+            labeled_images = images_with_labels[video_name]
+            basename = os.path.basename(image_file)
+            # Skip frames that were already labeled; handle both absolute and basename matches.
+            if image_file in labeled_images or basename in labeled_images:
+                continue
+            image_index = int(os.path.splitext(basename)[0].replace('img',''))
+            frames_by_video[video_name].append(image_index)
+        frames_by_video[video_name].sort()
 
-    utils.print_to_intercept("[extracted frames]" + 'videos: [' + ', '.join(video_names) + '],frames: [' + ', '.join(map(str, frames)) + ']')
+    extracted_frames_repr = ', '.join(
+        f"{video_name}: [" + ', '.join(map(str, frames_by_video[video_name])) + "]"
+        for video_name in video_names
+    )
+    utils.print_to_intercept("[extracted frames]{" + extracted_frames_repr + "}")
 
 
 def save_labels(params: dict):
