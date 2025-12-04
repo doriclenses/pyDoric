@@ -180,7 +180,7 @@ def train_evaluate(params: dict):
     deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
     deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
 
-    utils.print_to_intercept("[train info]")
+    utils.print_to_intercept("[train info]" + "shuffle:" + str(shuffle))
 
 
 def analyze_videos(params: dict):
