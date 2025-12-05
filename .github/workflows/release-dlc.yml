@@ -1,0 +1,148 @@
+name: Release DeepLabCut
+
+on:
+  push:
+    tags: ['deeplabcut-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dlc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, Windows, X64, GPU]
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag (cmd)
+        shell: cmd
+        run: |
+          set VERSION=%GITHUB_REF_NAME:deeplabcut-v=%
+          echo VERSION=%VERSION%>> %GITHUB_ENV%
+
+      - name: Create venv
+        shell: cmd
+        run: |
+          C:\Python310\python.exe -V
+          C:\Python310\python.exe -m venv venv
+
+      - name: Install deps
+        shell: cmd
+        run: |
+          venv\Scripts\python -m pip install --upgrade pip
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-dlc.txt h5py pyinstaller deeplabcut==3.0.0rc8
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-dlc.txt --upgrade --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0+cu128 torchvision==0.23.0+cu128
+          venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
+
+      - name: Clean old dist/build
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          if exist dist rmdir /s /q dist
+          if exist build rmdir /s /q build
+
+      - name: Build deeplabcut
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          ..\venv\Scripts\pyinstaller --clean --noconfirm pack_deeplabcut.spec
+          echo === DIST TREE ===
+          dir /s /b dist
+
+      - name: Smoke test torch/deeplabcut import
+        shell: cmd
+        run: |
+          venv\Scripts\python -c "import torch; import deeplabcut; print('torch', torch.__version__)"
+
+      - name: Zip onedir output with build-info
+        shell: cmd
+        working-directory: Deploy
+        env:
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          rem Locate the onedir app folder under dist
+          set "APPDIR="
+          for /d %%D in (dist\*) do ( set "APPDIR=%%D" & goto :found )
+          :found
+          if not defined APPDIR ( echo ERROR: no onedir folder found in Deploy\dist & exit /b 1 )
+
+          rem Write build-info into the app folder (included in the zip)
+          echo Version: %VERSION%> "%APPDIR%\build-info.txt"
+          echo Commit: %GIT_SHA%>> "%APPDIR%\build-info.txt"
+          echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
+
+          set "ZIPNAME=deeplabcut-%VERSION%.zip"
+
+          rem One-line Python (no backslashes/newlines)
+          ..\venv\Scripts\python -c "import os,zipfile; a=r'%APPDIR%'; zf=r'%ZIPNAME%'; assert os.path.isdir(a), 'no APPDIR: '+a; z=zipfile.ZipFile(zf,'w',zipfile.ZIP_DEFLATED); [z.write(os.path.join(r,f), os.path.relpath(os.path.join(r,f),a)) for r,_,fs in os.walk(a) for f in fs]; z.close()"
+          echo Created zip: %ZIPNAME%
+
+      - name: Show zip contents
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          set "ZN=deeplabcut-%VERSION%.zip"
+          if not exist "%ZN%" ( echo ERROR: zip not found & exit /b 1 )
+          ..\venv\Scripts\python -c "import os,zipfile; zn=r'%ZN%'; z=zipfile.ZipFile(zn,'r'); n=z.namelist(); print('Entries in',zn,':',len(n)); [print(' ',x) for x in n[:50]]; z.close()"
+
+
+      - name: SHA256 of release zip
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          setlocal EnableDelayedExpansion
+          set ZIP=deeplabcut-%VERSION%.zip
+          for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
+            set HASH=%%H
+            goto :got
+          )
+          :got
+          echo !HASH!> deeplabcut-%VERSION%.zip.sha256
+          type deeplabcut-%VERSION%.zip.sha256
+
+      - name: Copy release zip to network share
+        shell: cmd
+        working-directory: Deploy
+        env:
+          SHARE_DIR: "C:\\DoricSoftware\\danse\\Libraries\\DeepLabCut"
+        run: |
+          set "ZIP=deeplabcut-%VERSION%.zip"
+          if not exist "%ZIP%" (
+            echo ERROR: zip not found
+            exit /b 1
+          )
+          set "DEST=%SHARE_DIR%"
+          if not exist "%DEST%" (
+            echo Creating %DEST%
+            mkdir "%DEST%"
+          )
+          copy /Y "%ZIP%" "%DEST%\"
+          echo Copied %ZIP% to %DEST%
+
+      - name: Create GitHub Release (attach zip + checksum)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: deeplabcut ${{ env.VERSION }}
+          body: |
+            Automated deeplabcut release for tag ${{ github.ref_name }}.
+            - Version: ${{ env.VERSION }}
+            - Commit: ${{ github.sha }}
+          files: |
+            Deploy/deeplabcut-${{ env.VERSION }}.zip
+            Deploy/deeplabcut-${{ env.VERSION }}.zip.sha256
+
+      - name: Upload dist artifact (only on failure)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: deeplabcut-dist-${{ env.VERSION }}
+          path: Deploy/dist/**
+          retention-days: 3
+          compression-level: 1

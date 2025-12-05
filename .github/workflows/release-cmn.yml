@@ -1,0 +1,166 @@
+name: Release CaImAn
+
+on:
+  push:
+    tags: ['caiman-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cmn-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [self-hosted, Windows, X64, GPU]
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        shell: cmd
+        run: |
+          set VERSION=%GITHUB_REF_NAME:caiman-v=%
+          echo VERSION=%VERSION%>> %GITHUB_ENV%
+
+      - name: Verify Miniconda
+        shell: cmd
+        run: C:\Miniconda3\Scripts\conda.exe --version
+
+      - name: Create conda env for caiman
+        shell: cmd
+        run: |
+          C:\Miniconda3\Scripts\conda.exe env remove -n caiman_release -y || echo "no old env"
+          C:\Miniconda3\Scripts\conda.exe create -n caiman_release python=3.10 -y
+
+      - name: Install caiman deps with conda-forge
+        shell: cmd
+        run: |
+          C:\Miniconda3\Scripts\conda.exe install -n caiman_release -c conda-forge pyinstaller caiman -y
+          C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import caiman; print('Caiman version:', getattr(caiman,'__version__','?'))"
+
+      - name: caimanmanager install (detect path and export)
+        shell: cmd
+        run: |
+          C:\Miniconda3\Scripts\conda.exe run -n caiman_release caimanmanager install --force
+          for /f "delims=" %%H in ('C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import pathlib; print(pathlib.Path.home())"') do set "CM_HOME=%%H"
+          if exist "%CM_HOME%\caiman_data" (
+            echo CAIMAN_DATA_DIR=%CM_HOME%\caiman_data>> %GITHUB_ENV%
+          ) else if exist "%CM_HOME%\.caimanmanager\caiman_data" (
+            echo CAIMAN_DATA_DIR=%CM_HOME%\.caimanmanager\caiman_data>> %GITHUB_ENV%
+          ) else (
+            echo WARNING: caiman_data not found after install
+          )
+            
+      - name: Preflight paths
+        shell: cmd
+        run: |
+            cd
+            dir
+            dir Deploy
+            dir Deploy\pack_caiman.spec
+
+      - name: Clean old dist/build
+        shell: cmd
+        working-directory: Deploy
+        run: |
+            if exist dist rmdir /s /q dist
+            if exist build rmdir /s /q build
+
+      - name: Build caiman exe
+        shell: cmd
+        working-directory: Deploy
+        run: |
+            C:\Miniconda3\Scripts\conda.exe run -n caiman_release pyinstaller --clean --noconfirm pack_caiman_run.spec
+            echo === DIST TREE ===
+            dir /s /b dist
+
+      - name: Zip onedir output with build-info
+        shell: cmd
+        working-directory: Deploy
+        env:
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          rem Locate the onedir app folder under dist
+          set "APPDIR="
+          for /d %%D in (dist\*) do ( set "APPDIR=%%D" & goto :found )
+          :found
+          if not defined APPDIR ( echo ERROR: no onedir folder found in Deploy\dist & exit /b 1 )
+
+          rem Write build-info into the app folder (included in the zip)
+          echo Version: %VERSION%> "%APPDIR%\build-info.txt"
+          echo Commit: %GIT_SHA%>> "%APPDIR%\build-info.txt"
+          echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
+
+          set "ZIPNAME=caiman-%VERSION%.zip"
+
+          rem Use conda env's python (single-line, no backslashes)
+          C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import os,zipfile; a=r'%APPDIR%'; zf=r'%ZIPNAME%'; assert os.path.isdir(a), 'no APPDIR: '+a; z=zipfile.ZipFile(zf,'w',zipfile.ZIP_DEFLATED); [z.write(os.path.join(r,f), os.path.relpath(os.path.join(r,f),a)) for r,_,fs in os.walk(a) for f in fs]; z.close()"
+          echo Created zip: %ZIPNAME%
+
+      - name: Show zip contents
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          set "ZN=caiman-%VERSION%.zip"
+          if not exist "%ZN%" ( echo ERROR: zip not found & exit /b 1 )
+          C:\Miniconda3\Scripts\conda.exe run -n caiman_release python -c "import os,zipfile; zn=r'%ZN%'; z=zipfile.ZipFile(zn,'r'); n=z.namelist(); print('Entries in',zn,':',len(n)); [print(' ',x) for x in n[:50]]; z.close()"
+
+      - name: SHA256 of release zip
+        shell: cmd
+        working-directory: Deploy
+        run: |
+          setlocal EnableDelayedExpansion
+          set ZIP=caiman-%VERSION%.zip
+          if not exist "%ZIP%" ( echo ERROR: zip not found & exit /b 1 )
+          for /f "usebackq skip=1 tokens=1" %%H in (`certutil -hashfile "%ZIP%" SHA256 ^| findstr /v /i "hash certutil"`) do (
+            set HASH=%%H
+            goto :got
+          )
+          :got
+          echo !HASH!> caiman-%VERSION%.zip.sha256
+          type caiman-%VERSION%.zip.sha256
+
+      - name: Copy release zip
+        shell: cmd
+        working-directory: Deploy
+        env:
+          SHARE_DIR: "C:\\DoricSoftware\\danse\\Libraries\\CaImAn"
+        run: |
+          set "ZIP=caiman-%VERSION%.zip"
+          if not exist "%ZIP%" (
+            echo ERROR: zip not found
+            exit /b 1
+          )
+          set "DEST=%SHARE_DIR%"
+          if not exist "%DEST%" (
+            echo Creating %DEST%
+            mkdir "%DEST%"
+          )
+          copy /Y "%ZIP%" "%DEST%\"
+          echo Copied %ZIP% to %DEST%
+
+      - name: Create GitHub Release (attach zip + checksum)
+        uses: softprops/action-gh-release@v2
+        with:
+          name: caiman ${{ env.VERSION }}
+          body: |
+            Automated caiman release for tag ${{ github.ref_name }}.
+            - Version: ${{ env.VERSION }}
+            - Commit: ${{ github.sha }}
+          files: |
+            Deploy/caiman-${{ env.VERSION }}.zip
+            Deploy/caiman-${{ env.VERSION }}.zip.sha256
+
+      - name: Upload dist artifact (only on failure)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: caiman-dist-${{ env.VERSION }}
+          path: Deploy/dist/**
+          retention-days: 3
+          compression-level: 1
