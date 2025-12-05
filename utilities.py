@@ -383,6 +383,11 @@ def print_to_intercept(msg):
 
     print(defs.Messages.INTERCEPT_MESSAGE.format(message = msg), flush = True, end = '\n')
 
+def print_error_to_intercept(msg):
+    if not isinstance(msg, str):
+        msg = str(msg)
+
+    print_to_intercept(defs.Messages.ERROR.format(message = msg))
 
 def print_group_path_for_DANSE(path):
     path = clean_path(path)
