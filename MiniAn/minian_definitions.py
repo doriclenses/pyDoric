@@ -51,7 +51,10 @@ class Messages:
     CROSS_REGISTRATING          = "Cross-registering cells between sessions."
     PROCESS_DONE                = "MiniAn process is done"
 
-
+    TOO_MANY_SEEDS              = "Processing error due to too many seeds. Possible ways to decrease detected seeds:\n\
+                                   - Lowering the noise frequency cut off can decrease seed count. \n\
+                                   - Reducing the correlation threshold may help merge some seeds. \n\
+                                   - Inspect the image stack for artifact/bad frames; discarding such frames (via discard frames operation) can have a significant effect on the output"
 
 class Folder:
     """

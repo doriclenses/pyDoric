@@ -124,6 +124,7 @@ class Messages:
 
     CANT_SAVE_ATT_VAL       = "Cannot save attribute {attribute} with value {value}"
     PATHGROUP               = "[pathgroup]{path}"
+    ERROR                   = "[error]{message}"
     INTERCEPT_MESSAGE       = "[intercept]{message}[end]"
     ERROR_IN                = "Error in {position}: {type_error_name} - {error}"
     FILE_CLOSE              = "File is closed"
