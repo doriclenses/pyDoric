@@ -37,7 +37,7 @@ jobs:
         shell: cmd
         run: |
           venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install --constraint Deploy\constraints\pins.txt h5py pyinstaller suite2p==0.14.4
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-s2p.txt h5py pyinstaller suite2p==0.14.4 tbb
           venv\Scripts\python -c "import suite2p; print('Suite2p version:', getattr(suite2p,'__version__','?'))"
 
       - name: Clean old dist/build
@@ -74,7 +74,6 @@ jobs:
 
           set "ZIPNAME=suite2p-%VERSION%.zip"
 
-          rem One-line Python (no backslashes/newlines)
           ..\venv\Scripts\python -c "import os,zipfile; a=r'%APPDIR%'; zf=r'%ZIPNAME%'; assert os.path.isdir(a), 'no APPDIR: '+a; z=zipfile.ZipFile(zf,'w',zipfile.ZIP_DEFLATED); [z.write(os.path.join(r,f), os.path.relpath(os.path.join(r,f),a)) for r,_,fs in os.walk(a) for f in fs]; z.close()"
           echo Created zip: %ZIPNAME%
 
@@ -100,6 +99,25 @@ jobs:
           :got
           echo !HASH!> suite2p-%VERSION%.zip.sha256
           type suite2p-%VERSION%.zip.sha256
+
+      - name: Copy release zip to network share
+        shell: cmd
+        working-directory: Deploy
+        env:
+          SHARE_DIR: "C:\\DoricSoftware\\danse\\Libraries\\Suite2p"
+        run: |
+          set "ZIP=suite2p-%VERSION%.zip"
+          if not exist "%ZIP%" (
+            echo ERROR: zip not found
+            exit /b 1
+          )
+          set "DEST=%SHARE_DIR%"
+          if not exist "%DEST%" (
+            echo Creating %DEST%
+            mkdir "%DEST%"
+          )
+          copy /Y "%ZIP%" "%DEST%\"
+          echo Copied %ZIP% to %DEST%
 
       - name: Create GitHub Release (attach zip + checksum)
         uses: softprops/action-gh-release@v2

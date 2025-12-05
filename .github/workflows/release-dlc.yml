@@ -37,8 +37,8 @@ jobs:
         shell: cmd
         run: |
           venv\Scripts\python -m pip install --upgrade pip
-          venv\Scripts\pip install --constraint Deploy\constraints\pins.txt h5py pyinstaller deeplabcut==3.0.0rc8
-          venv\Scripts\pip install --constraint Deploy\constraints\pins.txt --upgrade --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0+cu128 torchvision==0.23.0+cu128
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-dlc.txt h5py pyinstaller deeplabcut==3.0.0rc8
+          venv\Scripts\pip install --constraint Deploy\constraints\pins-dlc.txt --upgrade --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0+cu128 torchvision==0.23.0+cu128
           venv\Scripts\python -c "import torch;print('Torch:',torch.__version__);print('CUDA build:',getattr(torch.version,'cuda',None));print('CUDA available:',torch.cuda.is_available())"
 
       - name: Clean old dist/build
@@ -106,6 +106,25 @@ jobs:
           :got
           echo !HASH!> deeplabcut-%VERSION%.zip.sha256
           type deeplabcut-%VERSION%.zip.sha256
+
+      - name: Copy release zip to network share
+        shell: cmd
+        working-directory: Deploy
+        env:
+          SHARE_DIR: "C:\\DoricSoftware\\danse\\Libraries\\DeepLabCut"
+        run: |
+          set "ZIP=deeplabcut-%VERSION%.zip"
+          if not exist "%ZIP%" (
+            echo ERROR: zip not found
+            exit /b 1
+          )
+          set "DEST=%SHARE_DIR%"
+          if not exist "%DEST%" (
+            echo Creating %DEST%
+            mkdir "%DEST%"
+          )
+          copy /Y "%ZIP%" "%DEST%\"
+          echo Copied %ZIP% to %DEST%
 
       - name: Create GitHub Release (attach zip + checksum)
         uses: softprops/action-gh-release@v2

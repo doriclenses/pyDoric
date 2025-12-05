@@ -1,6 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
+import sys
+from pathlib import Path
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT
 from PyInstaller.utils.hooks import collect_all
 
@@ -16,10 +18,10 @@ PACKAGES = [
 ]
 
 EXCLUDES = [
-    "IPython", 
-    "PyQt6", 
-    "PyQt5", 
-    "Markdown", 
+    "IPython",
+    "PyQt6",
+    "PyQt5",
+    "Markdown",
     "jupyter"
 ]
 
@@ -31,6 +33,22 @@ for package in PACKAGES:
     datas += tmp_ret[0]
     binaries += tmp_ret[1]
     hiddenimports += tmp_ret[2]
+
+# Ship Intel TBB runtime that PyTorch depends on.
+TBB_DLLS = [
+    "tbb12.dll",
+    "tbbmalloc.dll",
+    "tbbmalloc_proxy.dll",
+    "tbbbind.dll",
+    "tbbbind_2_0.dll",
+    "tbbbind_2_5.dll",
+]
+library_bin = Path(sys.prefix) / "Library" / "bin"
+if library_bin.is_dir():
+    for dll_name in TBB_DLLS:
+        dll_path = library_bin / dll_name
+        if dll_path.is_file():
+            binaries.append((str(dll_path), "."))
 
 a_suite2p = Analysis(
     ['../Suite2p/suite2p_run.py'],
