@@ -1,6 +1,8 @@
+"""Definitions for DeepLabCut"""
+
 class Messages:
     """
-    Messages
+    Messages showed in danse software
     """
     ADVANCED_BAD_TYPE  = "One of the advanced parameters is not of a python type"
     LOADING_ARGUMENTS  = "Loading parameters"
@@ -20,21 +22,30 @@ class Parameters:
         """
         Parameters of danse Pose Estimation operation
         """
-        PROJECT_FOLDER         = "ProjectFolder"
-        BODY_PART_NAMES        = "BodyPartNames"
-        BODY_PART_COLORS       = "BodyPartColors"
-        COORDINATES            = "Coordinates"
-        EXTRACTED_FRAMES       = "ExtractedFrames"
-        EXTRACTED_FRAMES_COUNT = "ExtractedFramesCount"
-        VIDEO_DATAPATH         = "VideoDatapath"
-        RELATIVE_FILEPATH      = "RelativeFilePath" 
-        VIDEO_RANGE            = "VideoRange"
-        LABELED_VIDEOS         = "LabeledVideos"
+        PROJECT_FOLDER = "ProjectFolder"
 
+        EXPERIMENTER  = "Experimenter"
+        PROJECT_NAME  = "ProjectName"
+        ROOT_DIR      = "RootDir"
+
+        EXTRACTION_ALGO = "ExtractionAlgorithm"
+        NUM_FRAMES      = "NumFrames"
+
+        VIDEO_FILEPATHS = "VideoFilepaths"
+        VIDEO_NAMES     = "VideoNames"
+        BODY_PART_NAMES  = "BodyPartNames"
+        COORDINATES      = "Coordinates"
+
+        SHUFFLE   = "Shuffle"
+        ITERATION = "Iteration"
 
 class DoricFile:
 
+    """Definitions for Doric file format"""
+
     class Group:
+
+        """Group names in Doric file"""
+
         POSE_ESTIMATION = "PoseEstimation"
-
-
+     
