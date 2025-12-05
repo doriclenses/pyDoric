@@ -33,7 +33,11 @@ def main(suite2p_params: s2p_params.Suite2pParameters):
             for datapath in suite2p_params.paths[defs.Parameters.Path.H5PATH]:
                 tif_file.write(file_[datapath][:, :, t], contiguous=True)
 
-    output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
+    try:
+        output_ops = suite2p.run_s2p(ops = suite2p_params.ops, db = suite2p_params.db)
+    except Exception as error:
+        print(s2p_defs.Messages.ERROR_NO_CELL_FOUND.format(error = error), flush=True)
+        sys.exit()
 
     data, driver, operation, series, sensor = suite2p_params.get_h5path_names()
     params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
