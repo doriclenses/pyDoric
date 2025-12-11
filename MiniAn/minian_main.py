@@ -398,6 +398,8 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, return_all_seeds = False
         with except_type_error("seeds_merge"):
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_params.params_seeds_merge)
 
+        utils.tprint(mn_defs.Messages.INIT_SEEDS_FINAL_COUNT.format(len(seeds_final)), flush=True)
+
         if return_all_seeds:
             return pd.merge(seeds, seeds_final, how="outer").fillna(False), max_proj
         else:

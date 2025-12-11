@@ -23,6 +23,7 @@ class Messages:
     INIT_COMP_TEMP              = "Initializing components: temporal..."
     INIT_COMP_MERG              = "Initializing components: merging..."
     INIT_COMP_BACKG             = "Initializing components: background..."
+    INIT_SEEDS_FINAL_COUNT      = "Initialization completed: final seed count = {0}"
     CNMF_IT                     = "CNMF {0} iteration"
     CNMF_ESTIM_NOISE            = CNMF_IT + ": estimating noise..."
     CNMF_UPDAT_SPATIAL          = CNMF_IT + ": updating spatial components..."
