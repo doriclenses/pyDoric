@@ -103,7 +103,7 @@ To create Suite2p executable, follow the steps:
     conda activate deeplabcut_pyinstaller
     ```
     ```
-    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+    pip install --upgrade --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0+cu128 torchvision==0.23.0+cu128
     ```
     Note: set your CUDA version in the prompt above
     ```
