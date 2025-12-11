@@ -64,6 +64,7 @@ class Parameters:
         PARAMETERS    = "Parameters"
         PATHS         = "Paths"
         PREVIEW       = "Preview"
+        STAGE         = "Stage"
         IS_MICROSCOPE = "IsMicroscope"
 
 
@@ -78,7 +79,6 @@ class Parameters:
         FILEPATHS = "Filepaths"
         H5PATH    = "HDF5Path"
         H5PATHS   = "HDF5Paths"
-        EXP_FILE  = "ExperimentFile"
 
 
     class danse:

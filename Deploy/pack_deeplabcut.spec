@@ -32,10 +32,6 @@ for package in PACKAGES:
 
 hiddenimports += ['pyarrow._generated_version']
 
-EXCLUDE_PACKAGES = [
-    "matplotlib"
-]
-
 a_deeplabcut = Analysis(
     ['../DeepLabCut/deeplabcut_run.py'],
     pathex=['../'],
@@ -45,7 +41,7 @@ a_deeplabcut = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=['constraints/torch_openmp_env.py'],
-    excludes=EXCLUDE_PACKAGES,
+    excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=BLOCK_CIPHER,

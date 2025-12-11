@@ -21,7 +21,10 @@ To create MiniAn executable, follow the steps:
 3.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
     ```
-    pyinstaller /Deploy/pack_minian_run.spec
+    cd Deploy
+    ```
+    ```
+    pyinstaller pack_minian_run.spec
     ```
 
 ## CaImAn
@@ -49,8 +52,12 @@ To create CaImAn executable, follow the steps:
 
 
 4.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
+    
     ```
-    pyinstaller /Deploy/pack_caiman_run.spec
+    cd Deploy
+    ```
+    ```
+    pyinstaller pack_caiman_run.spec
     ```
 
 ## Suite2p
@@ -75,7 +82,10 @@ To create Suite2p executable, follow the steps:
 4.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
 
     ```
-    pyinstaller /Deploy/pack_suite2p_run.spec
+    cd Deploy
+    ```
+    ```
+    pyinstaller pack_suite2p_run.spec
     ```
 
 ## DeepLabCut
@@ -93,10 +103,11 @@ To create Suite2p executable, follow the steps:
     conda activate deeplabcut_pyinstaller
     ```
     ```
-    pip install torch torchvision
+    pip install --upgrade --index-url https://download.pytorch.org/whl/cu128 torch==2.8.0+cu128 torchvision==0.23.0+cu128
     ```
+    Note: set your CUDA version in the prompt above
     ```
-    pip install "deeplabcut[gui,modelzoo,wandb]==3.0.0rc8"
+    pip install "deeplabcut==3.0.0rc8"
     ```
 
     For more information about the library, please read [DeepLabCut docs](https://deeplabcut.github.io/DeepLabCut/docs/beginner-guides/beginners-guide.html).
@@ -104,6 +115,10 @@ To create Suite2p executable, follow the steps:
 4.  Clone this repository. In Anaconda prompt, navigate to the directory where the repository was cloned.
 
 5.  Package the code into an executable by using pyinstaller spec file and running the following in Anaconda prompt:
+    
     ```
-    pyinstaller Deploy/pack_deeplabcut_run.spec
+    cd Deploy
+    ```
+    ```
+    pyinstaller pack_deeplabcut_run.spec
     ```
