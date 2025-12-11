@@ -110,7 +110,7 @@ class MinianParameters:
         }
 
         self.params_seeds_merge = {
-            "thres_dist": neuron_diameter[0],
+            "thres_dist": (neuron_diameter[0] + neuron_diameter[-1]) / 2.0,
             "thres_corr": thres_corr,
             "noise_freq": noise_freq
         }
