@@ -2,8 +2,6 @@
 import os
 import sys
 import h5py
-import inspect
-import tempfile
 import dask as da
 import numpy as np
 import pandas as pd
@@ -17,7 +15,6 @@ from typing import Optional, Callable
 sys.path.append("..")
 import utilities as utils
 import definitions as defs
-import minian_parameters as mn_params
 import minian_definitions as mn_defs
 
 # Import for MiniAn lib
