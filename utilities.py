@@ -1,11 +1,14 @@
 import os
 import cv2
 import h5py
+import time
 import warnings
 import numpy as np
-from typing import Any, Dict, List, Optional, Tuple, Union, Callable
+from typing import List, Optional, Tuple, Union
 
 import definitions as defs
+
+_start_time = time.perf_counter()
 
 def load_attributes(
     file_: Union[h5py.File, str],
@@ -377,6 +380,12 @@ def create_params_item(
     return {key_final: value_final}
 
 #*************************************************************** PRINT FUNCTIONS ********************************************
+def tprint(msg, *, flush=True):
+    elapsed = time.perf_counter() - _start_time
+    mins, secs = divmod(elapsed, 60)
+    millis = int((secs - int(secs)) * 1000)
+    print(f"[+{int(mins):02d}:{int(secs):02d}.{millis:03d}] {msg}", flush=flush)
+
 def print_to_intercept(msg):
     if not isinstance(msg, str):
         msg = str(msg)

@@ -39,7 +39,7 @@ def main(minian_params):
     """
 
     # Start cluster
-    print(mn_defs.Messages.START_CLUSTER, flush=True)
+    utils.tprint(mn_defs.Messages.START_CLUSTER)
     cluster = LocalCluster(**minian_params.params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
@@ -70,7 +70,7 @@ def main(minian_params):
     A = cross_register(AC, A, minian_params)
 
     # Save final MiniAn results
-    print(mn_defs.Messages.SAVING_FINAL, flush=True)
+    utils.tprint(mn_defs.Messages.SAVING_FINAL, flush=True)
     A = save_minian(A.rename("A"), **minian_params.params_save_minian)
     C = save_minian(C.rename("C"), **minian_params.params_save_minian)
     AC = save_minian(AC.rename("AC"), **minian_params.params_save_minian)
@@ -81,7 +81,7 @@ def main(minian_params):
     f = save_minian(f.rename("f"), **minian_params.params_save_minian)
 
     # Save results to .doric file
-    print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+    utils.tprint(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
 
     # Get all operation parameters and dataset attributes
     data, driver, operation, series, sensor = minian_params.get_h5path_names()
@@ -134,7 +134,7 @@ def init_preview(minian_params):
     """
 
     # Start cluster
-    print(mn_defs.Messages.START_CLUSTER, flush=True)
+    utils.tprint(mn_defs.Messages.START_CLUSTER, flush=True)
     cluster = LocalCluster(**minian_params.params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
@@ -212,7 +212,7 @@ def penalties_preview(minian_params):
     # It's in the "[TmpDir]/Intermediate", e.g. Y_hw_chk, Y_fm_chk
 
     # Start cluster
-    print(mn_defs.Messages.START_CLUSTER, flush=True)
+    utils.tprint(mn_defs.Messages.START_CLUSTER, flush=True)
     cluster = LocalCluster(**minian_params.params_LocalCluster)
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
@@ -320,7 +320,7 @@ def penalties_preview(minian_params):
 
 def load_chunk(intpath, minian_params):
 
-    print(mn_defs.Messages.LOAD_DATA, flush=True)
+    utils.tprint(mn_defs.Messages.LOAD_DATA, flush=True)
     varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
@@ -331,25 +331,25 @@ def load_chunk(intpath, minian_params):
 
 def preprocess(varr_ref, intpath, minian_params):
 
-    print(mn_defs.Messages.PREPROCESS, flush=True)
+    utils.tprint(mn_defs.Messages.PREPROCESS, flush=True)
 
     # 1. Glow removal
-    print(mn_defs.Messages.PREPROC_REMOVE_GLOW, flush=True)
+    utils.tprint(mn_defs.Messages.PREPROC_REMOVE_GLOW, flush=True)
     varr_min = varr_ref.min("frame").compute()
     varr_ref = varr_ref - varr_min
 
     # 2. Denoise
-    print(mn_defs.Messages.PREPROC_DENOISING, flush=True)
+    utils.tprint(mn_defs.Messages.PREPROC_DENOISING, flush=True)
     with except_type_error("denoise"):
         varr_ref = denoise(varr_ref, **minian_params.params_denoise)
 
     # 3. Background removal
-    print(mn_defs.Messages.PREPROC_REMOV_BACKG, flush=True)
+    utils.tprint(mn_defs.Messages.PREPROC_REMOV_BACKG, flush=True)
     with except_type_error("remove_background"):
         varr_ref = remove_background(varr_ref, **minian_params.params_remove_background)
 
     # Save
-    print(mn_defs.Messages.PREPROC_SAVE, flush=True)
+    utils.tprint(mn_defs.Messages.PREPROC_SAVE, flush=True)
     varr_ref = save_minian(varr_ref.rename("varr_ref"), intpath, overwrite=True)
 
     return varr_ref
@@ -358,18 +358,19 @@ def preprocess(varr_ref, intpath, minian_params):
 def correct_motion(varr_ref, intpath, chk, minian_params):
 
     if minian_params.params[defs.Parameters.danse.CORRECT_MOTION]:
-        print(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
+        utils.tprint(mn_defs.Messages.CORRECT_MOTION_ESTIM_SHIFT, flush=True)
         with except_type_error("estimate_motion"):
             motion = estimate_motion(varr_ref, **minian_params.params_estimate_motion)
 
         motion = save_minian(motion.rename("motion").chunk({"frame": chk["frame"]}), **minian_params.params_save_minian)
-        print(mn_defs.Messages.CORRECT_MOTION_APPLY_SHIFT, flush=True)
+
+        utils.tprint(mn_defs.Messages.CORRECT_MOTION_APPLY_SHIFT, flush=True)
         Y = apply_transform(varr_ref, motion, **minian_params.params_apply_transform)
 
     else:
         Y = varr_ref
 
-    print(mn_defs.Messages.PREP_DATA_INIT, flush=True)
+    utils.tprint(mn_defs.Messages.PREP_DATA_INIT, flush=True)
     Y_fm_chk = save_minian(Y.astype(float).rename("Y_fm_chk"), intpath, overwrite=True)
     Y_hw_chk = save_minian(Y_fm_chk.rename("Y_hw_chk"), intpath, overwrite=True,
                            chunks={"frame": -1, "height": chk["height"], "width": chk["width"]})
@@ -379,7 +380,7 @@ def correct_motion(varr_ref, intpath, chk, minian_params):
 
 def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, return_all_seeds = False):
 
-    print(mn_defs.Messages.INIT_SEEDS, flush=True)
+    utils.tprint(mn_defs.Messages.INIT_SEEDS, flush=True)
     with except_print_error_no_cells(mn_defs.Messages.INIT_SEEDS):
         # 1. Compute max projection
         max_proj = save_minian(Y_fm_chk.max("frame").rename("max_proj"), **minian_params.params_save_minian).compute()
@@ -389,17 +390,17 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, return_all_seeds = False
             seeds = seeds_init(Y_fm_chk, **minian_params.params_seeds_init)
 
         # 3. Peak-Noise-Ratio refine
-        print(mn_defs.Messages.INIT_SEEDS_PNR_REFI, flush=True)
+        utils.tprint(mn_defs.Messages.INIT_SEEDS_PNR_REFI, flush=True)
         with except_type_error("pnr_refine"):
             seeds, pnr, gmm = pnr_refine(Y_hw_chk, seeds, **minian_params.params_pnr_refine)
 
         # 4. Kolmogorov-Smirnov refine
-        print(mn_defs.Messages.INIT_SEEDS_KOLSM_REF, flush=True)
+        utils.tprint(mn_defs.Messages.INIT_SEEDS_KOLSM_REF, flush=True)
         with except_type_error("ks_refine"):
             seeds = ks_refine(Y_hw_chk, seeds, **minian_params.params_ks_refine)
 
         # 5. Merge seeds
-        print(mn_defs.Messages.INIT_SEEDS_MERG, flush=True)
+        utils.tprint(mn_defs.Messages.INIT_SEEDS_MERG, flush=True)
         seeds_final = seeds[seeds["mask_ks"] & seeds["mask_pnr"]].reset_index(drop=True)
         with except_type_error("seeds_merge"):
             seeds_final = seeds_merge(Y_hw_chk, max_proj, seeds_final, **minian_params.params_seeds_merge)
@@ -412,22 +413,22 @@ def initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, return_all_seeds = False
 
 def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_params):
 
-    print(mn_defs.Messages.INIT_COMP, flush=True)
+    utils.tprint(mn_defs.Messages.INIT_COMP, flush=True)
     with except_print_error_no_cells(mn_defs.Messages.INIT_COMP):
         # 1. Initialize spatial
-        print(mn_defs.Messages.INIT_COMP_SPATIAL, flush=True)
+        utils.tprint(mn_defs.Messages.INIT_COMP_SPATIAL, flush=True)
         with except_type_error("initA"):
             A_init = initA(Y_hw_chk, seeds_final[seeds_final["mask_mrg"]], **minian_params.params_initA)
         A_init = save_minian(A_init.rename("A_init"), intpath, overwrite=True)
 
         # 2. Initialize temporal
-        print(mn_defs.Messages.INIT_COMP_TEMP, flush=True)
+        utils.tprint(mn_defs.Messages.INIT_COMP_TEMP, flush=True)
         C_init = initC(Y_fm_chk, A_init)
         C_init = save_minian(C_init.rename("C_init"), intpath, overwrite=True,
                             chunks={"unit_id": 1, "frame": -1})
 
         # 3. Merge components
-        print(mn_defs.Messages.INIT_COMP_MERG, flush=True)
+        utils.tprint(mn_defs.Messages.INIT_COMP_MERG, flush=True)
         with except_type_error("unit_merge"):
             A, C = unit_merge(A_init, C_init, **minian_params.params_unit_merge)
 
@@ -437,7 +438,7 @@ def initialize_components(Y_hw_chk, Y_fm_chk, seeds_final, intpath, chk, minian_
                             chunks={"unit_id": -1, "frame": chk["frame"]})
 
         # 4. Initialize background
-        print(mn_defs.Messages.INIT_COMP_BACKG, flush=True)
+        utils.tprint(mn_defs.Messages.INIT_COMP_BACKG, flush=True)
         b, f = update_background(Y_fm_chk, A, C_chk)
         f = save_minian(f.rename("f"), intpath, overwrite=True)
         b = save_minian(b.rename("b"), intpath, overwrite=True)
@@ -449,14 +450,14 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params):
 
     with except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("1st")):
         # 1. Estimate spatial noise
-        print(mn_defs.Messages.CNMF_ESTIM_NOISE.format("1st"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_ESTIM_NOISE.format("1st"), flush=True)
         with except_type_error("get_noise_fft"):
             sn_spatial = get_noise_fft(Y_hw_chk, **minian_params.params_get_noise_fft)
 
         sn_spatial = save_minian(sn_spatial.rename("sn_spatial"), intpath, overwrite=True)
 
         # 2. First spatial update
-        print(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("1st"), flush=True)
         with except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_params.params_update_spatial)
 
@@ -464,7 +465,7 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params):
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
 
         # 3. Update background
-        print(mn_defs.Messages.CNMF_UPDAT_BACKG.format("1st"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_UPDAT_BACKG.format("1st"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -473,7 +474,7 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params):
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
 
         # 4. First temporal update
-        print(mn_defs.Messages.CNMF_UPDAT_TEMP.format("1st"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_UPDAT_TEMP.format("1st"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with except_type_error("update_temporal"):
@@ -487,12 +488,12 @@ def cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params):
         A = A.sel(unit_id=C.coords["unit_id"].values)
 
         # 5. Merge components
-        print(mn_defs.Messages.CNMF_MERG_COMP.format("1st"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_MERG_COMP.format("1st"), flush=True)
         with except_type_error("unit_merge"):
             A_mrg, C_mrg, [sig_mrg] = unit_merge(A, C, [C + b0 + c0], **minian_params.params_unit_merge)
 
         # Save
-        print(mn_defs.Messages.CNMF_SAVE_INTERMED.format("1st"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_SAVE_INTERMED.format("1st"), flush=True)
         A = save_minian(A_mrg.rename("A_mrg"), intpath, overwrite=True)
         C = save_minian(C_mrg.rename("C_mrg"), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_mrg_chk"), intpath, overwrite=True,
@@ -506,7 +507,7 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
 
     with except_print_error_no_cells(mn_defs.Messages.CNMF_IT.format("2nd")):
         # 1. Second spatial update
-        print(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_UPDAT_SPATIAL.format("2nd"), flush=True)
         with except_type_error("update_spatial"):
             A_new, mask, norm_fac = update_spatial(Y_hw_chk, A, C, sn_spatial, **minian_params.params_update_spatial)
 
@@ -514,7 +515,7 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
         C_chk_new = save_minian((C_chk.sel(unit_id=mask) * norm_fac).rename("C_chk_new"), intpath, overwrite=True)
 
         # 2. Second background update
-        print(mn_defs.Messages.CNMF_UPDAT_BACKG.format("2nd"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_UPDAT_BACKG.format("2nd"), flush=True)
         b_new, f_new = update_background(Y_fm_chk, A_new, C_chk_new)
         A = save_minian(A_new.rename("A"), intpath, overwrite=True, chunks={"unit_id": 1, "height": -1, "width": -1},)
         b = save_minian(b_new.rename("b"), intpath, overwrite=True)
@@ -523,14 +524,15 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
         C_chk = save_minian(C_chk_new.rename("C_chk"), intpath, overwrite=True)
 
         # 3. Second temporal update
-        print(mn_defs.Messages.CNMF_UPDAT_TEMP.format("2nd"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_UPDAT_TEMP.format("2nd"), flush=True)
         YrA = save_minian(compute_trace(Y_fm_chk, A, b, C_chk, f).rename("YrA"), intpath, overwrite=True,
                         chunks={"unit_id": 1, "frame": -1})
         with except_type_error("update_temporal"):
+            minian_params.params_update_temporal["jac_thres"] *= 2
             C_new, S_new, b0_new, c0_new, g, mask = update_temporal(A, C, YrA=YrA, **minian_params.params_update_temporal)
 
         # Save
-        print(mn_defs.Messages.CNMF_SAVE_INTERMED.format("2nd"), flush=True)
+        utils.tprint(mn_defs.Messages.CNMF_SAVE_INTERMED.format("2nd"), flush=True)
         C = save_minian(C_new.rename("C").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
         C_chk = save_minian(C.rename("C_chk"), intpath, overwrite=True, chunks={"unit_id": -1, "frame": chk["frame"]})
         S = save_minian(S_new.rename("S").chunk({"unit_id": 1, "frame": -1}), intpath, overwrite=True)
@@ -624,7 +626,7 @@ def cross_register(AC, A, minian_params):
     if not minian_params.params_cross_reg:
         return A
 
-    print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
+    utils.tprint(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
 
     # Load AC componenets from the reference file
     ref_filepath = minian_params.params_cross_reg["fname"]
@@ -795,7 +797,7 @@ def save_minian_to_doric(
 
     res = Y - AC # residual images
 
-    print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
+    utils.tprint(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
     ids           = A.coords["unit_id"].values
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
@@ -807,7 +809,7 @@ def save_minian_to_doric(
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
-        print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
+        utils.tprint(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
         rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
@@ -820,7 +822,7 @@ def save_minian_to_doric(
         utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
 
         if saveimages:
-            print(mn_defs.Messages.SAVE_IMAGES, flush=True)
+            utils.tprint(mn_defs.Messages.SAVE_IMAGES, flush=True)
             images_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.IMAGES+operationCount}"
             images_datapath  = f"{images_grouppath}/{vdataset}"
             utils.save_images(AC.values, time_, f, images_datapath, bit_count=bit_count, qt_format=qt_format, username=username)
@@ -828,7 +830,7 @@ def save_minian_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source, params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Images)"), f, images_grouppath)
 
         if saveresiduals:
-            print(mn_defs.Messages.SAVE_RES_IMAGES, flush=True)
+            utils.tprint(mn_defs.Messages.SAVE_RES_IMAGES, flush=True)
             residuals_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.RESIDUALS+operationCount}"
             residuals_datapath  = f"{residuals_grouppath}/{vdataset}"
             utils.save_images(res.values, time_, f, residuals_datapath, bit_count=bit_count, qt_format=qt_format, username=username)
@@ -836,7 +838,7 @@ def save_minian_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source,  params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] + "(Residuals)"), f, residuals_grouppath)
 
         if savespikes:
-            print(mn_defs.Messages.SAVE_SPIKES, flush=True)
+            utils.tprint(mn_defs.Messages.SAVE_SPIKES, flush=True)
             spikes_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
             attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
@@ -847,7 +849,7 @@ def save_minian_to_doric(
             utils.print_group_path_for_DANSE(spikes_datapath)
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
-    print(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
+    utils.tprint(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
 @contextmanager
