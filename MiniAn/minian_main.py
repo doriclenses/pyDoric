@@ -235,10 +235,6 @@ def penalties_preview(minian_params):
             "mask_mrg": [k in mask_mrg for k in np.arange(seed_count)]
         })
 
-        if (seed_count > 500):
-            utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
-            sys.exit()
-
         time_ = np.array(hdf5_file[f"{mn_defs.Preview.Group.NOISE_FREQ}/{defs.DoricFile.Dataset.TIME}"])
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
