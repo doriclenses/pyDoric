@@ -79,8 +79,6 @@ jobs:
           echo Date: %DATE% %TIME%>> "%APPDIR%\build-info.txt"
 
           set "ZIPNAME=deeplabcut-%VERSION%.zip"
-
-          rem One-line Python (no backslashes/newlines)
           ..\venv\Scripts\python -c "import os,zipfile; a=r'%APPDIR%'; zf=r'%ZIPNAME%'; assert os.path.isdir(a), 'no APPDIR: '+a; z=zipfile.ZipFile(zf,'w',zipfile.ZIP_DEFLATED); [z.write(os.path.join(r,f), os.path.relpath(os.path.join(r,f),a)) for r,_,fs in os.walk(a) for f in fs]; z.close()"
           echo Created zip: %ZIPNAME%
 
@@ -116,12 +114,10 @@ jobs:
           set "ZIP=deeplabcut-%VERSION%.zip"
           if not exist "%ZIP%" (
             echo ERROR: zip not found
-            exit /b 1
           )
           set "DEST=%SHARE_DIR%"
           if not exist "%DEST%" (
-            echo Creating %DEST%
-            mkdir "%DEST%"
+            echo ERROR: destination share not found: %DEST%
           )
           copy /Y "%ZIP%" "%DEST%\"
           echo Copied %ZIP% to %DEST%
