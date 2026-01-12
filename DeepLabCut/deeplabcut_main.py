@@ -38,6 +38,8 @@ def create_project(params: dict):
 
     deeplabcut.auxiliaryfunctions.edit_config(config_filepath, {defs.ConfigKeys.BODY_PARTS: bodypart_names})
 
+    print("This is a test", flush=True)
+
     utils.print_to_intercept(defs.MessageTags.PROJECT_PATH + os.path.dirname(config_filepath))
 
 
