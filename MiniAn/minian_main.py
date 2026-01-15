@@ -159,7 +159,7 @@ def init_preview(minian_params):
    
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
-    if (len(seeds) > 500):
+    if (len(seeds[seeds["mask_mrg"]]) > 1000):
         utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
 
     example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
