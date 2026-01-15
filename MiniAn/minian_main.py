@@ -56,9 +56,8 @@ def main(minian_params):
 
     seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params)
 
-    if (len(seeds) > 500):
-        utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
-        sys.exit()
+    if (len(seeds[seeds["mask_mrg"]]) > 1000):
+        print(mn_defs.Messages.TOO_MANY_SEEDS, flush = True)
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
