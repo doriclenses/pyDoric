@@ -832,6 +832,7 @@ def save_minian_to_doric(
 
         if savespikes:
             print(mn_defs.Messages.SAVE_SPIKES, flush=True)
+            S.values = np.where(S.values == 0, S, C.values)
             spikes_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
             attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
