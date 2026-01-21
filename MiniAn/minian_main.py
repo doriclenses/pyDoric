@@ -287,6 +287,8 @@ def penalties_preview(minian_params):
     cur_C, cur_S, cur_b0, cur_c0, cur_g, cur_mask = update_temporal(A_sub, C_sub, YrA=YrA, **minian_params.params_update_temporal)
     sig = (cur_C + cur_b0 + cur_c0).compute()
 
+    cur_S.values = np.where(cur_S.values == 0, cur_S, cur_C.values)
+
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
         if mn_defs.Preview.Group.TEMPORAL_PENALTY in h5file:
             del h5file[mn_defs.Preview.Group.TEMPORAL_PENALTY]
