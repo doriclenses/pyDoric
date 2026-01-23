@@ -56,9 +56,8 @@ def main(minian_params):
 
     seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params)
 
-    if (len(seeds) > 500):
-        utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
-        sys.exit()
+    if (seeds["mask_mrg"].sum() > 1000):
+        print(mn_defs.Messages.TOO_MANY_SEEDS, flush = True)
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
@@ -160,7 +159,7 @@ def init_preview(minian_params):
    
     seeds, max_proj = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params, True)
 
-    if (len(seeds) > 500):
+    if (seeds["mask_mrg"].sum() > 1000):
         utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
 
     example_trace = Y_hw_chk.sel(height=seeds["height"].to_xarray(),
@@ -238,10 +237,6 @@ def penalties_preview(minian_params):
             "mask_mrg": [k in mask_mrg for k in np.arange(seed_count)]
         })
 
-        if (seed_count > 500):
-            utils.print_error_to_intercept(mn_defs.Messages.TOO_MANY_SEEDS)
-            sys.exit()
-
         time_ = np.array(hdf5_file[f"{mn_defs.Preview.Group.NOISE_FREQ}/{defs.DoricFile.Dataset.TIME}"])
 
     A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
@@ -291,6 +286,8 @@ def penalties_preview(minian_params):
 
     cur_C, cur_S, cur_b0, cur_c0, cur_g, cur_mask = update_temporal(A_sub, C_sub, YrA=YrA, **minian_params.params_update_temporal)
     sig = (cur_C + cur_b0 + cur_c0).compute()
+
+    cur_S.values = np.where(cur_S.values == 0, cur_S, cur_C.values)
 
     with h5py.File(minian_params.preview_params[defs.Parameters.Preview.FILEPATH], 'a') as h5file:
         if mn_defs.Preview.Group.TEMPORAL_PENALTY in h5file:
@@ -837,6 +834,7 @@ def save_minian_to_doric(
 
         if savespikes:
             print(mn_defs.Messages.SAVE_SPIKES, flush=True)
+            S.values = np.where(S.values == 0, S, C.values)
             spikes_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.SPIKES+operationCount}"
             spikes_datapath  = f"{spikes_grouppath}/{vdataset}"
             attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
