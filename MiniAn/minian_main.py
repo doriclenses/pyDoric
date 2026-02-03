@@ -626,7 +626,7 @@ def cross_register(AC, A, minian_params):
     # Load AC componenets from the reference file
     ref_filepath = minian_params.params_cross_reg["fname"]
     ref_images   = minian_params.params_cross_reg["h5path_images"]
-    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, ref_images, np.float64, None, "subset", None)
+    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, ref_images, minian_params.params_load_doric["range"], np.float64, None, "subset", None)
 
     # Concatenate max proj of both results
     AC_ref_max = AC_ref.max("frame")
