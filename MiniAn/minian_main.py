@@ -93,6 +93,9 @@ def main(minian_params):
     time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
     time_ = np.array(file_[time_path])
 
+    temporalDownSample = minian_params.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE]
+    time_ = time_[::temporalDownSample] if temporalDownSample > 1 else time_
+
     file_.close()
 
     save_minian_to_doric(
