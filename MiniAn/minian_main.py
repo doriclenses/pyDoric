@@ -94,7 +94,8 @@ def main(minian_params):
     time_ = np.array(file_[time_path])
 
     temporalDownSample = minian_params.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE]
-    time_ = time_[::temporalDownSample] if temporalDownSample > 1 else time_
+    if temporalDownSample > 1:
+        time_ = time_[::temporalDownSample]
 
     file_.close()
 
