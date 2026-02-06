@@ -147,7 +147,7 @@ class MinianParameters:
         if self.params.get(defs.Parameters.danse.CROSS_REG, False):
             self.params_cross_reg = {
                 "fname"         : self.params[defs.Parameters.danse.REF_FILEPATH],
-                "h5path_images" : self.params[defs.Parameters.danse.REF_IMAGES_PATH],
+                "h5path_images" : self.params[defs.Parameters.danse.REF_IMAGES_DATASET_PATH],
                 "h5path_roi"    : self.params[defs.Parameters.danse.REF_ROIS_PATH],
                 "param_dist"    : neuron_diameter[0]
             }
