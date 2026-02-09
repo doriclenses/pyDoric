@@ -101,8 +101,8 @@ class Parameters:
         PNR_THRESHOLD            = "PNRThreshold"
         CROSS_REG                = "CrossReg"
         REF_FILEPATH             = "ReferenceFilepath"
-        REF_IMAGES_DATASET_PATH  = "ReferenceImagesPath"
-        REF_ROIS_PATH            = "ReferenceROIsPath"
+        REF_IMAGES_DATAPATH      = "ReferenceImagesDatapath"
+        REF_ROIS_GROUP_PATH      = "ReferenceROIsGroupPath"
 
     class Preview:
 
