@@ -102,7 +102,8 @@ class Parameters:
         CROSS_REG                = "CrossReg"
         REF_FILEPATH             = "ReferenceFilepath"
         REF_IMAGES_DATAPATH      = "ReferenceImagesDatapath"
-        REF_ROIS_GROUP_PATH      = "ReferenceROIsGroupPath"
+        REF_ROIS_GROUP_PATH      = "ReferenceROIsGroupPath" 
+        CROSS_REG_REF            = "CrossRegReference"
 
     class Preview:
 
