@@ -48,72 +48,78 @@ def main(minian_params):
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
-    file_, chk, varr_ref = load_chunk(intpath, minian_params)
+    for idx in range(len(minian_params.params_load_doric["h5paths"])):
+        
+        file_, chk, varr_ref = load_chunk(intpath, minian_params, idx)
 
-    varr_ref = preprocess(varr_ref, intpath, minian_params)
+        varr_ref = preprocess(varr_ref, intpath, minian_params)
 
-    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
+        Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
 
-    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params)
+        seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params)
 
-    if (seeds["mask_mrg"].sum() > 1000):
-        print(mn_defs.Messages.TOO_MANY_SEEDS, flush = True)
+        if (seeds["mask_mrg"].sum() > 1000):
+            print(mn_defs.Messages.TOO_MANY_SEEDS, flush = True)
 
-    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
+        A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
-    A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params)
+        A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params)
 
-    A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_params)
+        A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_params)
 
-    # Cross registration
-    A = cross_register(AC, A, minian_params)
+        # Cross registration
+        A = cross_register(AC, A, minian_params, idx)
 
-    # Save final MiniAn results
-    print(mn_defs.Messages.SAVING_FINAL, flush=True)
-    A = save_minian(A.rename("A"), **minian_params.params_save_minian)
-    C = save_minian(C.rename("C"), **minian_params.params_save_minian)
-    AC = save_minian(AC.rename("AC"), **minian_params.params_save_minian)
-    S = save_minian(S.rename("S"), **minian_params.params_save_minian)
-    c0 = save_minian(c0.rename("c0"), **minian_params.params_save_minian)
-    b0 = save_minian(b0.rename("b0"), **minian_params.params_save_minian)
-    b = save_minian(b.rename("b"), **minian_params.params_save_minian)
-    f = save_minian(f.rename("f"), **minian_params.params_save_minian)
+        # Save final MiniAn results
+        print(mn_defs.Messages.SAVING_FINAL, flush=True)
+        A = save_minian(A.rename("A"), **minian_params.params_save_minian)
+        C = save_minian(C.rename("C"), **minian_params.params_save_minian)
+        AC = save_minian(AC.rename("AC"), **minian_params.params_save_minian)
+        S = save_minian(S.rename("S"), **minian_params.params_save_minian)
+        c0 = save_minian(c0.rename("c0"), **minian_params.params_save_minian)
+        b0 = save_minian(b0.rename("b0"), **minian_params.params_save_minian)
+        b = save_minian(b.rename("b"), **minian_params.params_save_minian)
+        f = save_minian(f.rename("f"), **minian_params.params_save_minian)
 
-    # Save results to .doric file
-    print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+        # Save results to .doric file
+        print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
 
-    # Get all operation parameters and dataset attributes
-    data, driver, operation, series, sensor = minian_params.get_h5path_names()
-    params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    attrs = utils.load_attributes(file_, minian_params.paths[defs.Parameters.Path.H5PATH])
+        # Get all operation parameters and dataset attributes
+        data, driver, operation, series, sensor = minian_params.get_h5path_names(index = idx)
+        params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
+        attrs = utils.load_attributes(file_, minian_params.paths[defs.Parameters.Path.H5PATHS][idx])
 
-    if minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
-        minian_params.params[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
-    
-    time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
-    time_ = np.array(file_[time_path])
+        if minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
+            minian_params.params[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+        
+        time_path = minian_params.paths[defs.Parameters.Path.H5PATHS][idx].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+        time_ = np.array(file_[time_path])
 
-    temporalDownSample = minian_params.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE]
-    if temporalDownSample > 1:
-        time_ = time_[::temporalDownSample]
+        temporalDownSample = minian_params.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE]
+        if temporalDownSample > 1:
+            time_ = time_[::temporalDownSample]
 
-    file_.close()
+        file_.close()
 
-    save_minian_to_doric(
-        Y, A, C, AC, S,
-        time_ = time_,
-        bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
-        qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
-        username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-        vname = minian_params.paths[defs.Parameters.Path.FILEPATH],
-        vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
-        vdataset = f"{series}/{sensor}",
-        params_doric = minian_params.params,
-        params_source = params_source_data,
-        saveimages = True,
-        saveresiduals = True,
-        savespikes = True
-    )
+        imagePath, roiPath =  save_minian_to_doric(
+                                Y, A, C, AC, S,
+                                time_ = time_,
+                                bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
+                                qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
+                                username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
+                                vname = minian_params.paths[defs.Parameters.Path.FILEPATH],
+                                vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                                vdataset = f"{series}/{sensor}",
+                                params_doric = minian_params.params,
+                                params_source = params_source_data,
+                                saveimages = True,
+                                saveresiduals = True,
+                                savespikes = True
+                                )
+        
+        if (minian_params.params_cross_reg["crossRegRef"] == "Sequential"):
+            minian_params.params_cross_reg["h5path_images"] = imagePath
+            minian_params.params_cross_reg["h5path_roi"]    = roiPath
 
     # Close cluster
     client.close()
