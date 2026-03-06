@@ -325,10 +325,10 @@ def penalties_preview(minian_params):
     return 0
 
 
-def load_chunk(intpath, minian_params):
+def load_chunk(intpath, minian_params, idx = 0):
 
     print(mn_defs.Messages.LOAD_DATA, flush=True)
-    varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric)
+    varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric, index = idx)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
@@ -558,13 +558,14 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
 
 def load_doric_to_xarray(
     fname: str,
-    h5path: str,
+    h5paths: list, #str
     range: dict,
     dtype: type = np.float64,
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
     post_process: Optional[Callable] = None,
-    close_file: bool = False
+    close_file: bool = False,
+    index: int = 0,
 ):
 
     """
@@ -573,7 +574,7 @@ def load_doric_to_xarray(
 
     file_ = h5py.File(fname, 'r')
 
-    h5path = utils.clean_path(h5path)
+    h5path = utils.clean_path(h5paths[index])
     
     file_image_stack = file_[h5path]
 
@@ -626,9 +627,12 @@ def load_doric_to_xarray(
     return varr, file_
 
 
-def cross_register(AC, A, minian_params):
+def cross_register(AC, A, minian_params, idx):
 
     if not minian_params.params_cross_reg:
+        return A
+
+    if (minian_params.params_cross_reg["crossRegRef"] == "Sequential" and  idx == 0):
         return A
 
     print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
@@ -637,7 +641,7 @@ def cross_register(AC, A, minian_params):
     ref_filepath = minian_params.params_cross_reg["fname"]
     ref_images   = minian_params.params_cross_reg["h5path_images"]
     ref_range    = minian_params.params_load_doric["range"]
-    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, ref_images, ref_range)
+    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, [ref_images], ref_range)
 
     # Concatenate max proj of both results
     AC_ref_max = AC_ref.max("frame")
@@ -681,8 +685,12 @@ def cross_register(AC, A, minian_params):
     dist_ft = group_by_session(dist_ft)
 
     # Generate mappings for ids of the current and reference sessions
-    mappings = calculate_mapping(dist_ft)
-    mappings_meta = resolve_mapping(mappings)
+    if not dist_ft.empty:
+        mappings = calculate_mapping(dist_ft)
+        mappings_meta = resolve_mapping(mappings)
+    else:
+        mappings_meta = pd.DataFrame()
+    
     mappings_meta_fill = fill_mapping(mappings_meta, cents)
 
     # Update unit ids of the current spatial componenets A
@@ -857,6 +865,9 @@ def save_minian_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
     print(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
+
+    images_datapath = f"{images_datapath}/{defs.DoricFile.Dataset.IMAGE_STACK}"
+    return images_datapath, rois_datapath
 
 
 @contextmanager
