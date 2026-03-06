@@ -26,14 +26,14 @@ class MinianParameters:
         self.params                   = danse_params.get(defs.Parameters.Main.PARAMETERS, {})
         self.preview_params           = danse_params.get(defs.Parameters.Main.PREVIEW, {})
 
-        self.paths[defs.Parameters.Path.H5PATH] = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH][0])
+        self.paths[defs.Parameters.Path.H5PATHS] = [utils.clean_path(p) for p in self.paths[defs.Parameters.Path.H5PATHS]]
 
         os.environ["OMP_NUM_THREADS"]       = "1"
         os.environ["MKL_NUM_THREADS"]       = "1"
         os.environ["OPENBLAS_NUM_THREADS"]  = "1"
         os.environ["MINIAN_INTERMEDIATE"]   = os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
-        time_path = self.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+        time_path = self.paths[defs.Parameters.Path.H5PATHS][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
         self.freq = utils.get_frequency(self.paths[defs.Parameters.Path.FILEPATH], time_path)
 
         neuron_diameter = np.array([self.params[defs.Parameters.danse.NEURO_DIAM_MIN], self.params[defs.Parameters.danse.NEURO_DIAM_MAX]])
@@ -54,7 +54,7 @@ class MinianParameters:
 
         self.params_load_doric = {
             "fname": self.paths[defs.Parameters.Path.FILEPATH],
-            "h5path": self.paths[defs.Parameters.Path.H5PATH],
+            "h5paths": self.paths[defs.Parameters.Path.H5PATHS],
             "dtype": np.uint8,
             "downsample": {"frame": self.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE] if not self.preview_params else self.preview_params[defs.Parameters.Preview.TEMPORAL_DOWNSAMPLE],
                             "height": self.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE],
@@ -149,7 +149,8 @@ class MinianParameters:
                 "fname"         : self.params[defs.Parameters.danse.REF_FILEPATH],
                 "h5path_images" : self.params[defs.Parameters.danse.REF_IMAGES_DATAPATH],
                 "h5path_roi"    : self.params[defs.Parameters.danse.REF_ROIS_GROUP_PATH],
-                "param_dist"    : neuron_diameter[0]
+                "param_dist"    : neuron_diameter[0],
+                "crossRegRef"   : self.params[defs.Parameters.danse.CROSS_REG_REF]
             }
 
         # Remove advanced_sesttings function keys that are not in the minian functions list
@@ -295,13 +296,13 @@ class MinianParameters:
         return [all_params, advanced_params]
 
 
-    def get_h5path_names(self):
+    def get_h5path_names(self, index = 0):
 
         """
         Split the path to dataset into relevant names
         """
 
-        h5path_names = utils.clean_path(self.paths[defs.Parameters.Path.H5PATH]).split('/')
+        h5path_names = utils.clean_path(self.paths[defs.Parameters.Path.H5PATHS][index]).split('/')
 
         data      = h5path_names[0]
         driver    = h5path_names[1]
