@@ -637,6 +637,7 @@ def cross_register(AC, A, minian_params, idx):
 
     print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
 
+    # Prepare reference and current activity images (AC) for cross-registration.
     # Load AC componenets from the reference file
     ref_filepath = minian_params.params_cross_reg["fname"]
     ref_images   = minian_params.params_cross_reg["h5path_images"]
@@ -662,12 +663,7 @@ def cross_register(AC, A, minian_params, idx):
     # Concatenate max proj of references and current session
     AC_max_concat = xr.concat([AC_ref_max_concat, AC_max], dim="session")
 
-    # Estimate a translational shift along the session dimension using the max projection for each dataset.
-    # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
-    shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
-    temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
-    shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
-
+    # Prepare reference and current ROI footprints (A) for cross-registration.
     # Load A componenets from the reference file
     ref_rois_paths  = minian_params.params_cross_reg["h5path_roi"]
     A_ref_list = []
@@ -683,6 +679,12 @@ def cross_register(AC, A, minian_params, idx):
 
     A_concat = xr.concat([A_ref_concat, A],
                               pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"))
+
+    # Estimate a translational shift along the session dimension using the max projection for each dataset.
+    # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
+    shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
+    temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
+    shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
 
     file_ref.close()
 
