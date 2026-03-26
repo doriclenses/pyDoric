@@ -293,7 +293,7 @@ def footprint_to_coords(
     footprint: np.ndarray
     ) -> np.ndarray:
 
-    _, mask = cv2.threshold(footprint, 0, 255, 0)
+    _, mask = cv2.threshold(footprint, 0, 255, cv2.THRESH_BINARY)
     contours, _ = cv2.findContours(mask.astype("uint8"), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     maxI = 0

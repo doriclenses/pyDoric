@@ -118,8 +118,8 @@ def main(minian_params):
                                 )
         
         if (minian_params.params_cross_reg["crossRegRef"] == "Sequential"):
-            minian_params.params_cross_reg["h5path_images"] = imagePath
-            minian_params.params_cross_reg["h5path_roi"]    = roiPath
+            minian_params.params_cross_reg["h5path_images"].append(imagePath)
+            minian_params.params_cross_reg["h5path_roi"].append(roiPath)
 
     # Close cluster
     client.close()
@@ -565,7 +565,7 @@ def load_doric_to_xarray(
     downsample_strategy="subset",
     post_process: Optional[Callable] = None,
     close_file: bool = False,
-    index: int = 0,
+    index: int = 0
 ):
 
     """
@@ -641,12 +641,26 @@ def cross_register(AC, A, minian_params, idx):
     ref_filepath = minian_params.params_cross_reg["fname"]
     ref_images   = minian_params.params_cross_reg["h5path_images"]
     ref_range    = minian_params.params_load_doric["range"]
-    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, [ref_images], ref_range)
 
-    # Concatenate max proj of both results
-    AC_ref_max = AC_ref.max("frame")
-    AC_max  = AC.max("frame")
-    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["reference", "current"], name = "session"))
+    AC_ref_list = []
+
+    for img_path in ref_images:
+        AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, [img_path], ref_range)
+        AC_ref_list.append(AC_ref_i)
+
+    # Max projection for each reference dataset
+    AC_ref_max = [AC_ref.max("frame") for AC_ref in AC_ref_list]
+
+    # Concatenate all reference max projections into one xarray
+    AC_ref_max_concat = xr.concat(AC_ref_max,
+                                  pd.Index([f"reference_{i}" for i in range(len(AC_ref_max))], name="session"))
+    
+    AC_max = AC.max("frame") 
+    AC_max = AC_max.expand_dims(session=1)
+    AC_max = AC_max.assign_coords(session=["current"])
+
+    # Concatenate max proj of references and current session
+    AC_max_concat = xr.concat([AC_ref_max_concat, AC_max], dim="session")
 
     # Estimate a translational shift along the session dimension using the max projection for each dataset.
     # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
@@ -655,9 +669,21 @@ def cross_register(AC, A, minian_params, idx):
     shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
 
     # Load A componenets from the reference file
-    ref_rois_path  = minian_params.params_cross_reg["h5path_roi"]
-    A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
-    A_concat = xr.concat([A_ref, A], pd.Index(["reference", "current"], name="session"))
+    ref_rois_paths  = minian_params.params_cross_reg["h5path_roi"]
+    A_ref_list = []
+    for idx, rois_path in enumerate(ref_rois_paths):
+        A_ref_i = get_footprints(ref_filepath, rois_path, AC_ref_list[idx].coords)
+        A_ref_list.append(A_ref_i)
+
+    A_ref_concat = xr.concat(A_ref_list,
+                                  pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"))
+
+    A = A.expand_dims(session=1)
+    A = A.assign_coords(session=["current"])
+
+    A_concat = xr.concat([A_ref_concat, A],
+                              pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"))
+
     file_ref.close()
 
     # Apply shifts to spatial footprints of each session
@@ -680,7 +706,6 @@ def cross_register(AC, A, minian_params, idx):
 
     # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
     param_dist = minian_params.params_cross_reg["param_dist"]
-
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 
@@ -690,29 +715,56 @@ def cross_register(AC, A, minian_params, idx):
         mappings_meta = resolve_mapping(mappings)
     else:
         mappings_meta = pd.DataFrame()
-    
+
     mappings_meta_fill = fill_mapping(mappings_meta, cents)
 
     # Update unit ids of the current spatial componenets A
     ids        = list(A["unit_id"].values)
-    new_ids    = [0]*len(ids)
-    ref_id_max = int(A_ref.coords["unit_id"].values.max()) + 1
+    new_ids    = [None] * len(ids)
 
+    ref_id_max = int(A_ref_concat.coords["unit_id"].values.max()) + 1
+
+    reference_sessions = list(A_ref_concat.session.values)
     for i in range(len(mappings_meta_fill)):
-        # Matching ids between the sessions
-        group = mappings_meta_fill.iloc[i]["group"][0]
-        if "current" in group and "reference" in group:
-            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
-            new_ids[index] = int(mappings_meta_fill.iloc[i]["session"]["reference"])
-        # Unique ids for the current session
-        elif "current" in group:
-            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
+        # Matching ids between the current session and any reference session.
+        row = mappings_meta_fill.iloc[i]
+        group = row["group"][0]
+
+        if "current" not in group:
+            continue
+
+        current_id = row["session"].get("current")
+        if pd.isna(current_id):
+            continue
+
+        index = ids.index(current_id)
+
+        matched_reference_id = None
+        for reference_session in reference_sessions:
+            if reference_session not in group:
+                continue
+
+            reference_id = row["session"].get(reference_session)
+            if pd.notna(reference_id):
+                matched_reference_id = int(reference_id)
+                break
+
+        if matched_reference_id is not None:
+            new_ids[index] = matched_reference_id
+        else:
+            # Unique ids for the current session.
             new_ids[index] = ref_id_max
+            ref_id_max += 1
+
+    # Any current ROI left untouched by the mapping rows still needs a valid ID.
+    for i, unit_id in enumerate(new_ids):
+        if unit_id is None:
+            new_ids[i] = ref_id_max
             ref_id_max += 1
 
     A["unit_id"] = new_ids
 
-    return A
+    return A[0, :, :, :]
 
 
 def get_footprints(filename, rois_h5path, dims):
@@ -827,6 +879,7 @@ def save_minian_to_doric(
         rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+
         utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
                                 ids            = list(ids),
                                 dataset_names  = dataset_names,

@@ -65,7 +65,7 @@ class MinianParameters:
 
         self.params_save_minian = {
             "dpath": os.path.join(self.paths[defs.Parameters.Path.TMP_DIR], "final"),
-            "meta_dict": {"session": -1, "animal": -2},
+            "meta_dict": {"animal": -2}, #"meta_dict": {"session": -1, "animal": -2},
             "overwrite": True,
         }
 
@@ -147,8 +147,8 @@ class MinianParameters:
         if self.params.get(defs.Parameters.danse.CROSS_REG, False):
             self.params_cross_reg = {
                 "fname"         : self.params[defs.Parameters.danse.REF_FILEPATH],
-                "h5path_images" : self.params[defs.Parameters.danse.REF_IMAGES_DATAPATH],
-                "h5path_roi"    : self.params[defs.Parameters.danse.REF_ROIS_GROUP_PATH],
+                "h5path_images" : self.params.get(defs.Parameters.danse.REF_IMAGES_DATAPATH, []),
+                "h5path_roi"    : self.params.get(defs.Parameters.danse.REF_ROIS_GROUP_PATH, []),
                 "param_dist"    : neuron_diameter[0],
                 "crossRegRef"   : self.params[defs.Parameters.danse.CROSS_REG_REF]
             }
