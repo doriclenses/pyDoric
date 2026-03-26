@@ -696,20 +696,32 @@ def cross_register(AC, A, minian_params, idx):
     window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]],
                             output_core_dims=[["height", "width"]], vectorize=True)
 
+    cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(
+        A_shifted,
+        window,
+        minian_params.params_cross_reg["param_dist"],
+    )
+
+    A = assign_current_session_ids(A, A_ref_concat, mappings_meta_fill)
+
+    return A[0, :, :, :]
+
+
+def build_mapping(A_shifted, window, param_dist):
+
     # Calculate centroids of spatial footprints for cells inside a window.
     cents = calculate_centroids(A_shifted, window)
 
     # Calculate pairwise distance between cells in all pairs of sessions.
     # Note that at this stage, since we are computing something along the session dimension,
-    # it is no longer considered as a metadata dimension, so we remove it
+    # it is no longer considered as a metadata dimension, so we remove it.
     dist = calculate_centroid_distance(cents, "session", [])
 
-    # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
-    param_dist = minian_params.params_cross_reg["param_dist"]
+    # Keep only cell pairs with centroid distance below the matching threshold.
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 
-    # Generate mappings for ids of the current and reference sessions
+    # Generate mappings for ids of the current and reference sessions.
     if not dist_ft.empty:
         mappings = calculate_mapping(dist_ft)
         mappings_meta = resolve_mapping(mappings)
@@ -718,12 +730,10 @@ def cross_register(AC, A, minian_params, idx):
 
     mappings_meta_fill = fill_mapping(mappings_meta, cents)
 
-    A = update_current_session_ids(A, A_ref_concat, mappings_meta_fill)
-
-    return A[0, :, :, :]
+    return cents, dist_ft, mappings_meta, mappings_meta_fill
 
 
-def update_current_session_ids(A, A_ref_concat, mappings_meta_fill):
+def assign_current_session_ids(A, A_ref_concat, mappings_meta_fill):
 
     # Updates unit ids of the current spatial components A
     ids        = list(A["unit_id"].values)
