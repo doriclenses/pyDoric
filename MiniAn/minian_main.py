@@ -718,13 +718,20 @@ def cross_register(AC, A, minian_params, idx):
 
     mappings_meta_fill = fill_mapping(mappings_meta, cents)
 
-    # Update unit ids of the current spatial componenets A
+    A = update_current_session_ids(A, A_ref_concat, mappings_meta_fill)
+
+    return A[0, :, :, :]
+
+
+def update_current_session_ids(A, A_ref_concat, mappings_meta_fill):
+
+    # Updates unit ids of the current spatial components A
     ids        = list(A["unit_id"].values)
     new_ids    = [None] * len(ids)
 
     ref_id_max = int(A_ref_concat.coords["unit_id"].values.max()) + 1
-
     reference_sessions = list(A_ref_concat.session.values)
+
     for i in range(len(mappings_meta_fill)):
         # Matching ids between the current session and any reference session.
         row = mappings_meta_fill.iloc[i]
@@ -764,7 +771,7 @@ def cross_register(AC, A, minian_params, idx):
 
     A["unit_id"] = new_ids
 
-    return A[0, :, :, :]
+    return A
 
 
 def get_footprints(filename, rois_h5path, dims):
