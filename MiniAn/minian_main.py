@@ -563,7 +563,6 @@ def load_doric_to_xarray(
     dtype: type = np.float64,
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
-    post_process: Optional[Callable] = None,
     close_file: bool = False,
     index: int = 0
 ):
@@ -607,9 +606,6 @@ def load_doric_to_xarray(
         else:
             raise NotImplementedError(mn_defs.Messages.UNREC_DOWNSAMPLING_STRAT)
     varr = varr.rename("fluorescence")
-
-    if post_process:
-        varr = post_process(varr, vpath, vlist, varr_list)
 
     arr_opt = fct.partial(custom_arr_optimize, keep_patterns=["^load_avi_ffmpeg"])
 
