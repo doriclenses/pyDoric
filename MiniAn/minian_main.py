@@ -158,7 +158,7 @@ def init_preview(minian_params):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
 
-    time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+    time_path = minian_params.paths[defs.Parameters.Path.H5PATHS][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
     time_ = np.array(file_[time_path])
 
     selected_range = minian_params.params_load_doric["range"]["frame"]
