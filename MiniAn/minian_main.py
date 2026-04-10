@@ -116,10 +116,10 @@ def main(minian_params):
                                 saveresiduals = True,
                                 savespikes = True
                                 )
-        
-        if (minian_params.params_cross_reg["crossRegRef"] == "Sequential"):
-            minian_params.params_cross_reg["h5path_images"].append(imagePath)
-            minian_params.params_cross_reg["h5path_roi"].append(roiPath)
+        if (minian_params.params_cross_reg):
+            if (minian_params.params_cross_reg["crossRegRef"] == "Sequential"):
+                minian_params.params_cross_reg["h5path_images"].append(imagePath)
+                minian_params.params_cross_reg["h5path_roi"].append(roiPath)
 
     # Close cluster
     client.close()
