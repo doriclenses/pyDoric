@@ -48,72 +48,78 @@ def main(minian_params):
     # MiniAn CNMF
     intpath = os.path.join(minian_params.paths[defs.Parameters.Path.TMP_DIR], mn_defs.Folder.INTERMEDIATE)
 
-    file_, chk, varr_ref = load_chunk(intpath, minian_params)
+    for idx in range(len(minian_params.params_load_doric["h5paths"])):
+        
+        file_, chk, varr_ref = load_chunk(intpath, minian_params, idx)
 
-    varr_ref = preprocess(varr_ref, intpath, minian_params)
+        varr_ref = preprocess(varr_ref, intpath, minian_params)
 
-    Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
+        Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
 
-    seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params)
+        seeds, _ = initialize_seeds(Y_fm_chk, Y_hw_chk, minian_params)
 
-    if (seeds["mask_mrg"].sum() > 1000):
-        print(mn_defs.Messages.TOO_MANY_SEEDS, flush = True)
+        if (seeds["mask_mrg"].sum() > 1000):
+            print(mn_defs.Messages.TOO_MANY_SEEDS, flush = True)
 
-    A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
+        A, C, C_chk, f, b = initialize_components(Y_hw_chk, Y_fm_chk, seeds, intpath, chk, minian_params)
 
-    A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params)
+        A, C, C_chk, sn_spatial = cnmf1(Y_hw_chk, intpath, A, C, C_chk, Y_fm_chk, chk, minian_params)
 
-    A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_params)
+        A, C, AC, S, c0, b0 = cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_params)
 
-    # Cross registration
-    A = cross_register(AC, A, minian_params)
+        # Cross registration
+        A = cross_register(AC, A, minian_params, idx)
 
-    # Save final MiniAn results
-    print(mn_defs.Messages.SAVING_FINAL, flush=True)
-    A = save_minian(A.rename("A"), **minian_params.params_save_minian)
-    C = save_minian(C.rename("C"), **minian_params.params_save_minian)
-    AC = save_minian(AC.rename("AC"), **minian_params.params_save_minian)
-    S = save_minian(S.rename("S"), **minian_params.params_save_minian)
-    c0 = save_minian(c0.rename("c0"), **minian_params.params_save_minian)
-    b0 = save_minian(b0.rename("b0"), **minian_params.params_save_minian)
-    b = save_minian(b.rename("b"), **minian_params.params_save_minian)
-    f = save_minian(f.rename("f"), **minian_params.params_save_minian)
+        # Save final MiniAn results
+        print(mn_defs.Messages.SAVING_FINAL, flush=True)
+        A = save_minian(A.rename("A"), **minian_params.params_save_minian)
+        C = save_minian(C.rename("C"), **minian_params.params_save_minian)
+        AC = save_minian(AC.rename("AC"), **minian_params.params_save_minian)
+        S = save_minian(S.rename("S"), **minian_params.params_save_minian)
+        c0 = save_minian(c0.rename("c0"), **minian_params.params_save_minian)
+        b0 = save_minian(b0.rename("b0"), **minian_params.params_save_minian)
+        b = save_minian(b.rename("b"), **minian_params.params_save_minian)
+        f = save_minian(f.rename("f"), **minian_params.params_save_minian)
 
-    # Save results to .doric file
-    print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+        # Save results to .doric file
+        print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
 
-    # Get all operation parameters and dataset attributes
-    data, driver, operation, series, sensor = minian_params.get_h5path_names()
-    params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
-    attrs = utils.load_attributes(file_, minian_params.paths[defs.Parameters.Path.H5PATH])
+        # Get all operation parameters and dataset attributes
+        data, driver, operation, series, sensor = minian_params.get_h5path_names(index = idx)
+        params_source_data = utils.load_attributes(file_, f"{data}/{driver}/{operation}")
+        attrs = utils.load_attributes(file_, minian_params.paths[defs.Parameters.Path.H5PATHS][idx])
 
-    if minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
-        minian_params.params[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
-    
-    time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
-    time_ = np.array(file_[time_path])
+        if minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE] > 1:
+            minian_params.params[defs.DoricFile.Attribute.Group.BINNING_FACTOR] = minian_params.params[defs.Parameters.danse.SPATIAL_DOWNSAMPLE]
+        
+        time_path = minian_params.paths[defs.Parameters.Path.H5PATHS][idx].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+        time_ = np.array(file_[time_path])
 
-    temporalDownSample = minian_params.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE]
-    if temporalDownSample > 1:
-        time_ = time_[::temporalDownSample]
+        temporalDownSample = minian_params.params[defs.Parameters.danse.TEMPORAL_DOWNSAMPLE]
+        if temporalDownSample > 1:
+            time_ = time_[::temporalDownSample]
 
-    file_.close()
+        file_.close()
 
-    save_minian_to_doric(
-        Y, A, C, AC, S,
-        time_ = time_,
-        bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
-        qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
-        username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
-        vname = minian_params.paths[defs.Parameters.Path.FILEPATH],
-        vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
-        vdataset = f"{series}/{sensor}",
-        params_doric = minian_params.params,
-        params_source = params_source_data,
-        saveimages = True,
-        saveresiduals = True,
-        savespikes = True
-    )
+        imagePath, roiPath =  save_minian_to_doric(
+                                Y, A, C, AC, S,
+                                time_ = time_,
+                                bit_count = attrs[defs.DoricFile.Attribute.Image.BIT_COUNT],
+                                qt_format = attrs[defs.DoricFile.Attribute.Image.FORMAT],
+                                username = attrs.get(defs.DoricFile.Attribute.Dataset.USERNAME, sensor),
+                                vname = minian_params.paths[defs.Parameters.Path.FILEPATH],
+                                vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                                vdataset = f"{series}/{sensor}",
+                                params_doric = minian_params.params,
+                                params_source = params_source_data,
+                                saveimages = True,
+                                saveresiduals = True,
+                                savespikes = True
+                                )
+        
+        if (minian_params.params_cross_reg and minian_params.params_cross_reg["crossRegRef"] == "Sequential"):
+            minian_params.params_cross_reg["h5path_images"].append(imagePath)
+            minian_params.params_cross_reg["h5path_roi"].append(roiPath)
 
     # Close cluster
     client.close()
@@ -152,7 +158,7 @@ def init_preview(minian_params):
 
     Y, Y_fm_chk, Y_hw_chk = correct_motion(varr_ref, intpath, chk, minian_params)
 
-    time_path = minian_params.paths[defs.Parameters.Path.H5PATH].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+    time_path = minian_params.paths[defs.Parameters.Path.H5PATHS][0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
     time_ = np.array(file_[time_path])
 
     selected_range = minian_params.params_load_doric["range"]["frame"]
@@ -319,10 +325,16 @@ def penalties_preview(minian_params):
     return 0
 
 
-def load_chunk(intpath, minian_params):
+def load_chunk(intpath, minian_params, idx = 0):
 
     print(mn_defs.Messages.LOAD_DATA, flush=True)
-    varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric)
+
+    h5path = minian_params.params_load_doric["h5paths"][idx]
+    params = minian_params.params_load_doric.copy()
+    params.pop("h5paths", None)
+    params["h5path"] = h5path
+
+    varr, file_ = load_doric_to_xarray(**params)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
@@ -557,8 +569,7 @@ def load_doric_to_xarray(
     dtype: type = np.float64,
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
-    post_process: Optional[Callable] = None,
-    close_file: bool = False
+    close_file: bool = False,
 ):
 
     """
@@ -601,9 +612,6 @@ def load_doric_to_xarray(
             raise NotImplementedError(mn_defs.Messages.UNREC_DOWNSAMPLING_STRAT)
     varr = varr.rename("fluorescence")
 
-    if post_process:
-        varr = post_process(varr, vpath, vlist, varr_list)
-
     arr_opt = fct.partial(custom_arr_optimize, keep_patterns=["^load_avi_ffmpeg"])
 
     with da.config.set(array_optimize=arr_opt):
@@ -620,23 +628,58 @@ def load_doric_to_xarray(
     return varr, file_
 
 
-def cross_register(AC, A, minian_params):
+def cross_register(AC, A, minian_params, idx):
 
     if not minian_params.params_cross_reg:
         return A
 
+    if (minian_params.params_cross_reg["crossRegRef"] == "Sequential" and  idx == 0):
+        return A
+
     print(mn_defs.Messages.CROSS_REGISTRATING , flush=True)
 
+    # Prepare reference and current activity images (AC) for cross-registration.
     # Load AC componenets from the reference file
     ref_filepath = minian_params.params_cross_reg["fname"]
     ref_images   = minian_params.params_cross_reg["h5path_images"]
     ref_range    = minian_params.params_load_doric["range"]
-    AC_ref, file_ref = load_doric_to_xarray(ref_filepath, ref_images, ref_range)
 
-    # Concatenate max proj of both results
-    AC_ref_max = AC_ref.max("frame")
-    AC_max  = AC.max("frame")
-    AC_max_concat = xr.concat([AC_ref_max, AC_max], pd.Index(["reference", "current"], name = "session"))
+    AC_ref_list = []
+
+    for img_path in ref_images:
+        AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, img_path, ref_range)
+        AC_ref_list.append(AC_ref_i)
+
+    # Max projection for each reference dataset
+    AC_ref_max = [AC_ref.max("frame") for AC_ref in AC_ref_list]
+
+    # Concatenate all reference max projections into one xarray
+    AC_ref_max_concat = xr.concat(AC_ref_max,
+                                  pd.Index([f"reference_{i}" for i in range(len(AC_ref_max))], name="session"))
+    
+    AC_max = AC.max("frame") 
+    AC_max = AC_max.expand_dims(session=1)
+    AC_max = AC_max.assign_coords(session=["current"])
+
+    # Concatenate max proj of references and current session
+    AC_max_concat = xr.concat([AC_ref_max_concat, AC_max], dim="session")
+
+    # Prepare reference and current ROI footprints (A) for cross-registration.
+    # Load A componenets from the reference file
+    ref_rois_paths  = minian_params.params_cross_reg["h5path_roi"]
+    A_ref_list = []
+    for idx, rois_path in enumerate(ref_rois_paths):
+        A_ref_i = get_footprints(ref_filepath, rois_path, AC_ref_list[idx].coords)
+        A_ref_list.append(A_ref_i)
+
+    A_ref_concat = xr.concat(A_ref_list,
+                                  pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"))
+
+    A = A.expand_dims(session=1)
+    A = A.assign_coords(session=["current"])
+
+    A_concat = xr.concat([A_ref_concat, A],
+                              pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"))
 
     # Estimate a translational shift along the session dimension using the max projection for each dataset.
     # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
@@ -644,10 +687,6 @@ def cross_register(AC, A, minian_params):
     temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
     shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
 
-    # Load A componenets from the reference file
-    ref_rois_path  = minian_params.params_cross_reg["h5path_roi"]
-    A_ref = get_footprints(ref_filepath, ref_rois_path, AC_ref.coords)
-    A_concat = xr.concat([A_ref, A], pd.Index(["reference", "current"], name="session"))
     file_ref.close()
 
     # Apply shifts to spatial footprints of each session
@@ -660,40 +699,87 @@ def cross_register(AC, A, minian_params):
     window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]],
                             output_core_dims=[["height", "width"]], vectorize=True)
 
+    cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(
+        A_shifted,
+        window,
+        minian_params.params_cross_reg["param_dist"],
+    )
+
+    A = assign_current_session_ids(A, A_ref_concat, mappings_meta_fill)
+
+    return A[0, :, :, :]
+
+
+def build_mapping(A_shifted, window, param_dist):
+
     # Calculate centroids of spatial footprints for cells inside a window.
     cents = calculate_centroids(A_shifted, window)
 
     # Calculate pairwise distance between cells in all pairs of sessions.
     # Note that at this stage, since we are computing something along the session dimension,
-    # it is no longer considered as a metadata dimension, so we remove it
+    # it is no longer considered as a metadata dimension, so we remove it.
     dist = calculate_centroid_distance(cents, "session", [])
 
-    # Threshold centroid distances, keeping only cell pairs with distance less than param_dist.
-    param_dist = minian_params.params_cross_reg["param_dist"]
-
+    # Keep only cell pairs with centroid distance below the matching threshold.
     dist_ft = dist[dist["variable", "distance"] < param_dist].copy()
     dist_ft = group_by_session(dist_ft)
 
-    # Generate mappings for ids of the current and reference sessions
-    mappings = calculate_mapping(dist_ft)
-    mappings_meta = resolve_mapping(mappings)
+    # Generate mappings for ids of the current and reference sessions.
+    if not dist_ft.empty:
+        mappings = calculate_mapping(dist_ft)
+        mappings_meta = resolve_mapping(mappings)
+    else:
+        mappings_meta = pd.DataFrame()
+
     mappings_meta_fill = fill_mapping(mappings_meta, cents)
 
-    # Update unit ids of the current spatial componenets A
+    return cents, dist_ft, mappings_meta, mappings_meta_fill
+
+
+def assign_current_session_ids(A, A_ref_concat, mappings_meta_fill):
+
+    # Updates unit ids of the current spatial components A
     ids        = list(A["unit_id"].values)
-    new_ids    = [0]*len(ids)
-    ref_id_max = int(A_ref.coords["unit_id"].values.max()) + 1
+    new_ids    = [None] * len(ids)
+
+    ref_id_max = int(A_ref_concat.coords["unit_id"].values.max()) + 1
+    reference_sessions = list(A_ref_concat.session.values)
 
     for i in range(len(mappings_meta_fill)):
-        # Matching ids between the sessions
-        group = mappings_meta_fill.iloc[i]["group"][0]
-        if "current" in group and "reference" in group:
-            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
-            new_ids[index] = int(mappings_meta_fill.iloc[i]["session"]["reference"])
-        # Unique ids for the current session
-        elif "current" in group:
-            index = ids.index(mappings_meta_fill.iloc[i]["session"]["current"])
+        # Matching ids between the current session and any reference session.
+        row = mappings_meta_fill.iloc[i]
+        group = row["group"][0]
+
+        if "current" not in group:
+            continue
+
+        current_id = row["session"].get("current")
+        if pd.isna(current_id):
+            continue
+
+        index = ids.index(current_id)
+
+        matched_reference_id = None
+        for reference_session in reference_sessions:
+            if reference_session not in group:
+                continue
+
+            reference_id = row["session"].get(reference_session)
+            if pd.notna(reference_id):
+                matched_reference_id = int(reference_id)
+                break
+
+        if matched_reference_id is not None:
+            new_ids[index] = matched_reference_id
+        else:
+            # Unique ids for the current session.
             new_ids[index] = ref_id_max
+            ref_id_max += 1
+
+    # Any current ROI left untouched by the mapping rows still needs a valid ID.
+    for i, unit_id in enumerate(new_ids):
+        if unit_id is None:
+            new_ids[i] = ref_id_max
             ref_id_max += 1
 
     A["unit_id"] = new_ids
@@ -813,6 +899,7 @@ def save_minian_to_doric(
         rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+
         utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
                                 ids            = list(ids),
                                 dataset_names  = dataset_names,
@@ -851,6 +938,9 @@ def save_minian_to_doric(
             utils.save_attributes(utils.merge_params(params_doric, params_source), f, spikes_grouppath)
 
     print(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
+
+    images_datapath = f"{images_datapath}/{defs.DoricFile.Dataset.IMAGE_STACK}"
+    return images_datapath, rois_datapath
 
 
 @contextmanager
