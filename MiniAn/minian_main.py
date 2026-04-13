@@ -328,7 +328,12 @@ def penalties_preview(minian_params):
 def load_chunk(intpath, minian_params, idx = 0):
 
     print(mn_defs.Messages.LOAD_DATA, flush=True)
-    varr, file_ = load_doric_to_xarray(**minian_params.params_load_doric, index = idx)
+
+    filepath = minian_params.params_load_doric["fname"]
+    h5path   = minian_params.params_load_doric["h5paths"][idx]
+    range    = minian_params.params_load_doric["range"]
+
+    varr, file_ = load_doric_to_xarray(filepath, h5path, range)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
@@ -558,13 +563,12 @@ def cnmf2(Y_hw_chk, A, C, sn_spatial, intpath, C_chk, Y_fm_chk, chk, minian_para
 
 def load_doric_to_xarray(
     fname: str,
-    h5paths: list, #str
+    h5path: str,
     range: dict,
     dtype: type = np.float64,
     downsample: Optional[dict] = None,
     downsample_strategy="subset",
     close_file: bool = False,
-    index: int = 0
 ):
 
     """
@@ -573,7 +577,7 @@ def load_doric_to_xarray(
 
     file_ = h5py.File(fname, 'r')
 
-    h5path = utils.clean_path(h5paths[index])
+    h5path = utils.clean_path(h5path)
     
     file_image_stack = file_[h5path]
 
@@ -642,7 +646,7 @@ def cross_register(AC, A, minian_params, idx):
     AC_ref_list = []
 
     for img_path in ref_images:
-        AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, [img_path], ref_range)
+        AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, img_path, ref_range)
         AC_ref_list.append(AC_ref_i)
 
     # Max projection for each reference dataset
