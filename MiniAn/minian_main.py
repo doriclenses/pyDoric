@@ -329,11 +329,12 @@ def load_chunk(intpath, minian_params, idx = 0):
 
     print(mn_defs.Messages.LOAD_DATA, flush=True)
 
-    filepath = minian_params.params_load_doric["fname"]
-    h5path   = minian_params.params_load_doric["h5paths"][idx]
-    range    = minian_params.params_load_doric["range"]
+    h5path = minian_params.params_load_doric["h5paths"][idx]
+    params = minian_params.params_load_doric.copy()
+    params.pop("h5paths", None)
+    params["h5path"] = h5path
 
-    varr, file_ = load_doric_to_xarray(filepath, h5path, range)
+    varr, file_ = load_doric_to_xarray(**params)
     chk, _ = get_optimal_chk(varr, **minian_params.params_get_optimal_chk)
     varr = save_minian(varr.chunk({"frame": chk["frame"], "height": -1, "width": -1}).rename("varr"),
                        intpath, overwrite=True)
