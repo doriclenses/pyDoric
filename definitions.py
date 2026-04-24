@@ -104,6 +104,7 @@ class Parameters:
         REF_IMAGES_DATAPATH      = "ReferenceImagesDatapath"
         REF_ROIS_GROUP_PATH      = "ReferenceROIsGroupPath" 
         CROSS_REG_REF            = "CrossRegReference"
+        OPERATIONS                = "Operations"
 
     class Preview:
 

@@ -20,6 +20,7 @@ import utilities as utils
 import minian_main        as mn_main
 import minian_parameters  as mn_params
 import minian_definitions as mn_defs
+import definitions as defs
 
 # Import for PyInstaller
 from multiprocessing import freeze_support
@@ -40,11 +41,16 @@ except Exception as error:
     sys.exit()
 
 if __name__ == "__main__":
-    minian_params = mn_params.MinianParameters(danse_params)
-
-    if minian_params.preview_params:
-        mn_main.preview(minian_params)
+    params = danse_params.get(defs.Parameters.Main.PARAMETERS)
+    
+    if (params.get(defs.Parameters.danse.OPERATIONS) == "Multi-File Cross-Registration"):
+        mn_main.cross_register_multi_file(danse_params)
     else:
-        mn_main.main(minian_params)
+        minian_params = mn_params.MinianParameters(danse_params)
+
+        if minian_params.preview_params:
+            mn_main.preview(minian_params)
+        else:
+            mn_main.main(minian_params)
 
     print(mn_defs.Messages.PROCESS_DONE, flush=True)
