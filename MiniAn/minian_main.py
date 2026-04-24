@@ -812,6 +812,20 @@ def get_footprints(filename, rois_h5path, dims):
     return footprints_xr
 
 
+def cross_register_multi_file(multiFileCrossReg_params):
+    # Start cluster
+    print(mn_defs.Messages.START_CLUSTER, flush=True)
+    cluster = LocalCluster()
+    annt_plugin = TaskAnnotation()
+    cluster.scheduler.add_plugin(annt_plugin)
+    client = Client(cluster)
+
+
+    # Close cluster
+    client.close()
+    cluster.close()
+
+
 def save_minian_to_doric(
     Y: xr.DataArray,
     A: xr.DataArray,
