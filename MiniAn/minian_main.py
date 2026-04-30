@@ -812,6 +812,37 @@ def get_footprints(filename, rois_h5path, dims):
     return footprints_xr
 
 
+def get_roi_signals(filename, rois_h5path, dims):
+    """
+    Load ROI signals from HDF5 and return an xarray.DataArray
+    with dims: (unit_id, frame)
+    """
+
+    with h5py.File(filename, "r") as file_:
+
+        roi_names = list(file_.get(rois_h5path))
+        roi_ids = np.zeros((len(roi_names) - 1))
+        signals = np.zeros(((len(roi_names) - 1), dims["frame"].size), dtype=np.float64)
+
+        for i in range(len(roi_names) - 1):
+            roi_group = file_[rois_h5path]
+            roi_ids[i] = int(roi_group[roi_names[i]].attrs["ID"])
+            sig = np.array(roi_group[roi_names[i]]) # read dataset as numpy array
+            signals[i, :] = sig
+
+        signals_xr = xr.DataArray(
+            signals,
+            coords={
+                "unit_id": ("unit_id", roi_ids),
+                "frame": ("frame", dims["frame"].values),
+            },
+            dims=["unit_id", "frame"],
+            name="roi_signals",
+        )
+
+    return signals_xr
+    
+
 def cross_register_multi_file(multiFileCrossReg_params):
     # Start cluster
     print(mn_defs.Messages.START_CLUSTER, flush=True)
