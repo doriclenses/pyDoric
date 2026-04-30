@@ -854,6 +854,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
 
     paths  = multiFileCrossReg_params.get(defs.Parameters.Main.PATHS, {})
     params = multiFileCrossReg_params.get(defs.Parameters.Main.PARAMETERS, {})
+
     cluster = LocalCluster(n_workers = 2, memory_limit = "auto", threads_per_worker = 8, resources = {"MEM": 1}, 
                            dashboard_address = ":8787", local_directory = paths[defs.Parameters.Path.TMP_DIR])
     annt_plugin = TaskAnnotation()
@@ -861,7 +862,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
     client = Client(cluster)
 
     try:
-        print(mn_defs.Messages.MULTI_FILE_CROSS_REG , flush=True)
+        print(mn_defs.Messages.MULTI_FILE_CROSS_REG , flush = True)
 
         paths[defs.Parameters.Path.H5PATHS] = [utils.clean_path(p) for p in paths[defs.Parameters.Path.H5PATHS]]
 
@@ -874,7 +875,6 @@ def cross_register_multi_file(multiFileCrossReg_params):
         file_ref = None
         for img_path in ref_images:
             AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, img_path, ref_range)
-            # AC_ref_i = AC_ref_i.chunk({"frame": -1})
             AC_ref_list.append(AC_ref_i)
 
         base = "/".join(img_path.split("/")[:3])
@@ -882,7 +882,6 @@ def cross_register_multi_file(multiFileCrossReg_params):
         param_dist = attrs["MiniAn Find Cells(Images)-NeuronDiameterMin"]
 
         # Max projection for each reference dataset
-
         AC_ref_max = [AC_ref.max("frame") for AC_ref in AC_ref_list]
 
         # Concatenate all reference max projections into one xarray
@@ -927,7 +926,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 # Concatenate max proj of references and current session
                 AC_max_concat = xr.concat([AC_ref_max_concat, AC_max], dim="session")
 
-                # 1. Ensure correct chunking
+                # Ensure correct chunking
                 AC_max_concat = AC_max_concat.chunk({"session": 1})
 
                 roi_path = "/".join(datapath.split("/")[:-1])
@@ -943,7 +942,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 # Estimate a translational shift along the session dimension using the max projection for each dataset.
                 # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
 
-                # 2. Give the DataArray a proper name
+                # Give the DataArray a proper name
                 AC_max_concat = AC_max_concat.rename("fluorescence")
 
                 shifts = estimate_motion(AC_max_concat, dim="session").compute().rename("shifts")
@@ -978,7 +977,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 EMPTY = xr.DataArray([])
                 imagePath, roiPath =  save_minian_to_doric(
                                     Y = EMPTY,
-                                    A = A.squeeze(dim="session"),
+                                    A = A.squeeze(dim = "session"),
                                     C = C, 
                                     AC = AC,
                                     S = EMPTY,
@@ -996,23 +995,19 @@ def cross_register_multi_file(multiFileCrossReg_params):
                                     )
                 
                 # --- Update reference AC and A for next datapath ---
-
-                # 1. Add current AC_max as new reference
+                # Add current AC_max as new reference
                 AC_curr = f"reference_{len(AC_ref_max_concat.session)}"
                 AC_curr_max = AC_max.assign_coords(session=[AC_curr])
                
-                # AC_ref_max_concat = xr.concat([AC_ref_max_concat, AC_max_ref], dim="session")
                 AC_ref_max_concat = xr.concat(
                     [AC_ref_max_concat, AC_curr_max],
                     pd.Index(list(AC_ref_max_concat.session.values) + [AC_curr], name="session")
                 )
 
-                # 2. Add current A as new reference
+                # Add current A as new reference
                 A_curr = f"reference_{len(A_ref_concat.session)}"
                 A_current = A.assign_coords(session=[A_curr])
 
-                # A_ref_concat = xr.concat([A_ref_concat, A_ref_new], dim="session")
-                # Concat safely
                 A_ref_concat = xr.concat(
                     [A_ref_concat, A_current],
                     pd.Index(list(A_ref_concat.session.values) + [A_curr], name="session"))
