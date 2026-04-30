@@ -49,6 +49,8 @@ class Messages:
     LOADING_ARGUMENTS           = "Loading parameters"
 
     CROSS_REGISTRATING          = "Cross-registering cells between sessions."
+    MULTI_FILE_CROSS_REG        = "Multi-file cross-registration in process..."
+    
     PROCESS_DONE                = "MiniAn process is done"
 
     TOO_MANY_SEEDS              = "Processing error due to too many seeds. Possible ways to decrease detected seeds:\n\
