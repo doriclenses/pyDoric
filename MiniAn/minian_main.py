@@ -850,18 +850,178 @@ def get_roi_signals(filename, rois_h5path, dims):
     
 
 def cross_register_multi_file(multiFileCrossReg_params):
-    # Start cluster
     print(mn_defs.Messages.START_CLUSTER, flush=True)
-    cluster = LocalCluster()
+
+    paths  = multiFileCrossReg_params.get(defs.Parameters.Main.PATHS, {})
+    params = multiFileCrossReg_params.get(defs.Parameters.Main.PARAMETERS, {})
+    cluster = LocalCluster(n_workers = 2, memory_limit = "auto", threads_per_worker = 8, resources = {"MEM": 1}, 
+                           dashboard_address = ":8787", local_directory = paths[defs.Parameters.Path.TMP_DIR])
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
     client = Client(cluster)
 
+    try:
+        print(mn_defs.Messages.MULTI_FILE_CROSS_REG , flush=True)
 
-    # Close cluster
-    client.close()
-    cluster.close()
+        paths[defs.Parameters.Path.H5PATHS] = [utils.clean_path(p) for p in paths[defs.Parameters.Path.H5PATHS]]
 
+        # Load AC componenets (images) from the reference file (1st file)
+        ref_filepath = paths["Filepaths"][0]
+        ref_images   = paths["HDF5Paths"]
+        ref_range    = {"frame": slice(0, None)}
+
+        AC_ref_list = []
+        file_ref = None
+        for img_path in ref_images:
+            AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, img_path, ref_range)
+            # AC_ref_i = AC_ref_i.chunk({"frame": -1})
+            AC_ref_list.append(AC_ref_i)
+
+        base = "/".join(img_path.split("/")[:3])
+        attrs = utils.load_attributes(file_ref, base)
+        param_dist = attrs["MiniAn Find Cells(Images)-NeuronDiameterMin"]
+
+        # Max projection for each reference dataset
+
+        AC_ref_max = [AC_ref.max("frame") for AC_ref in AC_ref_list]
+
+        # Concatenate all reference max projections into one xarray
+        AC_ref_max_concat = xr.concat(AC_ref_max,
+                                    pd.Index([f"reference_{i}" for i in range(len(AC_ref_max))], name="session"))
+
+        # Load A componenets from the reference file
+        ref_rois_paths = []
+        for img_path in ref_images:
+            roi_path = "/".join(img_path.split("/")[:-1])
+            roi_path = roi_path.replace("MiniAnImages", "MiniAnROISignals")
+            ref_rois_paths.append(roi_path)
+
+        A_ref_list = []
+        for idx, rois_path in enumerate(ref_rois_paths):
+            A_ref_i = get_footprints(ref_filepath, rois_path, AC_ref_list[idx].coords)
+            A_ref_list.append(A_ref_i)
+
+        A_ref_concat = xr.concat(A_ref_list,
+                                    pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"))
+        AC_ref_max_concat = AC_ref_max_concat.load()
+        A_ref_concat      = A_ref_concat.load()
+
+        if file_ref is not None:
+            file_ref.close()
+
+        for filepath in paths["Filepaths"][1:]:
+            for datapath in paths["HDF5Paths"]:
+
+                h5path_names = utils.clean_path(datapath).split('/')
+                driver = h5path_names[1]
+                series = h5path_names[-3]
+                sensor = h5path_names[-2]
+
+                AC, file_ = load_doric_to_xarray(filepath, datapath, ref_range)
+                AC = AC.load()
+
+                AC_max = AC.max("frame").load()
+                AC_max = AC_max.expand_dims(session=1)
+                AC_max = AC_max.assign_coords(session=["current"])
+
+                # Concatenate max proj of references and current session
+                AC_max_concat = xr.concat([AC_ref_max_concat, AC_max], dim="session")
+
+                # 1. Ensure correct chunking
+                AC_max_concat = AC_max_concat.chunk({"session": 1})
+
+                roi_path = "/".join(datapath.split("/")[:-1])
+                roi_path = roi_path.replace("MiniAnImages", "MiniAnROISignals")
+                A = get_footprints(filepath, roi_path, AC.coords).load()
+                
+                A = A.expand_dims(session=1)
+                A = A.assign_coords(session=["current"])
+
+                A_concat = xr.concat([A_ref_concat, A], 
+                                    pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"))
+
+                # Estimate a translational shift along the session dimension using the max projection for each dataset.
+                # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
+
+                # 2. Give the DataArray a proper name
+                AC_max_concat = AC_max_concat.rename("fluorescence")
+
+                shifts = estimate_motion(AC_max_concat, dim="session").compute().rename("shifts")
+                temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
+                shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
+
+                # Apply shifts to spatial footprints of each session
+                A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
+
+                window = shiftds['temps_shifted'].isnull().sum('session')
+                window, _ = xr.broadcast(window, shiftds['temps_shifted'])
+                def set_window(wnd):
+                    return wnd == wnd.min()
+                window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]],
+                                        output_core_dims=[["height", "width"]], vectorize=True)
+
+                import dask
+                # Force local, in-process computation for this part
+                with dask.config.set(scheduler="threads"):  # or "synchronous"
+                    cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
+
+                A = assign_current_session_ids(A, A_ref_concat, mappings_meta_fill)
+
+                C = get_roi_signals(filepath, roi_path, AC.coords)
+
+                time_path = datapath.replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+                time_ = np.array(file_[time_path])
+                file_.close()
+                
+                # Save results to .doric file
+                print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+
+                EMPTY = xr.DataArray([])
+                imagePath, roiPath =  save_minian_to_doric(
+                                    Y = EMPTY,
+                                    A = A.squeeze(dim="session"),
+                                    C = C, 
+                                    AC = AC,
+                                    S = EMPTY,
+                                    time_ = time_,
+                                    bit_count = 0,
+                                    qt_format = 0,
+                                    username = "",
+                                    vname = filepath,
+                                    vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                                    vdataset = f"{series}/{sensor}",
+                                    params_doric =  params,
+                                    saveimages = False,
+                                    saveresiduals = False,
+                                    savespikes = False
+                                    )
+                
+                # --- Update reference AC and A for next datapath ---
+
+                # 1. Add current AC_max as new reference
+                AC_curr = f"reference_{len(AC_ref_max_concat.session)}"
+                AC_curr_max = AC_max.assign_coords(session=[AC_curr])
+               
+                # AC_ref_max_concat = xr.concat([AC_ref_max_concat, AC_max_ref], dim="session")
+                AC_ref_max_concat = xr.concat(
+                    [AC_ref_max_concat, AC_curr_max],
+                    pd.Index(list(AC_ref_max_concat.session.values) + [AC_curr], name="session")
+                )
+
+                # 2. Add current A as new reference
+                A_curr = f"reference_{len(A_ref_concat.session)}"
+                A_current = A.assign_coords(session=[A_curr])
+
+                # A_ref_concat = xr.concat([A_ref_concat, A_ref_new], dim="session")
+                # Concat safely
+                A_ref_concat = xr.concat(
+                    [A_ref_concat, A_current],
+                    pd.Index(list(A_ref_concat.session.values) + [A_curr], name="session"))
+
+    finally:
+        # Close cluster
+        client.close()
+        cluster.close()
 
 def save_minian_to_doric(
     Y: xr.DataArray,
