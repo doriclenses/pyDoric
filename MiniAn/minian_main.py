@@ -960,9 +960,8 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 window = xr.apply_ufunc(set_window, window, input_core_dims=[["height", "width"]],
                                         output_core_dims=[["height", "width"]], vectorize=True)
 
-                import dask
                 # Force local, in-process computation for this part
-                with dask.config.set(scheduler="threads"):  # or "synchronous"
+                with da.Config.set(scheduler="threads"):  # or "synchronous"
                     cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
 
                 A = assign_current_session_ids(A, A_ref_concat, mappings_meta_fill)
