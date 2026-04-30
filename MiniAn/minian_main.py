@@ -646,6 +646,9 @@ def cross_register(AC, A, minian_params, idx):
 
     AC_ref_list = []
 
+    if isinstance(ref_images, str):
+        ref_images = [ref_images]
+
     for img_path in ref_images:
         AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, img_path, ref_range)
         AC_ref_list.append(AC_ref_i)
@@ -667,6 +670,9 @@ def cross_register(AC, A, minian_params, idx):
     # Prepare reference and current ROI footprints (A) for cross-registration.
     # Load A componenets from the reference file
     ref_rois_paths  = minian_params.params_cross_reg["h5path_roi"]
+    if isinstance(ref_rois_paths, str):
+        ref_rois_paths = [ref_rois_paths]
+
     A_ref_list = []
     for idx, rois_path in enumerate(ref_rois_paths):
         A_ref_i = get_footprints(ref_filepath, rois_path, AC_ref_list[idx].coords)
