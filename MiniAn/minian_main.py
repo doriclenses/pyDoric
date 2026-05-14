@@ -866,7 +866,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
 
         paths[defs.Parameters.Path.H5PATHS] = [utils.clean_path(p) for p in paths[defs.Parameters.Path.H5PATHS]]
 
-        # Load AC componenets (images) from the reference file (1st file)
+        # Load AC componenets (images) from the reference file (1st file in the list)
         ref_filepath = paths["Filepaths"][0]
         ref_images   = paths["HDF5Paths"]
         ref_range    = {"frame": slice(0, None)}
@@ -1097,12 +1097,18 @@ def save_minian_to_doric(
     with h5py.File(vname, 'a') as f:
 
         # Check if MiniAn results already exist
-        operationCount = utils.operation_count(vpath, f, mn_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
+
+        if (params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] == "Multi-File Cross-Registration"):
+             group = mn_defs.DoricFile.Group.MULTI_FILE_CROSS_REG
+        else: 
+             group = mn_defs.DoricFile.Group.ROISIGNALS
+
+        operationCount = utils.operation_count(vpath, f, group, params_doric, params_source)
 
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
-        rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
+        rois_grouppath = f"{vpath}/{group + operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
 
