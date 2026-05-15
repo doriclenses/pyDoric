@@ -873,10 +873,13 @@ def cross_register_multi_file(multiFileCrossReg_params):
         ref_range    = {"frame": slice(0, None)}
 
         AC_ref_list = []
+        fileList = []
         file_ref = None
+
         for img_path in ref_images:
             AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, img_path, ref_range)
             AC_ref_list.append(AC_ref_i)
+            fileList.append(file_ref)
 
         base = "/".join(img_path.split("/")[:3])
         attrs = utils.load_attributes(file_ref, base)
@@ -903,15 +906,70 @@ def cross_register_multi_file(multiFileCrossReg_params):
 
         A_ref_concat = xr.concat(A_ref_list, pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"))
         
-        del AC_ref_list
-        del A_ref_list
-        gc.collect()
-        
         AC_ref_max_concat = AC_ref_max_concat.load()
         A_ref_concat      = A_ref_concat.load()
 
+        ref_coords_metadata = []
+
+        for AC in AC_ref_list:
+            # .to_dataset().load() pulls all coordinates into RAM as numpy arrays
+            # then we grab the .coords from that "disconnected" object
+            detached_coords = AC.coords.to_dataset().load().coords
+            ref_coords_metadata.append(detached_coords)
+        
+        del AC_ref_list
+        del A_ref_list
+        gc.collect()
+
+        for f in fileList:
+            if f is not None:
+                f.close()
+
         if file_ref is not None:
             file_ref.close()
+
+        # Save multi-file Cross reg data in Reference file (first file in the list) - its a copy of the original data
+        with h5py.File(ref_filepath, 'r') as f_ref:
+            time_path = ref_images[0].replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+            time_ = np.array(f_ref[time_path])
+
+        for idx, rois_path in enumerate(ref_rois_paths):
+            
+            ref_roiSignal = get_roi_signals(ref_filepath, rois_path, ref_coords_metadata[idx])
+
+            valid_ids = ref_roiSignal.coords["unit_id"].values.astype(int)
+            A_filtered = A_ref_concat[idx].sel(unit_id=valid_ids)
+            # FIX: convert the coordinate to int
+            A_filtered = A_filtered.assign_coords(unit_id=valid_ids)
+
+            # Save results to .doric file
+            h5path_names = utils.clean_path(rois_path).split('/')
+            driver = h5path_names[1]
+            series = h5path_names[-2]
+            sensor = h5path_names[-1]
+
+            print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+
+            EMPTY = xr.DataArray([])
+            imagePath, roiPath =  save_minian_to_doric(
+                                Y = EMPTY,
+                                A = A_filtered,  # A_ref_concat[idx],
+                                C = ref_roiSignal, 
+                                AC = None,    # AC_ref_list[idx],
+                                S = EMPTY,
+                                time_ = time_,
+                                bit_count = 0,
+                                qt_format = 0,
+                                username = "",
+                                vname = ref_filepath,
+                                vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                                vdataset = f"{series}/{sensor}",
+                                params_doric =  params,
+                                saveimages = False,
+                                saveresiduals = False,
+                                savespikes = False
+                                )
+        del ref_coords_metadata
 
         for filepath in paths["Filepaths"][1:]:
             for datapath in paths["HDF5Paths"]:
