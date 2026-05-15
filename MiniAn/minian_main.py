@@ -2,6 +2,7 @@
 import os
 import sys
 import h5py
+import gc
 import inspect
 import tempfile
 import dask as da
@@ -598,7 +599,7 @@ def load_doric_to_xarray(
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
             bit_count = file_image_stack.attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]
-            varr = varr / 2**bit_count * 2**8
+            varr = (varr / 2**bit_count) * 2**8
 
         varr = varr.astype(dtype)
 
@@ -900,8 +901,12 @@ def cross_register_multi_file(multiFileCrossReg_params):
             A_ref_i = get_footprints(ref_filepath, rois_path, AC_ref_list[idx].coords)
             A_ref_list.append(A_ref_i)
 
-        A_ref_concat = xr.concat(A_ref_list,
-                                    pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"))
+        A_ref_concat = xr.concat(A_ref_list, pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"))
+        
+        del AC_ref_list
+        del A_ref_list
+        gc.collect()
+        
         AC_ref_max_concat = AC_ref_max_concat.load()
         A_ref_concat      = A_ref_concat.load()
 
@@ -917,8 +922,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 sensor = h5path_names[-2]
 
                 AC, file_ = load_doric_to_xarray(filepath, datapath, ref_range)
-                AC = AC.load()
-
+                
                 AC_max = AC.max("frame").load()
                 AC_max = AC_max.expand_dims(session=1)
                 AC_max = AC_max.assign_coords(session=["current"])
@@ -928,22 +932,21 @@ def cross_register_multi_file(multiFileCrossReg_params):
 
                 # Ensure correct chunking
                 AC_max_concat = AC_max_concat.chunk({"session": 1})
+                AC_max_concat = AC_max_concat.rename("fluorescence")
 
                 roi_path = "/".join(datapath.split("/")[:-1])
                 roi_path = roi_path.replace("MiniAnImages", "MiniAnROISignals")
-                A = get_footprints(filepath, roi_path, AC.coords).load()
-                
+                A = get_footprints(filepath, roi_path, AC.coords).load() 
                 A = A.expand_dims(session=1)
                 A = A.assign_coords(session=["current"])
 
-                A_concat = xr.concat([A_ref_concat, A], 
-                                    pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"))
+                A_concat = xr.concat([A_ref_concat, A], pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"))
+
+                A.load()
+                AC_max.load()
 
                 # Estimate a translational shift along the session dimension using the max projection for each dataset.
                 # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
-
-                # Give the DataArray a proper name
-                AC_max_concat = AC_max_concat.rename("fluorescence")
 
                 shifts = estimate_motion(AC_max_concat, dim="session").compute().rename("shifts")
                 temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
@@ -960,11 +963,10 @@ def cross_register_multi_file(multiFileCrossReg_params):
                                         output_core_dims=[["height", "width"]], vectorize=True)
 
                 # Force local, in-process computation for this part
-                with da.Config.set(scheduler="threads"):  # or "synchronous"
+                with da.config.set(scheduler="threads"):  # or "synchronous"
                     cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
 
                 A = assign_current_session_ids(A, A_ref_concat, mappings_meta_fill)
-
                 C = get_roi_signals(filepath, roi_path, AC.coords)
 
                 time_path = datapath.replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
@@ -993,12 +995,12 @@ def cross_register_multi_file(multiFileCrossReg_params):
                                     saveresiduals = False,
                                     savespikes = False
                                     )
-                
+
                 # --- Update reference AC and A for next datapath ---
                 # Add current AC_max as new reference
                 AC_curr = f"reference_{len(AC_ref_max_concat.session)}"
                 AC_curr_max = AC_max.assign_coords(session=[AC_curr])
-               
+
                 AC_ref_max_concat = xr.concat(
                     [AC_ref_max_concat, AC_curr_max],
                     pd.Index(list(AC_ref_max_concat.session.values) + [AC_curr], name="session")
@@ -1007,10 +1009,24 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 # Add current A as new reference
                 A_curr = f"reference_{len(A_ref_concat.session)}"
                 A_current = A.assign_coords(session=[A_curr])
+                A_current = A_current.assign_coords(unit_id=A_current.unit_id.astype(float))
+                new_session_index = pd.Index(list(A_ref_concat.session.values) + [A_curr], name="session")
+
+                # Force unique IDs to prevent the ValueError
+                unique_ids = np.arange(len(A_current.unit_id))
+                A_current = A_current.assign_coords(unit_id=unique_ids)
 
                 A_ref_concat = xr.concat(
                     [A_ref_concat, A_current],
-                    pd.Index(list(A_ref_concat.session.values) + [A_curr], name="session"))
+                    dim=new_session_index,
+                    join="outer",      # This expands 'unit_id' to the union of both sets (fills missing with NaN)
+                    coords="minimal",  # Keeps coordinates that don't vary across sessions simple
+                    compat="override"  # Prevents crashing on minor metadata mismatches
+                    )
+                
+                del AC
+                del A
+                gc.collect()
 
     finally:
         # Close cluster
