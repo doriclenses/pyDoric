@@ -801,14 +801,14 @@ def get_footprints(filename, rois_h5path, dims):
         roi_names =  list(file_.get(rois_h5path))
 
         roi_ids = np.zeros((len(roi_names) - 1))
-        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.float64)
+        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.uint8)
         for i in range(len(roi_names) - 1):
             attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
 
             roi_ids[i] = int(attrs["ID"])
 
             coords = np.array(attrs["Coordinates"])
-            mask = np.zeros((dims["height"].size, dims["width"].size), np.float64)
+            mask = np.zeros((dims["height"].size, dims["width"].size), np.uint8)
             cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
             footprints[i, :, :] = mask
 
@@ -904,7 +904,12 @@ def cross_register_multi_file(multiFileCrossReg_params):
             A_ref_i = get_footprints(ref_filepath, rois_path, AC_ref_list[idx].coords)
             A_ref_list.append(A_ref_i)
 
-        A_ref_concat = xr.concat(A_ref_list, pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"))
+        A_ref_concat = xr.concat(
+            A_ref_list, 
+            pd.Index([f"reference_{i}" for i in range(len(A_ref_list))], name="session"),
+            join="outer",
+            fill_value=0,
+            )
         
         AC_ref_max_concat = AC_ref_max_concat.load()
         A_ref_concat      = A_ref_concat.load()
@@ -978,10 +983,25 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 A = A.expand_dims(session=1)
                 A = A.assign_coords(session=["current"])
 
-                A_concat = xr.concat([A_ref_concat, A], pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"))
+                A_concat = xr.concat(
+                    [A_ref_concat, A], 
+                    pd.Index(list(A_ref_concat.session.values) + ["current"], name="session"),
+                    join="outer",
+                    fill_value=0,
+                )
+
+                A_concat = A_concat.astype(np.uint8)
+                A_concat = A_concat.chunk({
+                    "session": 1,
+                    "unit_id": 50,
+                    "height": -1,
+                    "width": -1,
+                })
 
                 A.load()
                 AC_max.load()
+                del AC
+                gc.collect()
 
                 # Estimate a translational shift along the session dimension using the max projection for each dataset.
                 # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
@@ -991,7 +1011,15 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
 
                 # Apply shifts to spatial footprints of each session
-                A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
+                # A_shifted = apply_transform(A_concat.chunk(dict(height = -1, width = -1)), shiftds["shifts"])
+
+                A_shifted = apply_transform(A_concat, shiftds["shifts"])
+                A_shifted = A_shifted.chunk({
+                    "session": 1,
+                    "unit_id": 50,
+                    "height": -1,
+                    "width": -1,
+                })
 
                 window = shiftds['temps_shifted'].isnull().sum('session')
                 window, _ = xr.broadcast(window, shiftds['temps_shifted'])
@@ -1001,7 +1029,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                                         output_core_dims=[["height", "width"]], vectorize=True)
 
                 # Force local, in-process computation for this part
-                with da.config.set(scheduler="threads"):  # or "synchronous"
+                with da.config.set(scheduler="threads", num_workers=1):  # or "synchronous"
                     cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
 
                 A = assign_current_session_ids(A, A_ref_concat, mappings_meta_fill)
@@ -1023,6 +1051,8 @@ def cross_register_multi_file(multiFileCrossReg_params):
                     params_doric =  params
                 )
 
+                del C
+
                 # --- Update reference AC and A for next datapath ---
                 # Add current AC_max as new reference
                 AC_curr = f"reference_{len(AC_ref_max_concat.session)}"
@@ -1040,18 +1070,27 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 new_session_index = pd.Index(list(A_ref_concat.session.values) + [A_curr], name="session")
 
                 # Force unique IDs to prevent the ValueError
-                unique_ids = np.arange(len(A_current.unit_id))
-                A_current = A_current.assign_coords(unit_id=unique_ids)
+                _, unique_idx = np.unique(A_current.unit_id.values, return_index=True)
+                A_current = A_current.isel(unit_id=np.sort(unique_idx))
 
                 A_ref_concat = xr.concat(
                     [A_ref_concat, A_current],
                     dim=new_session_index,
                     join="outer",      # This expands 'unit_id' to the union of both sets (fills missing with NaN)
+                    fill_value=0,
                     coords="minimal",  # Keeps coordinates that don't vary across sessions simple
                     compat="override"  # Prevents crashing on minor metadata mismatches
                     )
-                
-                del AC
+
+                A_ref_concat = A_ref_concat.astype(np.uint8)
+
+                A_ref_concat = A_ref_concat.chunk({
+                    "session": 1,
+                    "unit_id": 50,
+                    "height": -1,
+                    "width": -1,
+                })
+
                 del A
                 gc.collect()
 
