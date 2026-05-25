@@ -819,17 +819,17 @@ def get_footprints(filename, rois_h5path, dims):
     return footprints_xr
 
 
-def get_roi_signals(filename, rois_h5path, dims):
+def get_roi_signals(filename, rois_h5path):
     """
     Load ROI signals from HDF5 and return an xarray.DataArray
     with dims: (unit_id, frame)
     """
 
     with h5py.File(filename, "r") as file_:
-
+        n_frames =  file_[rois_h5path][defs.DoricFile.Dataset.TIME].size
         roi_names = list(file_.get(rois_h5path))
         roi_ids = np.zeros((len(roi_names) - 1))
-        signals = np.zeros(((len(roi_names) - 1), dims["frame"].size), dtype=np.float64)
+        signals = np.zeros(((len(roi_names) - 1), n_frames), dtype=np.float64)
 
         for i in range(len(roi_names) - 1):
             roi_group = file_[rois_h5path]
@@ -841,7 +841,7 @@ def get_roi_signals(filename, rois_h5path, dims):
             signals,
             coords={
                 "unit_id": ("unit_id", roi_ids),
-                "frame": ("frame", dims["frame"].values),
+                "frame": ("frame", np.arange(1, n_frames + 1)),
             },
             dims=["unit_id", "frame"],
             name="roi_signals",
@@ -935,7 +935,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
 
         for idx, rois_path in enumerate(ref_rois_paths):
             
-            ref_roiSignal = get_roi_signals(ref_filepath, rois_path, ref_coords_metadata[idx])
+            ref_roiSignal = get_roi_signals(ref_filepath, rois_path)
 
             valid_ids = ref_roiSignal.coords["unit_id"].values.astype(int)
             A_filtered = A_ref_concat[idx].sel(unit_id=valid_ids)
@@ -1025,7 +1025,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                     cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
 
                 A = assign_current_session_ids(A, A_ref_concat, mappings_meta_fill)
-                C = get_roi_signals(filepath, roi_path, AC.coords)
+                C = get_roi_signals(filepath, roi_path)
 
                 time_path = datapath.replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
                 time_ = np.array(file_[time_path])
