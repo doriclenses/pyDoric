@@ -909,14 +909,6 @@ def cross_register_multi_file(multiFileCrossReg_params):
         AC_ref_max_concat = AC_ref_max_concat.load()
         A_ref_concat      = A_ref_concat.load()
 
-        ref_coords_metadata = []
-
-        for AC in AC_ref_list:
-            # .to_dataset().load() pulls all coordinates into RAM as numpy arrays
-            # then we grab the .coords from that "disconnected" object
-            detached_coords = AC.coords.to_dataset().load().coords
-            ref_coords_metadata.append(detached_coords)
-        
         del AC_ref_list
         del A_ref_list
         gc.collect()
@@ -949,28 +941,16 @@ def cross_register_multi_file(multiFileCrossReg_params):
             sensor = h5path_names[-1]
 
             print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
-
-            EMPTY = xr.DataArray([])
-            imagePath, roiPath =  save_minian_to_doric(
-                                Y = EMPTY,
+            save_crossregistered_ROI_to_Doric(
                                 A = A_filtered,  # A_ref_concat[idx],
                                 C = ref_roiSignal, 
-                                AC = None,    # AC_ref_list[idx],
-                                S = EMPTY,
                                 time_ = time_,
-                                bit_count = 0,
-                                qt_format = 0,
-                                username = "",
                                 vname = ref_filepath,
                                 vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
                                 vdataset = f"{series}/{sensor}",
-                                params_doric =  params,
-                                saveimages = False,
-                                saveresiduals = False,
-                                savespikes = False
-                                )
-        del ref_coords_metadata
-
+                                params_doric =  params
+            )
+            
         for filepath in paths["Filepaths"][1:]:
             for datapath in paths["HDF5Paths"]:
 
@@ -1033,26 +1013,15 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 
                 # Save results to .doric file
                 print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
-
-                EMPTY = xr.DataArray([])
-                imagePath, roiPath =  save_minian_to_doric(
-                                    Y = EMPTY,
-                                    A = A.squeeze(dim = "session"),
-                                    C = C, 
-                                    AC = AC,
-                                    S = EMPTY,
-                                    time_ = time_,
-                                    bit_count = 0,
-                                    qt_format = 0,
-                                    username = "",
-                                    vname = filepath,
-                                    vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
-                                    vdataset = f"{series}/{sensor}",
-                                    params_doric =  params,
-                                    saveimages = False,
-                                    saveresiduals = False,
-                                    savespikes = False
-                                    )
+                save_crossregistered_ROI_to_Doric(
+                    A = A.squeeze(dim = "session"),
+                    C = C, 
+                    time_ = time_,
+                    vname = filepath,
+                    vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                    vdataset = f"{series}/{sensor}",
+                    params_doric =  params
+                )
 
                 # --- Update reference AC and A for next datapath ---
                 # Add current AC_max as new reference
@@ -1172,17 +1141,11 @@ def save_minian_to_doric(
 
         # Check if MiniAn results already exist
 
-        if (params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] == "Multi-File Cross-Registration"):
-             group = mn_defs.DoricFile.Group.MULTI_FILE_CROSS_REG
-        else: 
-             group = mn_defs.DoricFile.Group.ROISIGNALS
-
-        operationCount = utils.operation_count(vpath, f, group, params_doric, params_source)
-
+        operationCount = utils.operation_count(vpath, f, mn_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
-        rois_grouppath = f"{vpath}/{group + operationCount}"
+        rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS + operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
 
@@ -1227,6 +1190,47 @@ def save_minian_to_doric(
 
     images_datapath = f"{images_datapath}/{defs.DoricFile.Dataset.IMAGE_STACK}"
     return images_datapath, rois_datapath
+
+
+def save_crossregistered_ROI_to_Doric(
+    A: xr.DataArray,
+    C: xr.DataArray, 
+    time_: np.array,
+    vname: str = "minian.doric",
+    vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C",
+    vdataset: str = "Series1/Sensor1",
+    params_doric: Optional[dict] = {},
+    params_source: Optional[dict] = {},
+):
+
+    vpath    = utils.clean_path(vpath)
+    vdataset = utils.clean_path(vdataset)
+
+    print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
+    ids           = A.coords["unit_id"].values
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
+
+    with h5py.File(vname, 'a') as f:
+
+        group = mn_defs.DoricFile.Group.MULTI_FILE_CROSS_REG
+        operationCount = utils.operation_count(vpath, f, group, params_doric, params_source)
+        params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
+
+        print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
+        rois_grouppath = f"{vpath}/{group + operationCount}"
+        rois_datapath  = f"{rois_grouppath}/{vdataset}"
+        attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+
+        utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
+                                ids            = list(ids),
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                common_attrs   = attrs)
+        utils.print_group_path_for_DANSE(rois_datapath)
+        utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
+
+        print(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
 @contextmanager
