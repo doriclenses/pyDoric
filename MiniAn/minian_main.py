@@ -940,10 +940,10 @@ def cross_register_multi_file(multiFileCrossReg_params):
             A_filtered = A_filtered.assign_coords(unit_id=valid_ids)
 
             # Save results to .doric file
-            h5path_names = utils.clean_path(rois_path).split('/')
-            driver = h5path_names[1]
-            series = h5path_names[-2]
-            sensor = h5path_names[-1]
+            rois_path_names = utils.clean_path(rois_path).split('/')
+            rois_path_driver = rois_path_names[1]
+            rois_path_series = rois_path_names[-2]
+            rois_path_sensor = rois_path_names[-1]
 
             print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
             save_crossregistered_ROI_to_Doric(
@@ -951,18 +951,13 @@ def cross_register_multi_file(multiFileCrossReg_params):
                                 C = ref_roiSignal, 
                                 time_ = time_,
                                 vname = ref_filepath,
-                                vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
-                                vdataset = f"{series}/{sensor}",
+                                vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{rois_path_driver}",
+                                vdataset = f"{rois_path_series}/{rois_path_sensor}",
                                 params_doric =  params
             )
             
         for filepath in paths["Filepaths"][1:]:
             for datapath in paths["HDF5Paths"]:
-
-                h5path_names = utils.clean_path(datapath).split('/')
-                driver = h5path_names[1]
-                series = h5path_names[-3]
-                sensor = h5path_names[-2]
 
                 AC, file_ = load_doric_to_xarray(filepath, datapath, ref_range)
                 
@@ -1041,6 +1036,12 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 
                 # Save results to .doric file
                 print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+
+                datapath_names = datapath.split('/')
+                driver = datapath_names[1]
+                series = datapath_names[-3]
+                sensor = datapath_names[-2]
+
                 save_crossregistered_ROI_to_Doric(
                     A = A.squeeze(dim = "session"),
                     C = C, 
@@ -1052,6 +1053,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 )
 
                 del C
+                gc.collect()
 
                 # --- Update reference AC and A for next datapath ---
                 # Add current AC_max as new reference
