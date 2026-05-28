@@ -850,7 +850,7 @@ def get_roi_signals(filename, rois_h5path):
     return signals_xr
     
 
-def cross_register_multi_file(multiFileCrossReg_params):
+def cross_register_multi_file_original(multiFileCrossReg_params):
     print(mn_defs.Messages.START_CLUSTER, flush=True)
 
     paths  = multiFileCrossReg_params.get(defs.Parameters.Main.PATHS, {})
@@ -1100,6 +1100,266 @@ def cross_register_multi_file(multiFileCrossReg_params):
         # Close cluster
         client.close()
         cluster.close()
+
+
+def cross_register_multi_file(multiFileCrossReg_params):
+    print(mn_defs.Messages.START_CLUSTER, flush=True)
+
+    paths  = multiFileCrossReg_params.get(defs.Parameters.Main.PATHS, {})
+    params = multiFileCrossReg_params.get(defs.Parameters.Main.PARAMETERS, {})
+
+    cluster = LocalCluster(
+        n_workers=1,
+        memory_limit="auto",
+        threads_per_worker=1,
+        resources={"MEM": 1},
+        dashboard_address=":8787",
+        local_directory=paths[defs.Parameters.Path.TMP_DIR],
+    )
+
+    annt_plugin = TaskAnnotation()
+    cluster.scheduler.add_plugin(annt_plugin)
+    client = Client(cluster)
+
+    try:
+        print(mn_defs.Messages.MULTI_FILE_CROSS_REG, flush=True)
+
+        paths[defs.Parameters.Path.H5PATHS] = [
+            utils.clean_path(p) for p in paths[defs.Parameters.Path.H5PATHS]
+        ]
+
+        ref_range = {"frame": slice(0, None)}
+        AC_ref_max_concat = None
+        A_ref_concat = None
+        ref_count = 0
+        param_dist = None
+        unit_chunk = 50
+
+        for file_idx, filepath in enumerate(paths["Filepaths"]):
+            for datapath in paths["HDF5Paths"]:
+
+                h5path_names = utils.clean_path(datapath).split("/")
+                driver = h5path_names[1]
+                series = h5path_names[-3]
+                sensor = h5path_names[-2]
+
+                AC, file_ = load_doric_to_xarray(filepath, datapath, ref_range)
+
+                if param_dist is None:
+                    base = "/".join(datapath.split("/")[:3])
+                    attrs = utils.load_attributes(file_, base)
+                    param_dist = attrs["MiniAn Find Cells(Images)-NeuronDiameterMin"]
+
+                AC_max = AC.max("frame").load()
+
+                roi_path = "/".join(datapath.split("/")[:-1])
+                roi_path = roi_path.replace("MiniAnImages", "MiniAnROISignals")
+
+                A = get_footprints(filepath, roi_path, AC.coords).load()
+                C = get_roi_signals(filepath, roi_path)
+
+                valid_ids = C.coords["unit_id"].values.astype(int)
+                A = A.sel(unit_id=valid_ids)
+                A = A.assign_coords(unit_id=valid_ids)
+                A = drop_duplicate_unit_ids(A)
+
+                time_path = datapath.replace(
+                    defs.DoricFile.Dataset.IMAGE_STACK,
+                    defs.DoricFile.Dataset.TIME,
+                )
+                time_ = np.array(file_[time_path])
+                file_.close()
+
+                del AC
+                gc.collect()
+
+                if file_idx == 0:
+                    A_to_save = A
+                    A_to_reference = A
+
+                else:
+                    AC_max_current = AC_max.expand_dims(
+                        session=pd.Index(["current"], name="session")
+                    )
+
+                    AC_max_concat = xr.concat(
+                        [AC_ref_max_concat, AC_max_current],
+                        dim="session",
+                    )
+                    AC_max_concat = AC_max_concat.chunk({"session": 1})
+                    AC_max_concat = AC_max_concat.rename("fluorescence")
+
+                    A_current = A.expand_dims(
+                        session=pd.Index(["current"], name="session")
+                    )
+
+                    A_concat = xr.concat(
+                        [A_ref_concat, A_current],
+                        dim=pd.Index(
+                            list(A_ref_concat.session.values) + ["current"],
+                            name="session",
+                        ),
+                        join="outer",
+                        fill_value=0,
+                        coords="minimal",
+                        compat="override",
+                    )
+
+                    A_concat = chunk_footprints(A_concat, unit_chunk)
+
+                    shifts = estimate_motion(
+                        AC_max_concat,
+                        dim="session",
+                    ).compute().rename("shifts")
+
+                    temps_sh = apply_transform(
+                        AC_max_concat,
+                        shifts,
+                    ).compute().rename("temps_shifted")
+
+                    shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
+
+                    A_shifted = apply_transform(A_concat, shiftds["shifts"])
+                    A_shifted = chunk_footprints(A_shifted, unit_chunk)
+
+                    window = shiftds["temps_shifted"].isnull().sum("session")
+                    window, _ = xr.broadcast(window, shiftds["temps_shifted"])
+
+                    def set_window(wnd):
+                        return wnd == wnd.min()
+
+                    window = xr.apply_ufunc(
+                        set_window,
+                        window,
+                        input_core_dims=[["height", "width"]],
+                        output_core_dims=[["height", "width"]],
+                        vectorize=True,
+                    )
+
+                    with da.config.set(scheduler="threads", num_workers=1):
+                        cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(
+                            A_shifted,
+                            window,
+                            param_dist,
+                        )
+
+                    A_registered = assign_current_session_ids(
+                        A_current,
+                        A_ref_concat,
+                        mappings_meta_fill,
+                    )
+
+                    A_to_save = A_registered.squeeze(dim="session", drop=True)
+                    A_to_reference = A_registered
+
+                print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+                save_crossregistered_ROI_to_Doric(
+                    A=A_to_save,
+                    C=C,
+                    time_=time_,
+                    vname=filepath,
+                    vpath=f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                    vdataset=f"{series}/{sensor}",
+                    params_doric=params,
+                )
+
+                session_name = f"reference_{ref_count}"
+
+                AC_ref_max_concat = append_ac_reference(
+                    AC_ref_max_concat,
+                    AC_max,
+                    session_name,
+                )
+
+                A_ref_concat = append_a_reference(
+                    A_ref_concat,
+                    A_to_reference,
+                    session_name,
+                    unit_chunk=unit_chunk,
+                )
+
+                ref_count += 1
+
+                del A
+                del C
+                gc.collect()
+
+    finally:
+        client.close()
+        cluster.close()
+
+
+def drop_duplicate_unit_ids(A):
+    ids = np.asarray(A.coords["unit_id"].values)
+    _, keep_idx = np.unique(ids, return_index=True)
+
+    if len(keep_idx) != len(ids):
+        A = A.isel(unit_id=np.sort(keep_idx))
+
+    return A
+
+
+def add_session_dim(arr, session_name):
+    if "session" in arr.dims:
+        return arr.assign_coords(session=[session_name])
+
+    return arr.expand_dims(session=pd.Index([session_name], name="session"))
+
+
+def chunk_footprints(A, unit_chunk=50):
+    A = A.fillna(0).astype(np.uint8)
+
+    chunks = {
+        "height": -1,
+        "width": -1,
+    }
+
+    if "session" in A.dims:
+        chunks["session"] = 1
+
+    if "unit_id" in A.dims:
+        chunks["unit_id"] = min(unit_chunk, A.sizes["unit_id"])
+
+    return A.chunk(chunks)
+
+
+def append_ac_reference(AC_ref_max_concat, AC_max, session_name):
+    AC_ref = add_session_dim(AC_max, session_name).load()
+
+    if AC_ref_max_concat is None:
+        return AC_ref
+
+    return xr.concat(
+        [AC_ref_max_concat, AC_ref],
+        pd.Index(
+            list(AC_ref_max_concat.session.values) + [session_name],
+            name="session"
+        )
+    ).chunk({"session": 1})
+
+
+def append_a_reference(A_ref_concat, A_ref, session_name, unit_chunk=5):
+    A_ref = add_session_dim(A_ref, session_name)
+    A_ref = drop_duplicate_unit_ids(A_ref)
+    A_ref = A_ref.fillna(0).astype(np.uint8)
+
+    if A_ref_concat is None:
+        return chunk_footprints(A_ref, unit_chunk)
+
+    A_ref_concat = xr.concat(
+        [A_ref_concat, A_ref],
+        dim=pd.Index(
+            list(A_ref_concat.session.values) + [session_name],
+            name="session"
+        ),
+        join="outer",
+        fill_value=0,
+        coords="minimal",
+        compat="override",
+    )
+
+    return chunk_footprints(A_ref_concat, unit_chunk)
+
 
 def save_minian_to_doric(
     Y: xr.DataArray,
