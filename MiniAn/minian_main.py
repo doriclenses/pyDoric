@@ -1108,14 +1108,12 @@ def cross_register_multi_file(multiFileCrossReg_params):
     paths  = multiFileCrossReg_params.get(defs.Parameters.Main.PATHS, {})
     params = multiFileCrossReg_params.get(defs.Parameters.Main.PARAMETERS, {})
 
-    cluster = LocalCluster(
-        n_workers=1,
-        memory_limit="auto",
-        threads_per_worker=1,
-        resources={"MEM": 1},
-        dashboard_address=":8787",
-        local_directory=paths[defs.Parameters.Path.TMP_DIR],
-    )
+    cluster = LocalCluster(n_workers = 1,
+                           memory_limit = "auto",
+                           threads_per_worker = 1,
+                           resources = {"MEM": 1},
+                           dashboard_address = ":8787",
+                           local_directory = paths[defs.Parameters.Path.TMP_DIR])
 
     annt_plugin = TaskAnnotation()
     cluster.scheduler.add_plugin(annt_plugin)
@@ -1124,10 +1122,6 @@ def cross_register_multi_file(multiFileCrossReg_params):
     try:
         print(mn_defs.Messages.MULTI_FILE_CROSS_REG, flush=True)
 
-        paths[defs.Parameters.Path.H5PATHS] = [
-            utils.clean_path(p) for p in paths[defs.Parameters.Path.H5PATHS]
-        ]
-
         ref_range = {"frame": slice(0, None)}
         AC_ref_max_concat = None
         A_ref_concat = None
@@ -1135,8 +1129,8 @@ def cross_register_multi_file(multiFileCrossReg_params):
         param_dist = None
         unit_chunk = 50
 
-        for file_idx, filepath in enumerate(paths["Filepaths"]):
-            for datapath in paths["HDF5Paths"]:
+        for file_idx, filepath in enumerate(paths[defs.Parameters.Path.FILEPATHS]):
+            for datapath in paths[defs.Parameters.Path.H5PATHS]:
 
                 h5path_names = utils.clean_path(datapath).split("/")
                 driver = h5path_names[1]
@@ -1163,11 +1157,9 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 A = A.assign_coords(unit_id=valid_ids)
                 A = drop_duplicate_unit_ids(A)
 
-                time_path = datapath.replace(
-                    defs.DoricFile.Dataset.IMAGE_STACK,
-                    defs.DoricFile.Dataset.TIME,
-                )
+                time_path = datapath.replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
                 time_ = np.array(file_[time_path])
+                
                 file_.close()
 
                 del AC
@@ -1178,44 +1170,24 @@ def cross_register_multi_file(multiFileCrossReg_params):
                     A_to_reference = A
 
                 else:
-                    AC_max_current = AC_max.expand_dims(
-                        session=pd.Index(["current"], name="session")
-                    )
+                    AC_max_current = AC_max.expand_dims(session = pd.Index(["current"], name = "session"))
 
-                    AC_max_concat = xr.concat(
-                        [AC_ref_max_concat, AC_max_current],
-                        dim="session",
-                    )
+                    AC_max_concat = xr.concat([AC_ref_max_concat, AC_max_current], dim = "session")
                     AC_max_concat = AC_max_concat.chunk({"session": 1})
                     AC_max_concat = AC_max_concat.rename("fluorescence")
 
-                    A_current = A.expand_dims(
-                        session=pd.Index(["current"], name="session")
-                    )
-
-                    A_concat = xr.concat(
-                        [A_ref_concat, A_current],
-                        dim=pd.Index(
-                            list(A_ref_concat.session.values) + ["current"],
-                            name="session",
-                        ),
-                        join="outer",
-                        fill_value=0,
-                        coords="minimal",
-                        compat="override",
-                    )
-
+                    A_current = A.expand_dims(session = pd.Index(["current"], name = "session"))
+                    A_concat  = xr.concat([A_ref_concat, A_current],
+                                          dim = pd.Index(list(A_ref_concat.session.values) + ["current"], name = "session"),
+                                          join ="outer",
+                                          fill_value = 0,
+                                          coords = "minimal",
+                                          compat = "override")
                     A_concat = chunk_footprints(A_concat, unit_chunk)
 
-                    shifts = estimate_motion(
-                        AC_max_concat,
-                        dim="session",
-                    ).compute().rename("shifts")
+                    shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
 
-                    temps_sh = apply_transform(
-                        AC_max_concat,
-                        shifts,
-                    ).compute().rename("temps_shifted")
+                    temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
 
                     shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
 
@@ -1225,58 +1197,38 @@ def cross_register_multi_file(multiFileCrossReg_params):
                     window = shiftds["temps_shifted"].isnull().sum("session")
                     window, _ = xr.broadcast(window, shiftds["temps_shifted"])
 
-                    def set_window(wnd):
-                        return wnd == wnd.min()
+                    window = xr.apply_ufunc(lambda wnd: wnd == wnd.min(),
+                                            window,
+                                            input_core_dims = [["height", "width"]],
+                                            output_core_dims = [["height", "width"]],
+                                            vectorize = True)
 
-                    window = xr.apply_ufunc(
-                        set_window,
-                        window,
-                        input_core_dims=[["height", "width"]],
-                        output_core_dims=[["height", "width"]],
-                        vectorize=True,
-                    )
+                    with da.config.set(scheduler = "threads", num_workers = 1):
+                        _, _, _, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
 
-                    with da.config.set(scheduler="threads", num_workers=1):
-                        cents, dist_ft, mappings_meta, mappings_meta_fill = build_mapping(
-                            A_shifted,
-                            window,
-                            param_dist,
-                        )
+                    A_registered = assign_current_session_ids(A_current, A_ref_concat, mappings_meta_fill)
 
-                    A_registered = assign_current_session_ids(
-                        A_current,
-                        A_ref_concat,
-                        mappings_meta_fill,
-                    )
-
-                    A_to_save = A_registered.squeeze(dim="session", drop=True)
+                    A_to_save = A_registered.squeeze(dim = "session", drop=True)
                     A_to_reference = A_registered
 
                 print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
-                save_crossregistered_ROI_to_Doric(
-                    A=A_to_save,
-                    C=C,
-                    time_=time_,
-                    vname=filepath,
-                    vpath=f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
-                    vdataset=f"{series}/{sensor}",
-                    params_doric=params,
-                )
+                save_crossregistered_ROI_to_Doric(A = A_to_save,
+                                                  C = C,
+                                                  time_ = time_,
+                                                  vname = filepath,
+                                                  vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                                                  vdataset = f"{series}/{sensor}",
+                                                  params_doric = params)
 
                 session_name = f"reference_{ref_count}"
+                AC_ref_max_concat = append_ac_reference(AC_ref_max_concat,
+                                                        AC_max,
+                                                        session_name)
 
-                AC_ref_max_concat = append_ac_reference(
-                    AC_ref_max_concat,
-                    AC_max,
-                    session_name,
-                )
-
-                A_ref_concat = append_a_reference(
-                    A_ref_concat,
-                    A_to_reference,
-                    session_name,
-                    unit_chunk=unit_chunk,
-                )
+                A_ref_concat = append_a_reference(A_ref_concat,
+                                                  A_to_reference,
+                                                  session_name,
+                                                  unit_chunk = unit_chunk)
 
                 ref_count += 1
 
@@ -1306,14 +1258,9 @@ def add_session_dim(arr, session_name):
     return arr.expand_dims(session=pd.Index([session_name], name="session"))
 
 
-def chunk_footprints(A, unit_chunk=50):
+def chunk_footprints(A, unit_chunk = 50):
     A = A.fillna(0).astype(np.uint8)
-
-    chunks = {
-        "height": -1,
-        "width": -1,
-    }
-
+    chunks = {"height": -1, "width": -1}
     if "session" in A.dims:
         chunks["session"] = 1
 
@@ -1329,16 +1276,13 @@ def append_ac_reference(AC_ref_max_concat, AC_max, session_name):
     if AC_ref_max_concat is None:
         return AC_ref
 
-    return xr.concat(
-        [AC_ref_max_concat, AC_ref],
-        pd.Index(
-            list(AC_ref_max_concat.session.values) + [session_name],
-            name="session"
-        )
-    ).chunk({"session": 1})
+    AC_ref_concat = xr.concat([AC_ref_max_concat, AC_ref],
+                              pd.Index(list(AC_ref_max_concat.session.values) + [session_name], name = "session"))
+    
+    return AC_ref_concat.chunk({"session": 1})
 
 
-def append_a_reference(A_ref_concat, A_ref, session_name, unit_chunk=5):
+def append_a_reference(A_ref_concat, A_ref, session_name, unit_chunk = 5):
     A_ref = add_session_dim(A_ref, session_name)
     A_ref = drop_duplicate_unit_ids(A_ref)
     A_ref = A_ref.fillna(0).astype(np.uint8)
@@ -1346,17 +1290,12 @@ def append_a_reference(A_ref_concat, A_ref, session_name, unit_chunk=5):
     if A_ref_concat is None:
         return chunk_footprints(A_ref, unit_chunk)
 
-    A_ref_concat = xr.concat(
-        [A_ref_concat, A_ref],
-        dim=pd.Index(
-            list(A_ref_concat.session.values) + [session_name],
-            name="session"
-        ),
-        join="outer",
-        fill_value=0,
-        coords="minimal",
-        compat="override",
-    )
+    A_ref_concat = xr.concat([A_ref_concat, A_ref],
+                             dim = pd.Index(list(A_ref_concat.session.values) + [session_name], name = "session"),
+                             join = "outer",
+                             fill_value = 0,
+                             coords = "minimal",
+                             compat = "override")
 
     return chunk_footprints(A_ref_concat, unit_chunk)
 
