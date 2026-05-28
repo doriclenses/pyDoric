@@ -43,7 +43,7 @@ except Exception as error:
 if __name__ == "__main__":
     params = danse_params.get(defs.Parameters.Main.PARAMETERS)
     
-    if (params.get(defs.Parameters.danse.OPERATIONS) == defs.Parameters.Main.Multi_File_CrossReg):
+    if (params.get(defs.Parameters.danse.OPERATIONS) == defs.Parameters.Main.MULTI_FILE_CROSS_REG):
         mn_main.cross_register_multi_file(danse_params)
     else:
         minian_params = mn_params.MinianParameters(danse_params)
