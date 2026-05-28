@@ -61,11 +61,13 @@ class Parameters:
         Main keys to distinguish different parameters
         """
 
-        PARAMETERS    = "Parameters"
-        PATHS         = "Paths"
-        PREVIEW       = "Preview"
-        STAGE         = "Stage"
-        IS_MICROSCOPE = "IsMicroscope"
+        PARAMETERS          = "Parameters"
+        PATHS               = "Paths"
+        PREVIEW             = "Preview"
+        STAGE               = "Stage"
+        IS_MICROSCOPE       = "IsMicroscope"
+        Multi_File_CrossReg = "Multi-File Cross-Registration"
+
 
 
     class Path:
