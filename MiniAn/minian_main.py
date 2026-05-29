@@ -917,6 +917,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                 gc.collect()
 
                 if file_idx == 0:
+                    # Save multi-file Cross reg data in Reference file (first file in the list) - its a copy of the original data
                     A_to_save = A
                     A_to_reference = A
 
@@ -936,6 +937,9 @@ def cross_register_multi_file(multiFileCrossReg_params):
                                           compat = "override")
                     A_concat = chunk_footprints(A_concat, unit_chunk)
 
+                    # Estimate a translational shift along the session dimension using the max projection for each dataset.
+                    # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
+
                     shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
 
                     temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
@@ -954,6 +958,7 @@ def cross_register_multi_file(multiFileCrossReg_params):
                                             output_core_dims = [["height", "width"]],
                                             vectorize = True)
 
+                    # Force local, in-process computation for this part
                     with da.config.set(scheduler = "threads", num_workers = 1):
                         _, _, _, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
 
