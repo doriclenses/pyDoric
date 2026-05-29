@@ -1131,8 +1131,10 @@ def cross_register_multi_file(multiFileCrossReg_params):
 
         for file_idx, filepath in enumerate(paths[defs.Parameters.Path.FILEPATHS]):
             for datapath in paths[defs.Parameters.Path.H5PATHS]:
-
-                h5path_names = utils.clean_path(datapath).split("/")
+                
+                datapath = utils.clean_path(datapath)
+                h5path_names = datapath.split("/")
+                
                 driver = h5path_names[1]
                 series = h5path_names[-3]
                 sensor = h5path_names[-2]
