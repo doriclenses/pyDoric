@@ -61,11 +61,13 @@ class Parameters:
         Main keys to distinguish different parameters
         """
 
-        PARAMETERS    = "Parameters"
-        PATHS         = "Paths"
-        PREVIEW       = "Preview"
-        STAGE         = "Stage"
-        IS_MICROSCOPE = "IsMicroscope"
+        PARAMETERS           = "Parameters"
+        PATHS                = "Paths"
+        PREVIEW              = "Preview"
+        STAGE                = "Stage"
+        IS_MICROSCOPE        = "IsMicroscope"
+        MULTI_FILE_CROSS_REG = "Multi-File Cross-Registration"
+
 
 
     class Path:
@@ -87,23 +89,24 @@ class Parameters:
         Parameters of danse Find Cells operation
         """
 
-        NEURO_DIAM_MIN           = "NeuronDiameterMin"
-        NEURO_DIAM_MAX           = "NeuronDiameterMax"
-        TEMPORAL_DOWNSAMPLE      = "TemporalDownsample"
-        SPATIAL_DOWNSAMPLE       = "SpatialDownsample"
-        NOISE_FREQ               = "NoiseFreq"
-        THRES_CORR               = "ThresCorr"
-        SPATIAL_PENALTY          = "SpatialPenalty"
-        TEMPORAL_PENALTY         = "TemporalPenalty"
-        CORRECT_MOTION           = "CorrectMotion"
-        ADVANCED_SETTINGS        = "AdvancedSettings"
-        LOCAL_CORR_THRESHOLD     = "CorrelationThreshold"
-        PNR_THRESHOLD            = "PNRThreshold"
-        CROSS_REG                = "CrossReg"
-        REF_FILEPATH             = "ReferenceFilepath"
-        REF_IMAGES_DATAPATH      = "ReferenceImagesDatapath"
-        REF_ROIS_GROUP_PATH      = "ReferenceROIsGroupPath" 
-        CROSS_REG_REF            = "CrossRegReference"
+        NEURO_DIAM_MIN       = "NeuronDiameterMin"
+        NEURO_DIAM_MAX       = "NeuronDiameterMax"
+        TEMPORAL_DOWNSAMPLE  = "TemporalDownsample"
+        SPATIAL_DOWNSAMPLE   = "SpatialDownsample"
+        NOISE_FREQ           = "NoiseFreq"
+        THRES_CORR           = "ThresCorr"
+        SPATIAL_PENALTY      = "SpatialPenalty"
+        TEMPORAL_PENALTY     = "TemporalPenalty"
+        CORRECT_MOTION       = "CorrectMotion"
+        ADVANCED_SETTINGS    = "AdvancedSettings"
+        LOCAL_CORR_THRESHOLD = "CorrelationThreshold"
+        PNR_THRESHOLD        = "PNRThreshold"
+        CROSS_REG            = "CrossReg"
+        REF_FILEPATH         = "ReferenceFilepath"
+        REF_IMAGES_DATAPATH  = "ReferenceImagesDatapath"
+        REF_ROIS_GROUP_PATH  = "ReferenceROIsGroupPath" 
+        CROSS_REG_REF        = "CrossRegReference"
+        OPERATIONS           = "Operations"
 
     class Preview:
 

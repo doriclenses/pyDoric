@@ -2,6 +2,7 @@
 import os
 import sys
 import h5py
+import gc
 import inspect
 import tempfile
 import dask as da
@@ -598,7 +599,7 @@ def load_doric_to_xarray(
         if dtype == np.uint8:
             #varr = (varr - varr.values.min()) / (varr.values.max() - varr.values.min()) * 2**8 + 1
             bit_count = file_image_stack.attrs[defs.DoricFile.Attribute.Image.BIT_COUNT]
-            varr = varr / 2**bit_count * 2**8
+            varr = (varr / 2**bit_count) * 2**8
 
         varr = varr.astype(dtype)
 
@@ -646,6 +647,9 @@ def cross_register(AC, A, minian_params, idx):
 
     AC_ref_list = []
 
+    if isinstance(ref_images, str):
+        ref_images = [ref_images]
+
     for img_path in ref_images:
         AC_ref_i, file_ref = load_doric_to_xarray(ref_filepath, img_path, ref_range)
         AC_ref_list.append(AC_ref_i)
@@ -667,6 +671,9 @@ def cross_register(AC, A, minian_params, idx):
     # Prepare reference and current ROI footprints (A) for cross-registration.
     # Load A componenets from the reference file
     ref_rois_paths  = minian_params.params_cross_reg["h5path_roi"]
+    if isinstance(ref_rois_paths, str):
+        ref_rois_paths = [ref_rois_paths]
+
     A_ref_list = []
     for idx, rois_path in enumerate(ref_rois_paths):
         A_ref_i = get_footprints(ref_filepath, rois_path, AC_ref_list[idx].coords)
@@ -794,14 +801,14 @@ def get_footprints(filename, rois_h5path, dims):
         roi_names =  list(file_.get(rois_h5path))
 
         roi_ids = np.zeros((len(roi_names) - 1))
-        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.float64)
+        footprints = np.zeros(((len(roi_names) - 1), dims["height"].size, dims["width"].size), np.uint8)
         for i in range(len(roi_names) - 1):
             attrs = utils.load_attributes(file_, f"{rois_h5path}/{roi_names[i]}")
 
             roi_ids[i] = int(attrs["ID"])
 
             coords = np.array(attrs["Coordinates"])
-            mask = np.zeros((dims["height"].size, dims["width"].size), np.float64)
+            mask = np.zeros((dims["height"].size, dims["width"].size), np.uint8)
             cv2.drawContours(mask, [coords], -1, 255, cv2.FILLED)
             footprints[i, :, :] = mask
 
@@ -810,6 +817,243 @@ def get_footprints(filename, rois_h5path, dims):
                                      dims   = ["unit_id", "height", "width"])
 
     return footprints_xr
+
+
+def get_roi_signals(filename, rois_h5path):
+    """
+    Load ROI signals from HDF5 and return an xarray.DataArray
+    with dims: (unit_id, frame)
+    """
+
+    with h5py.File(filename, "r") as file_:
+        n_frames =  file_[rois_h5path][defs.DoricFile.Dataset.TIME].size
+        roi_names = list(file_.get(rois_h5path))
+        roi_ids = np.zeros((len(roi_names) - 1))
+        signals = np.zeros(((len(roi_names) - 1), n_frames), dtype=np.float64)
+
+        for i in range(len(roi_names) - 1):
+            roi_group = file_[rois_h5path]
+            roi_ids[i] = int(roi_group[roi_names[i]].attrs["ID"])
+            sig = np.array(roi_group[roi_names[i]]) # read dataset as numpy array
+            signals[i, :] = sig
+
+        signals_xr = xr.DataArray(
+            signals,
+            coords={
+                "unit_id": ("unit_id", roi_ids),
+                "frame": ("frame", np.arange(1, n_frames + 1)),
+            },
+            dims=["unit_id", "frame"],
+            name="roi_signals",
+        )
+
+    return signals_xr
+    
+
+
+def cross_register_multi_file(multiFileCrossReg_params):
+    print(mn_defs.Messages.START_CLUSTER, flush=True)
+
+    paths  = multiFileCrossReg_params.get(defs.Parameters.Main.PATHS, {})
+    params = multiFileCrossReg_params.get(defs.Parameters.Main.PARAMETERS, {})
+
+    cluster = LocalCluster(n_workers = 1,
+                           memory_limit = "auto",
+                           threads_per_worker = 1,
+                           resources = {"MEM": 1},
+                           dashboard_address = ":8787",
+                           local_directory = paths[defs.Parameters.Path.TMP_DIR])
+
+    annt_plugin = TaskAnnotation()
+    cluster.scheduler.add_plugin(annt_plugin)
+    client = Client(cluster)
+
+    try:
+        print(mn_defs.Messages.MULTI_FILE_CROSS_REG, flush=True)
+
+        ref_range = {"frame": slice(0, None)}
+        AC_ref_max_concat = None
+        A_ref_concat = None
+        ref_count = 0
+        param_dist = None
+        unit_chunk = 50
+
+        for file_idx, filepath in enumerate(paths[defs.Parameters.Path.FILEPATHS]):
+            for datapath in paths[defs.Parameters.Path.H5PATHS]:
+                
+                datapath = utils.clean_path(datapath)
+                h5path_names = datapath.split("/")
+                
+                driver = h5path_names[1]
+                series = h5path_names[-3]
+                sensor = h5path_names[-2]
+
+                AC, file_ = load_doric_to_xarray(filepath, datapath, ref_range)
+
+                if param_dist is None:
+                    base = "/".join(datapath.split("/")[:3])
+                    attrs = utils.load_attributes(file_, base)
+                    param_dist = attrs["MiniAn Find Cells(Images)-NeuronDiameterMin"]
+
+                AC_max = AC.max("frame").load()
+
+                roi_path = "/".join(datapath.split("/")[:-1])
+                roi_path = roi_path.replace("MiniAnImages", "MiniAnROISignals")
+
+                A = get_footprints(filepath, roi_path, AC.coords).load()
+                C = get_roi_signals(filepath, roi_path)
+
+                valid_ids = C.coords["unit_id"].values.astype(int)
+                A = A.sel(unit_id=valid_ids)
+                A = A.assign_coords(unit_id=valid_ids)
+                A = drop_duplicate_unit_ids(A)
+
+                time_path = datapath.replace(defs.DoricFile.Dataset.IMAGE_STACK, defs.DoricFile.Dataset.TIME)
+                time_ = np.array(file_[time_path])
+                
+                file_.close()
+
+                del AC
+                gc.collect()
+
+                if file_idx == 0:
+                    # Save multi-file Cross reg data in Reference file (first file in the list) - its a copy of the original data
+                    A_to_save = A
+                    A_to_reference = A
+
+                else:
+                    AC_max_current = AC_max.expand_dims(session = pd.Index(["current"], name = "session"))
+
+                    AC_max_concat = xr.concat([AC_ref_max_concat, AC_max_current], dim = "session")
+                    AC_max_concat = AC_max_concat.chunk({"session": 1})
+                    AC_max_concat = AC_max_concat.rename("fluorescence")
+
+                    A_current = A.expand_dims(session = pd.Index(["current"], name = "session"))
+                    A_concat  = xr.concat([A_ref_concat, A_current],
+                                          dim = pd.Index(list(A_ref_concat.session.values) + ["current"], name = "session"),
+                                          join ="outer",
+                                          fill_value = 0,
+                                          coords = "minimal",
+                                          compat = "override")
+                    A_concat = chunk_footprints(A_concat, unit_chunk)
+
+                    # Estimate a translational shift along the session dimension using the max projection for each dataset.
+                    # Combine the shifts, original templates temps, and shifted templates temps_sh into a single dataset shiftds to use later
+
+                    shifts = estimate_motion(AC_max_concat, dim = "session").compute().rename("shifts")
+
+                    temps_sh = apply_transform(AC_max_concat, shifts).compute().rename("temps_shifted")
+
+                    shiftds = xr.merge([AC_max_concat, shifts, temps_sh])
+
+                    A_shifted = apply_transform(A_concat, shiftds["shifts"])
+                    A_shifted = chunk_footprints(A_shifted, unit_chunk)
+
+                    window = shiftds["temps_shifted"].isnull().sum("session")
+                    window, _ = xr.broadcast(window, shiftds["temps_shifted"])
+
+                    window = xr.apply_ufunc(lambda wnd: wnd == wnd.min(),
+                                            window,
+                                            input_core_dims = [["height", "width"]],
+                                            output_core_dims = [["height", "width"]],
+                                            vectorize = True)
+
+                    # Force local, in-process computation for this part
+                    with da.config.set(scheduler = "threads", num_workers = 1):
+                        _, _, _, mappings_meta_fill = build_mapping(A_shifted, window, param_dist)
+
+                    A_registered = assign_current_session_ids(A_current, A_ref_concat, mappings_meta_fill)
+
+                    A_to_save = A_registered.squeeze(dim = "session", drop=True)
+                    A_to_reference = A_registered
+
+                print(mn_defs.Messages.SAVING_TO_DORIC, flush=True)
+                save_crossregistered_ROI_to_Doric(A = A_to_save,
+                                                  C = C,
+                                                  time_ = time_,
+                                                  vname = filepath,
+                                                  vpath = f"{defs.DoricFile.Group.DATA_PROCESSED}/{driver}",
+                                                  vdataset = f"{series}/{sensor}",
+                                                  params_doric = params)
+
+                session_name = f"reference_{ref_count}"
+                AC_ref_max_concat = append_ac_reference(AC_ref_max_concat,
+                                                        AC_max,
+                                                        session_name)
+
+                A_ref_concat = append_a_reference(A_ref_concat,
+                                                  A_to_reference,
+                                                  session_name,
+                                                  unit_chunk = unit_chunk)
+
+                ref_count += 1
+
+                del A
+                del C
+                gc.collect()
+
+    finally:
+        client.close()
+        cluster.close()
+
+
+def drop_duplicate_unit_ids(A):
+    ids = np.asarray(A.coords["unit_id"].values)
+    _, keep_idx = np.unique(ids, return_index=True)
+
+    if len(keep_idx) != len(ids):
+        A = A.isel(unit_id=np.sort(keep_idx))
+
+    return A
+
+
+def add_session_dim(arr, session_name):
+    if "session" in arr.dims:
+        return arr.assign_coords(session=[session_name])
+
+    return arr.expand_dims(session=pd.Index([session_name], name="session"))
+
+
+def chunk_footprints(A, unit_chunk = 50):
+    A = A.fillna(0).astype(np.uint8)
+    chunks = {"height": -1, "width": -1}
+    if "session" in A.dims:
+        chunks["session"] = 1
+
+    if "unit_id" in A.dims:
+        chunks["unit_id"] = min(unit_chunk, A.sizes["unit_id"])
+
+    return A.chunk(chunks)
+
+
+def append_ac_reference(AC_ref_max_concat, AC_max, session_name):
+    AC_ref = add_session_dim(AC_max, session_name).load()
+
+    if AC_ref_max_concat is None:
+        return AC_ref
+
+    AC_ref_concat = xr.concat([AC_ref_max_concat, AC_ref],
+                              pd.Index(list(AC_ref_max_concat.session.values) + [session_name], name = "session"))
+    
+    return AC_ref_concat.chunk({"session": 1})
+
+
+def append_a_reference(A_ref_concat, A_ref, session_name, unit_chunk = 5):
+    A_ref = add_session_dim(A_ref, session_name)
+    A_ref = drop_duplicate_unit_ids(A_ref)
+    A_ref = A_ref.fillna(0).astype(np.uint8)
+
+    if A_ref_concat is None:
+        return chunk_footprints(A_ref, unit_chunk)
+
+    A_ref_concat = xr.concat([A_ref_concat, A_ref],
+                             dim = pd.Index(list(A_ref_concat.session.values) + [session_name], name = "session"),
+                             join = "outer",
+                             fill_value = 0,
+                             coords = "minimal",
+                             compat = "override")
+
+    return chunk_footprints(A_ref_concat, unit_chunk)
 
 
 def save_minian_to_doric(
@@ -888,15 +1132,16 @@ def save_minian_to_doric(
     dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
     usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
 
+    images_datapath = ""
     with h5py.File(vname, 'a') as f:
 
         # Check if MiniAn results already exist
-        operationCount = utils.operation_count(vpath, f, mn_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
 
+        operationCount = utils.operation_count(vpath, f, mn_defs.DoricFile.Group.ROISIGNALS, params_doric, params_source)
         params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
 
         print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
-        rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS+operationCount}"
+        rois_grouppath = f"{vpath}/{mn_defs.DoricFile.Group.ROISIGNALS + operationCount}"
         rois_datapath  = f"{rois_grouppath}/{vdataset}"
         attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
 
@@ -941,6 +1186,47 @@ def save_minian_to_doric(
 
     images_datapath = f"{images_datapath}/{defs.DoricFile.Dataset.IMAGE_STACK}"
     return images_datapath, rois_datapath
+
+
+def save_crossregistered_ROI_to_Doric(
+    A: xr.DataArray,
+    C: xr.DataArray, 
+    time_: np.array,
+    vname: str = "minian.doric",
+    vpath: str = "DataProcessed/MicroscopeDriver-1stGen1C",
+    vdataset: str = "Series1/Sensor1",
+    params_doric: Optional[dict] = {},
+    params_source: Optional[dict] = {},
+):
+
+    vpath    = utils.clean_path(vpath)
+    vdataset = utils.clean_path(vdataset)
+
+    print(mn_defs.Messages.GEN_ROI_NAMES, flush = True)
+    ids           = A.coords["unit_id"].values
+    dataset_names = [defs.DoricFile.Dataset.ROI.format(str(id_).zfill(4)) for id_ in ids]
+    usernames     = [defs.DoricFile.Dataset.ROI.format(id_) for id_ in ids]
+
+    with h5py.File(vname, 'a') as f:
+
+        group = mn_defs.DoricFile.Group.MULTI_FILE_CROSS_REG
+        operationCount = utils.operation_count(vpath, f, group, params_doric, params_source)
+        params_doric[defs.DoricFile.Attribute.Group.OPERATIONS] += operationCount
+
+        print(mn_defs.Messages.SAVE_ROI_SIG, flush=True)
+        rois_grouppath = f"{vpath}/{group + operationCount}"
+        rois_datapath  = f"{rois_grouppath}/{vdataset}"
+        attrs = {"RangeMin": 0, "RangeMax": 0, "Unit": "AU"}
+
+        utils.save_roi_signals(C.values, A.values, time_, f, rois_datapath,
+                                ids            = list(ids),
+                                dataset_names  = dataset_names,
+                                usernames      = usernames,
+                                common_attrs   = attrs)
+        utils.print_group_path_for_DANSE(rois_datapath)
+        utils.save_attributes(utils.merge_params(params_doric, params_source), f, rois_grouppath)
+
+        print(mn_defs.Messages.SAVE_TO.format(path = vname), flush = True)
 
 
 @contextmanager
