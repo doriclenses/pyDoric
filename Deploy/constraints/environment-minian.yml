@@ -43,6 +43,7 @@ dependencies:
   - pip=24.2              #
   - jinja2=2.11.3         # =2.11.3
   - pefile=2024.8.26
+  - libdeflate=1.14
   - pip:
       - SimpleITK==2.0.2  # ==2.0.2
   - minian=1.2.1        # Feb 10, 2022 release
