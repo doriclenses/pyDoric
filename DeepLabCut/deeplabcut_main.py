@@ -214,3 +214,49 @@ def analyze_videos(params: dict):
     video_names = [os.path.splitext(os.path.basename(filepath))[0] for filepath in video_filepaths]
 
     utils.print_to_intercept(defs.MessageTags.ANALYZED_VIDEOS + ', '.join(video_names))
+
+def extract_outliers(params: dict):
+
+    """
+    Extract outlier frames from videos using the trained DeepLabCut network.
+    """
+    # Read danse parameters
+    project_folder: str        = params.get(defs.Parameters.danse.PROJECT_FOLDER)
+    video_filepaths: list[str] = params.get(defs.Parameters.danse.VIDEO_FILEPATHS)
+
+    config_filepath = os.path.join(project_folder, defs.Paths.CONFIG_FILE)
+
+    destfolder = os.path.join(project_folder, defs.Paths.ANALYZED_DATA)
+
+    video_names = [os.path.splitext(os.path.basename(filepath))[0] for filepath in video_filepaths]
+    # Track existing images so only frames extracted by this call are reported.
+    existing_frames = {
+        video_name: set(glob.glob(os.path.join(
+            project_folder, defs.Paths.LABELED_DATA, video_name, defs.Files.PNG_PATTERN
+        )))
+        for video_name in video_names
+    }
+
+    deeplabcut.extract_outlier_frames(
+        config=config_filepath,
+        videos=video_filepaths,
+        destfolder=destfolder,
+        automatic=True
+    )
+
+    frames_by_video = {}
+    for video_name in video_names:
+        image_files = glob.glob(os.path.join(
+            project_folder, defs.Paths.LABELED_DATA, video_name, defs.Files.PNG_PATTERN
+        ))
+        frame_indices = []
+        for image_file in set(image_files) - existing_frames[video_name]:
+            match = re.fullmatch(r"img(\d+)\.png", os.path.basename(image_file))
+            if match:
+                frame_indices.append(int(match.group(1)))
+        frames_by_video[video_name] = sorted(frame_indices)
+
+    extracted_frames_repr = ', '.join(
+        f"{video_name}: {frames_by_video[video_name]}" for video_name in video_names
+    )
+    utils.print_to_intercept(defs.MessageTags.EXTRACTED_OUTLIER_FRAMES + "{" + extracted_frames_repr + "}")
