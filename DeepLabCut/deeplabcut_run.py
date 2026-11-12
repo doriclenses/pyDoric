@@ -39,6 +39,9 @@ if __name__ == "__main__":
     elif params.stage == "AnalyzeVideos":
         dlc_main.analyze_videos(params.params)
 
+    elif params.stage == "ExtractOutliers":
+        dlc_main.extract_outliers(params.params)
+
     else:
         utils.print_to_intercept(f"Unknown stage: {params.stage}")
         sys.exit()
