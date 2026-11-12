@@ -4,6 +4,9 @@ import os
 import re
 import sys
 import glob
+import tempfile
+from pathlib import Path
+import numpy as np
 import pandas as pd
 import deeplabcut
 from multiprocessing import freeze_support
@@ -180,13 +183,85 @@ def train_evaluate(params: dict):
     project_folder: str = params.get(defs.Parameters.danse.PROJECT_FOLDER)
     config_filepath = os.path.join(project_folder, defs.Paths.CONFIG_FILE)
 
-    training_dataset_info = deeplabcut.create_training_dataset(config_filepath) # returns list of tupples [(trainFraction, shuffle, ...), ...]
+    from deeplabcut.core.engine import Engine
+    from deeplabcut.core.weight_init import WeightInitialization
+    from deeplabcut.pose_estimation_pytorch.runners.snapshots import TorchSnapshotManager
+
+    cfg = deeplabcut.auxiliaryfunctions.read_config(config_filepath)
+    previous_shuffle = int(params.get(defs.Parameters.danse.SHUFFLE, 1))
+    current_iteration = int(cfg[defs.ConfigKeys.ITERATION])
+    model_root = Path(project_folder) / Engine.PYTORCH.model_folder_name
+    iterations = sorted(
+        (int(folder.name.removeprefix("iteration-"))
+         for folder in model_root.glob("iteration-*")
+         if folder.is_dir() and folder.name.removeprefix("iteration-").isdigit()),
+        reverse=True,
+    )
+    previous_snapshot = None
+    previous_model_cfg = None
+    for iteration in iterations:
+        if iteration > current_iteration:
+            continue
+        previous_cfg = dict(cfg, iteration=iteration)
+        model_folder = Path(project_folder) / deeplabcut.auxiliaryfunctions.get_model_folder(
+            cfg["TrainingFraction"][0], previous_shuffle, previous_cfg, engine=Engine.PYTORCH
+        ) / "train"
+        if not model_folder.is_dir():
+            continue
+        snapshots = TorchSnapshotManager(snapshot_prefix="snapshot", model_folder=model_folder)
+        best = snapshots.best()
+        if best is None:
+            if snapshots.snapshots():
+                raise ValueError(f"Previous model has checkpoints but no best snapshot: {model_folder}")
+            continue
+        previous_snapshot = best.path.resolve()
+        previous_model_cfg = deeplabcut.auxiliaryfunctions.read_plainconfig(
+            model_folder / Engine.PYTORCH.pose_cfg_name
+        )
+        if previous_model_cfg["metadata"]["bodyparts"] != cfg[defs.ConfigKeys.BODY_PARTS]:
+            raise ValueError("Body-part names/order differ from the previous model")
+        break
+
+    dataset_options = {}
+    training_options = {}
+    if previous_snapshot is not None:
+        # Preserve old artifacts and use a fresh split/config for the expanded labels.
+        new_iteration = max([current_iteration, *iterations]) + 1
+        deeplabcut.auxiliaryfunctions.edit_config(
+            config_filepath, {defs.ConfigKeys.ITERATION: new_iteration}
+        )
+        dataset_options["net_type"] = previous_model_cfg["net_type"]
+        weight_init = WeightInitialization(
+            snapshot_path=previous_snapshot,
+            with_decoder=True,
+            conversion_array=np.arange(len(cfg[defs.ConfigKeys.BODY_PARTS])),
+        )
+        # Apply after dataset creation: DLC rc8 reserves with_decoder=True in
+        # create_training_dataset() for SuperAnimal configurations.
+        training_options["pytorch_cfg_updates"] = {
+            "model": previous_model_cfg["model"],
+            "train_settings.weight_init": weight_init.to_dict(),
+            "resume_training_from": None,
+        }
+        print(f"Fine-tuning iteration {new_iteration} from {previous_snapshot}; "
+              "starting a fresh optimizer and training schedule", flush=True)
+    else:
+        print("No previous trained model found; using default pretrained weights", flush=True)
+
+    training_dataset_info = deeplabcut.create_training_dataset(config_filepath, **dataset_options)
+    if not training_dataset_info:
+        raise ValueError("DeepLabCut did not create a training dataset")
     shuffle: int = training_dataset_info[0][1]
 
-    deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle)
+    deeplabcut.train_network(config_filepath, batch_size=8, shuffle=shuffle, **training_options)
     deeplabcut.evaluate_network(config_filepath, Shuffles=[shuffle])
 
-    utils.print_to_intercept(defs.MessageTags.TRAIN_INFO + defs.MessageTags.SHUFFLE + str(shuffle))
+    completed_cfg = deeplabcut.auxiliaryfunctions.read_config(config_filepath)
+    utils.print_to_intercept(
+        defs.MessageTags.TRAIN_INFO
+        + defs.MessageTags.ITERATION + str(completed_cfg[defs.ConfigKeys.ITERATION])
+        + " " + defs.MessageTags.SHUFFLE + str(shuffle)
+    )
 
 
 def analyze_videos(params: dict):
