@@ -138,6 +138,10 @@ def save_labels(params: dict):
     project_folder: str       = params.get(defs.Parameters.danse.PROJECT_FOLDER)
     bodypart_names: list[str] = params.get(defs.Parameters.danse.BODY_PART_NAMES)
     video_names: list[str]    = params.get(defs.Parameters.danse.VIDEO_NAMES)
+    labeled_frames: list[list[int]] = params.get(defs.Parameters.danse.LABELED_FRAMES)
+
+    if labeled_frames is None or len(labeled_frames) != len(video_names):
+        raise ValueError("LabeledFrames must contain one frame list per video")
 
     config_filepath = os.path.join(project_folder, defs.Paths.CONFIG_FILE)
 
@@ -145,14 +149,35 @@ def save_labels(params: dict):
 
     scorer = project_folder.split('-')[1]
 
-    for video_name in video_names:
+    for video_name, frame_numbers in zip(video_names, labeled_frames):
         labeled_data_path = os.path.join(project_folder, defs.Paths.LABELED_DATA, video_name)
         if not os.path.exists(labeled_data_path):
             os.makedirs(labeled_data_path)
 
         coords = params.get(video_name + defs.Parameters.danse.COORDINATES)
 
-        frames = os.listdir(labeled_data_path)
+        if not frame_numbers or len(frame_numbers) != len(set(frame_numbers)):
+            raise ValueError(f"Frame numbers must be nonempty and unique for {video_name}")
+        if coords is None or len(coords) != len(frame_numbers):
+            raise ValueError(f"Coordinate row count does not match frame count for {video_name}")
+        if any(len(row) != 2 * len(bodypart_names) for row in coords):
+            raise ValueError(f"Coordinate column count does not match body parts for {video_name}")
+
+        # Match actual filenames to retain their zero-padding and the Qt frame order.
+        images_by_frame = {}
+        image_pattern = re.compile(rf"{re.escape(defs.LabelColumns.IMAGE_PREFIX)}(\d+)\.png")
+        for image_name in os.listdir(labeled_data_path):
+            match = image_pattern.fullmatch(image_name)
+            if match and os.path.isfile(os.path.join(labeled_data_path, image_name)):
+                frame_number = int(match.group(1))
+                if frame_number in images_by_frame:
+                    raise ValueError(f"Multiple images match frame {frame_number} for {video_name}")
+                images_by_frame[frame_number] = image_name
+
+        missing_frames = [frame for frame in frame_numbers if frame not in images_by_frame]
+        if missing_frames:
+            raise ValueError(f"Missing frame images for {video_name}: {missing_frames}")
+        frames = [images_by_frame[frame] for frame in frame_numbers]
         indices = [(defs.Paths.LABELED_DATA, video_name, frame) for frame in frames]
 
         header1 = []
@@ -165,11 +190,36 @@ def save_labels(params: dict):
 
         df = pd.DataFrame(coords, columns = header2, index = pd.MultiIndex.from_tuples(indices))
 
+        # Save labeled frame information (image names and coordinates) to the collected-data file.
         filepath = os.path.join(
             labeled_data_path,
             f"{defs.Files.COLLECTED_DATA_PREFIX}{scorer}{defs.Files.HDF_EXTENSION}"
         )
-        df.to_hdf(filepath, key=defs.Files.HDF_KEYPOINTS, mode='w')
+        if os.path.exists(filepath):
+            existing = pd.read_hdf(filepath, key=defs.Files.HDF_KEYPOINTS)
+            # Require matching columns and a three-level (folder, video, image) row index.
+            if not existing.columns.equals(df.columns):
+                raise ValueError(f"Existing scorer/body-part columns do not match for {video_name}")
+            if not isinstance(existing.index, pd.MultiIndex) or existing.index.nlevels != 3:
+                raise ValueError(f"Existing frame index is not in DeepLabCut format for {video_name}")
+            # Preserve existing frames; use new coordinates for frames labeled again.
+            df = pd.concat([existing, df])
+            df = df.loc[~df.index.duplicated(keep='last')]
+
+        # Sort complete rows so image names and their coordinates move together.
+        df = df.sort_index()
+
+        # Replace the original only after the complete merged file is written.
+        with tempfile.NamedTemporaryFile(suffix=defs.Files.HDF_EXTENSION,
+                                         dir=labeled_data_path, delete=False) as temporary:
+            temporary_path = temporary.name
+        try:
+            df.to_hdf(temporary_path, key=defs.Files.HDF_KEYPOINTS, mode='w')
+            os.replace(temporary_path, filepath)
+        finally:
+            # Remove the temporary file if writing or replacement failed.
+            if os.path.exists(temporary_path):
+                os.remove(temporary_path)
 
     utils.print_to_intercept(defs.MessageTags.LABELED_VIDEOS + ', '.join(video_names))
 
