@@ -25,8 +25,9 @@ class Parameters:
 
         VIDEO_FILEPATHS = "VideoFilepaths"
         VIDEO_NAMES     = "VideoNames"
-        BODY_PART_NAMES  = "BodyPartNames"
-        COORDINATES      = "Coordinates"
+        LABELED_FRAMES  = "LabeledFrames"
+        BODY_PART_NAMES = "BodyPartNames"
+        COORDINATES     = "Coordinates"
 
         SHUFFLE   = "Shuffle"
         ITERATION = "Iteration"
@@ -71,13 +72,15 @@ class Files:
 
 class MessageTags:
     """Prefixes used when printing status messages"""
-    PROJECT_PATH     = "[project path]"
-    EXTRACTED_FRAMES = "[extracted frames]"
-    LABELED_VIDEOS   = "[labeled videos]"
-    TRAIN_INFO       = "[train info]"
-    ANALYZED_VIDEOS  = "[analyzed videos]"
+    PROJECT_PATH             = "[project path]"
+    EXTRACTED_FRAMES         = "[extracted frames]"
+    EXTRACTED_OUTLIER_FRAMES = "[extracted outlier frames]"
+    LABELED_VIDEOS           = "[labeled videos]"
+    TRAIN_INFO               = "[train info]"
+    ANALYZED_VIDEOS          = "[analyzed videos]" 
 
-    SHUFFLE = "shuffle:"
+    SHUFFLE   = "shuffle:"
+    ITERATION = "iteration:"
 
 class LabelColumns:
     """Column and index names used for labeled dataframes"""
