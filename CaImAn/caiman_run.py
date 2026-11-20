@@ -31,7 +31,9 @@ from multiprocessing import freeze_support
 
 # Miscellaneous configuration for CaImAn
 import logging
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
+#logging.getLogger("caiman").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 freeze_support()
 
 danse_parameters = {}
