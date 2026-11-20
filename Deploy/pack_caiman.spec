@@ -27,6 +27,7 @@ EXCLUDES = [
     "PyQt5", 
     "Markdown",
     "jupyter",
+    "notebook",
     "panel",
     "matplotlib",
     "bokeh",
