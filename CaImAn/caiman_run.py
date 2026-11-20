@@ -5,6 +5,7 @@ import sys
 # Turn unused packages to dummy ones so they can be removed during pyinstaller wrapping
 from unittest.mock import Mock
 mock_packages  = ["panel", "bokeh", "ipywidgets", "ipyparallel"]
+mock_packages += ["bokeh.plotting", "bokeh.models"]
 mock_packages += ["matplotlib", "matplotlib.pyplot", "matplotlib.animation", "matplotlib.patches",  "matplotlib.widgets"]
 mock_packages += ["IPython", "IPython.display"]
 mock_packages += ["tensorflow", "tensorflow.keras", "tensorflow.keras.layers", "tensorflow.keras.models", "tensorflow.keras.optimizers",
